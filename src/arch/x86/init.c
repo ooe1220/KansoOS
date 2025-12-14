@@ -1,6 +1,9 @@
-#include "pic.h"
+#include "arch/x86/pic.h"
+#include "arch/x86/a20.h"
+#include "arch/x86/console.h"
 
 void init_irq(void) {
+
     pic_init();
 
     // キーボードのみ有効 (IRQ1)
@@ -11,5 +14,9 @@ void init_irq(void) {
 
 //カーネルから直接x86固有の関数を呼ばない
 void arch_init(void) {
+    enable_a20();
+    puts("A20 initialized\n");
     init_irq();
+    puts("Interrupt initialized\n");
+
 }

@@ -1,4 +1,5 @@
 #!/bin/bash
+mkdir build # githubにbuildフォルダをあげていない為ここで追加。
 clear
 
 # 1. ブートローダーを bin に
@@ -14,9 +15,18 @@ gcc -m32 -ffreestanding -I./src -c src/arch/x86/console.c -o build/console.o
 gcc -m32 -ffreestanding -I./src -c src/arch/x86/rtc.c -o build/rtc.o
 gcc -m32 -ffreestanding -I./src -c src/arch/x86/init.c -o build/init.o
 gcc -m32 -ffreestanding -I./src -c src/arch/x86/pic.c -o build/pic.o
+gcc -m32 -ffreestanding -I./src -c src/arch/x86/a20.c -o build/a20.o
 
 # 4. リンカで ELF 作成
- ld -m elf_i386 -T src/linker.ld -o build/kernel.elf build/switch32.o build/kernel.o build/cmos.o build/console.o build/rtc.o build/init.o build/pic.o
+ld -m elf_i386 -T src/linker.ld -o build/kernel.elf \
+  build/switch32.o \
+  build/kernel.o \
+  build/cmos.o \
+  build/console.o \
+  build/rtc.o \
+  build/init.o \
+  build/pic.o \
+  build/a20.o
 
 # 5. ELF → バイナリ
 objcopy -O binary build/kernel.elf build/kernel.bin
@@ -36,3 +46,8 @@ cat build/boot.bin build/kernel.bin > build/disk.img
 
 # 7. QEMU で実行
 qemu-system-i386 -hda build/disk.img
+
+# USBメモリへ書き込む　sdXはlsblkの結果を参照する
+# lsblk
+# sudo dd if=build/disk.img of=/dev/sdb bs=512 count=33 conv=notrunc
+
