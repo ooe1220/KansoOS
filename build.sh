@@ -7,6 +7,7 @@ nasm -f bin src/boot/boot.asm -o build/boot.bin
 
 # 2. 追加アセンブリをオブジェクトに
 nasm -f elf32 src/kernel/switch32.asm -o build/switch32.o
+nasm -f elf32 src/arch/x86/isr.asm -o build/isr.o
 
 # 3. カーネル C をオブジェクトファイルに
 gcc -m32 -ffreestanding -I./src -c src/kernel/kernel.c -o build/kernel.o
@@ -15,6 +16,7 @@ gcc -m32 -ffreestanding -I./src -c src/arch/x86/console.c -o build/console.o
 gcc -m32 -ffreestanding -I./src -c src/arch/x86/rtc.c -o build/rtc.o
 gcc -m32 -ffreestanding -I./src -c src/arch/x86/pic.c -o build/pic.o
 gcc -m32 -ffreestanding -I./src -c src/arch/x86/a20.c -o build/a20.o
+gcc -m32 -ffreestanding -I./src -c src/arch/x86/idt.c -o build/idt.o
 gcc -m32 -ffreestanding -I./src -c src/lib/string.c -o build/string.o
 
 # 4. リンカで ELF 作成
@@ -26,6 +28,8 @@ ld -m elf_i386 -T src/linker.ld -o build/kernel.elf \
   build/rtc.o \
   build/pic.o \
   build/a20.o \
+  build/idt.o \
+  build/isr.o \
   build/string.o
 
 # 5. ELF → バイナリ

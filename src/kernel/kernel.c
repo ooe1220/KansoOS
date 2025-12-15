@@ -20,12 +20,17 @@ void kernel_main() {
 
     enable_a20();
     kputs("A20 initialized\n");
+    
     pic_init();
     pic_set_mask(0xFFFD);
     kputs("Interrupt initialized\n");
     
-    
+    idt_init();
+
     asm volatile("sti");  // 割り込みを有効にする(PIC初期化しないと割り込みが常時発生)
+    
+    asm volatile("ud2");  // 割り込み動作確認
+    
     while(1){
         asm volatile("hlt");  // 割り込みが来るまでCPU停止
     }
