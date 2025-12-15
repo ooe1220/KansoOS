@@ -1,24 +1,24 @@
 #include "arch/x86/io.h"    // inb/outb
 #include "arch/x86/console.h"
 #include "arch/x86/rtc.h"
-#include "lib/stdint.h"
 #include "arch/x86/pic.h"
 #include "arch/x86/a20.h"
+#include "lib/stdint.h"
+#include "lib/string.h"
 
 void kernel_main() {
 
     // 起動時間取得
-    char buf[20];
-    format_date_time(buf);
+    char boot_time[20];
+    format_date_time(boot_time);
     
-    //char title[100];
-
-    puts("-----------------------------------\n");
-    puts("         C Kernel Booted           \n");
-    puts("         ");
-    puts(buf);
-    puts("\n-----------------------------------\n");
-    
+    char title[128];
+    strcpy(title, "-----------------------------------\n");
+    strcat(title, "         C Kernel Booted           \n");
+    strcat(title, "         ");
+    strcat(title, boot_time);
+    strcat(title, "\n-----------------------------------\n");
+    puts(title);
 
     enable_a20();
     puts("A20 initialized\n");
