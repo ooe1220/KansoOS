@@ -24,6 +24,7 @@ void kernel_main() {
     pic_set_mask(0xFFFD);
     kputs("Interrupt initialized\n");
     
+    
     asm volatile("sti");  // 割り込みを有効にする(PIC初期化しないと割り込みが常時発生)
     while(1){
         asm volatile("hlt");  // 割り込みが来るまでCPU停止

@@ -13,7 +13,7 @@ static inline void wait_8042_output_full(void)
 }
 
 /* 8042 キーボードコントローラ方式 */
-static void enable_a20_8042(void)
+void enable_a20(void)
 {
     uint8_t data;
 
@@ -44,10 +44,4 @@ static void enable_a20_8042(void)
     
 }
 
-/* 外部公開用 */
-void enable_a20(void)
-{
-    /* 念のため 8042 も実行 */
-    enable_a20_8042();
-}
 
