@@ -30,7 +30,7 @@ static void scroll() {
 }
 
 /* 1文字出力 */
-void putc(char c) {
+void kputc(char c) {
 
     if (c == '\n') {        // 改行処理
         cursor_x = 0;
@@ -53,9 +53,9 @@ void putc(char c) {
 }
 
 /* 文字列出力 */
-void puts(const char* s) {
+void kputs(const char* s) {
     while (*s) {
-        putc(*s++);
+        kputc(*s++);
     }
 }
 

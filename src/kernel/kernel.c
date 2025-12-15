@@ -12,22 +12,20 @@ void kernel_main() {
     char boot_time[20];
     format_date_time(boot_time);
     
-    char title[128];
-    strcpy(title, "-----------------------------------\n");
-    strcat(title, "         C Kernel Booted           \n");
-    strcat(title, "         ");
-    strcat(title, boot_time);
-    strcat(title, "\n-----------------------------------\n");
-    puts(title);
+    kputs("-----------------------------------\n");
+    kputs("         C Kernel Booted           \n");
+    kputs("         ");
+    kputs(boot_time);
+    kputs("\n-----------------------------------\n");
 
     enable_a20();
-    puts("A20 initialized\n");
+    kputs("A20 initialized\n");
     pic_init();
     pic_set_mask(0xFFFD);
-    puts("Interrupt initialized\n");
+    kputs("Interrupt initialized\n");
     
+    asm volatile("sti");  // 割り込みを有効にする(PIC初期化しないと割り込みが常時発生)
     while(1){
-        asm volatile("sti");  // 割り込みを有効にする(PIC初期化しないと割り込みが常時発生)
         asm volatile("hlt");  // 割り込みが来るまでCPU停止
     }
 
