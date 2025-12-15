@@ -20,8 +20,8 @@ C言語を用いて32ビットのOSを開発します。(開発途中)
     │       ├── cmos.h
     │       ├── console.c
     │       ├── console.h
-    │       ├── init.c
-    │       ├── init.h
+    │       ├── a20.c
+    │       ├── a20.h
     │       ├── io.h
     │       ├── pic.c
     │       ├── pic.h

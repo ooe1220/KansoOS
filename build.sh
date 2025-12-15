@@ -13,7 +13,6 @@ gcc -m32 -ffreestanding -I./src -c src/kernel/kernel.c -o build/kernel.o
 gcc -m32 -ffreestanding -I./src -c src/arch/x86/cmos.c -o build/cmos.o
 gcc -m32 -ffreestanding -I./src -c src/arch/x86/console.c -o build/console.o
 gcc -m32 -ffreestanding -I./src -c src/arch/x86/rtc.c -o build/rtc.o
-gcc -m32 -ffreestanding -I./src -c src/arch/x86/init.c -o build/init.o
 gcc -m32 -ffreestanding -I./src -c src/arch/x86/pic.c -o build/pic.o
 gcc -m32 -ffreestanding -I./src -c src/arch/x86/a20.c -o build/a20.o
 
@@ -26,7 +25,8 @@ ld -m elf_i386 -T src/linker.ld -o build/kernel.elf \
   build/rtc.o \
   build/init.o \
   build/pic.o \
-  build/a20.o
+  build/a20.o \
+  build/string.o
 
 # 5. ELF → バイナリ
 objcopy -O binary build/kernel.elf build/kernel.bin
