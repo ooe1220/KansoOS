@@ -12,6 +12,5 @@ char *strcpy(char *dst, const char *src);
 /* 文字列連結 */
 char *strcat(char *dst, const char *src);
 
-
 #endif
 

@@ -18,16 +18,18 @@ static struct idt_entry idt[256];
 
 extern void isr6(void);
 
+static void set_gate(int n, uint32_t handler) {
+    idt[n].offset_low  = handler & 0xFFFF;
+    idt[n].selector    = 0x08;
+    idt[n].zero        = 0;
+    idt[n].type_attr   = 0x8E;
+    idt[n].offset_high = handler >> 16;
+}
+
 void idt_init(void) {
     struct idt_ptr idtp;
-
-    uint32_t addr = (uint32_t)isr6;
-
-    idt[6].offset_low  = addr & 0xFFFF;
-    idt[6].selector    = 0x08;   // kernel code segment
-    idt[6].zero        = 0;
-    idt[6].type_attr   = 0x8E;   // interrupt gate
-    idt[6].offset_high = addr >> 16;
+    
+    set_gate(0x06, (uint32_t)isr6);
 
     idtp.limit = sizeof(idt) - 1;
     idtp.base  = (uint32_t)&idt;
@@ -38,7 +40,7 @@ void idt_init(void) {
 }
 
 void exception_handler(void) {
-    kputs("EXCEPTION!\n");
+    kputs("KERNEL PANIC!\n");
     while (1) {
         asm volatile("hlt");
     }

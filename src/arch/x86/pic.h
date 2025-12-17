@@ -7,8 +7,8 @@
 // PIC初期化（リマップ＋全IRQマスク）
 void pic_init(void);
 
-// IRQマスク設定（16bit: 下位8bit=マスタ, 上位8bit=スレーブ）
-void pic_set_mask(uint16_t mask);
+// IRQマスク設定
+void pic_mask_irq(uint8_t irq);
 
 #endif // PIC_H
 

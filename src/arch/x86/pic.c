@@ -1,7 +1,7 @@
 // PIC.c
 #include "arch/x86/io.h"
 
-// PIC初期化（リマップ＋全マスク）
+// PIC初期化
 void pic_init(void) {
     outb(0x20, 0x11);
     outb(0xA0, 0x11);
@@ -17,9 +17,21 @@ void pic_init(void) {
     outb(0xA1, 0xFF);
 }
 
-// IRQマスク更新（8bit: 下位8bitはマスタ、上位8bitはスレーブ）
-void pic_set_mask(uint16_t mask) {
-    outb(0x21, (uint8_t)(mask & 0xFF));    // マスタ
-    outb(0xA1, (uint8_t)((mask >> 8) & 0xFF)); // スレーブ
+void pic_mask_irq(uint8_t irq) {
+    uint16_t port;
+    uint8_t mask;
+
+    if (irq < 8) {
+        port = 0x21;
+        mask = inb(port);
+        mask |= (1 << irq); // 例 IRQ=1 : 00000001b << 1 = 00000010
+    } else {
+        port = 0xA1;
+        irq -= 8;
+        mask = inb(port);
+        mask |= (1 << irq);
+    }
+
+    outb(port, mask);
 }
 
