@@ -35,18 +35,13 @@ ld -m elf_i386 -T src/linker.ld -o build/kernel.elf \
 # 5. ELF → バイナリ
 objcopy -O binary build/kernel.elf build/kernel.bin
 
-# 16KBになるように0埋め(ブートローダを変更しなくて良いように大きさを固定する)
-# まず大きさを確認
-size=$(stat -c%s build/kernel.bin)
-# 16 KB = 16384 バイト
-pad=$((16384 - size))
-# pad が正の値ならゼロを追記
-if [ $pad -gt 0 ]; then
-    dd if=/dev/zero bs=1 count=$pad >> build/kernel.bin
-fi
+# 仮想HDD作成
+dd if=/dev/zero of=build/disk.img bs=1M count=1
+# boot.bin を先頭セクタに書き込む（1セクタ = 512B）
+dd if=build/boot.bin of=build/disk.img bs=512 count=1 conv=notrunc
 
-# 6. ブート＋カーネルを結合してディスクイメージ作成
-cat build/boot.bin build/kernel.bin > build/disk.img
+# kernel.bin をその次のセクタから書き込む
+dd if=build/kernel.bin of=build/disk.img bs=512 seek=1 conv=notrunc
 
 # 7. QEMU で実行
 qemu-system-i386 -hda build/disk.img
