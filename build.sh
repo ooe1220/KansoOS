@@ -18,6 +18,7 @@ gcc -m32 -ffreestanding -I./src -c src/arch/x86/rtc.c -o build/rtc.o
 gcc -m32 -ffreestanding -I./src -c src/arch/x86/pic.c -o build/pic.o
 gcc -m32 -ffreestanding -I./src -c src/arch/x86/a20.c -o build/a20.o
 gcc -m32 -ffreestanding -I./src -c src/arch/x86/idt.c -o build/idt.o
+gcc -m32 -ffreestanding -I./src -c src/arch/x86/ata.c -o build/ata.o
 gcc -m32 -ffreestanding -I./src -c src/lib/string.c -o build/string.o
 
 # 4. リンカで ELF 作成
@@ -31,6 +32,7 @@ ld -m elf_i386 -T src/linker.ld -o build/kernel.elf \
   build/a20.o \
   build/idt.o \
   build/isr.o \
+  build/ata.o \
   build/string.o
 
 # 5. ELF → バイナリ
@@ -53,7 +55,7 @@ dd if=build/kernel.bin of=build/disk.img bs=512 seek=126 conv=notrunc
 qemu-system-i386 -hda build/disk.img
 # qemu-system-i386 -hda build/disk.img -monitor stdio
 
-#  xp /512bx 0x8000 # カーネルが読み込まれているか確認
+#  xp /512bx 0x9000 # 読み込まれているか確認
 
 # USBメモリへ書き込む　sdXはlsblkの結果を参照する
 # lsblk

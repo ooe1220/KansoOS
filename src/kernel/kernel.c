@@ -4,6 +4,7 @@
 #include "arch/x86/pic.h"
 #include "arch/x86/a20.h"
 #include "arch/x86/idt.h"
+#include "arch/x86/ata.h"
 #include "lib/stdint.h"
 #include "lib/string.h"
 
@@ -31,6 +32,8 @@ void kernel_main() {
     asm volatile("sti");  // 割り込みを有効にする(PIC初期化しないと割り込みが常時発生)
     
     // asm volatile("ud2");  // 割り込み動作確認
+    
+    ata_read_lba28(0, 1, (void*)0x10000);
     
     while(1){
         asm volatile("hlt");  // 割り込みが来るまでCPU停止
