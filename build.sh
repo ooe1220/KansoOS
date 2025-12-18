@@ -3,7 +3,8 @@ mkdir build # githubにbuildフォルダをあげていない為ここで追加�
 clear
 
 # 1. ブートローダーを bin に
-nasm -f bin src/boot/boot.asm -o build/boot.bin
+nasm -f bin src/boot/mbr.asm -o build/mbr.bin
+nasm -f bin src/boot/vbr.asm -o build/vbr.bin
 
 # 2. 追加アセンブリをオブジェクトに
 nasm -f elf32 src/kernel/switch32.asm -o build/switch32.o
@@ -35,16 +36,24 @@ ld -m elf_i386 -T src/linker.ld -o build/kernel.elf \
 # 5. ELF → バイナリ
 objcopy -O binary build/kernel.elf build/kernel.bin
 
-# 仮想HDD作成
+# 6. 仮想HDD作成
 dd if=/dev/zero of=build/disk.img bs=1M count=1
-# boot.bin を先頭セクタに書き込む（1セクタ = 512B）
-dd if=build/boot.bin of=build/disk.img bs=512 count=1 conv=notrunc
 
-# kernel.bin をその次のセクタから書き込む
-dd if=build/kernel.bin of=build/disk.img bs=512 seek=1 conv=notrunc
+# MBR を LBA 0 に書く (C=0, H=0, S=1)
+dd if=build/mbr.bin of=build/disk.img bs=512 count=1 seek=0 conv=notrunc
+
+# VBR を LBA 63 に書く (C=0, H=1, S=1)
+dd if=build/vbr.bin of=build/disk.img bs=512 count=1 seek=63 conv=notrunc
+
+# kernel.binを LBA 126 に書く (C=0, H=2, S=1)
+dd if=build/kernel.bin of=build/disk.img bs=512 seek=126 conv=notrunc
+
 
 # 7. QEMU で実行
 qemu-system-i386 -hda build/disk.img
+# qemu-system-i386 -hda build/disk.img -monitor stdio
+
+#  xp /512bx 0x8000 # カーネルが読み込まれているか確認
 
 # USBメモリへ書き込む　sdXはlsblkの結果を参照する
 # lsblk
