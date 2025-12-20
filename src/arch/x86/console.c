@@ -1,4 +1,7 @@
 #include "console.h"
+#include "io.h"
+
+static void hw_move_cursor(int x, int y);
 
 #define VRAM       ((volatile unsigned short*)0xB8000)
 #define COLS       80
@@ -50,6 +53,8 @@ void kputc(char c) {
         cursor_y++;
         scroll();
     }
+    
+     hw_move_cursor(cursor_x, cursor_y);
 }
 
 /* 文字列出力 */
@@ -69,4 +74,19 @@ void console_clear() {
     cursor_x = 0;
     cursor_y = 0;
 }
+
+/* ハードウェアカーソル移動 */
+/*
+ x: 0〜79（列）
+ y: 0〜24（行）
+*/
+static void hw_move_cursor(int x, int y) {
+    unsigned short pos = y * COLS + x;
+
+    outb(0x3D4, 0x0F);           // 下位バイト
+    outb(0x3D5, pos & 0xFF);
+    outb(0x3D4, 0x0E);           // 上位バイト
+    outb(0x3D5, (pos >> 8) & 0xFF);
+}
+
 

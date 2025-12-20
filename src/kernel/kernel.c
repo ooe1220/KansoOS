@@ -4,6 +4,7 @@
 #include "arch/x86/pic.h"
 #include "arch/x86/idt.h"
 #include "arch/x86/ata.h"
+#include "arch/x86/keyboard.h"
 #include "lib/stdint.h"
 #include "lib/string.h"
 
@@ -27,14 +28,35 @@ void kernel_main() {
     kputs("PIC initialized\n");
     
     pic_unmask_irq(1); // キーボード IRQ1初期化
+    keyboard_init();
     
     asm volatile("sti");  // 割り込みを有効にする(PIC初期化しないと割り込みが常時発生)
     
     // asm volatile("ud2");  // 割り込み動作確認
     // ata_read_lba28(0, 1, (void*)0x10000); // ATAドライバ動作確認
     
+    char line[128]; // コマンド入力バッファ
+    int len = 0; // 現在の入力位置（文字数）
+    
     while(1){
-        asm volatile("hlt");  // 割り込みが来るまでCPU停止
+        char c = keyboard_getchar(); // キーボード
+
+        if (c == '\n') {
+            line[len] = 0;
+            //execute_command(line);
+            len = 0;
+            kputs("\n> ");
+        } else if (c == '\b') {
+            if (len > 0) {
+                len--;
+                kputc('\b'); kputc(' '); kputc('\b');
+            }
+        } else {
+            if (len < sizeof(line)-1) {
+                line[len++] = c;
+                kputc(c);
+            }
+        }
     }
 
 }

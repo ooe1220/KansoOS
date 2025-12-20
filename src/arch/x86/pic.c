@@ -17,6 +17,11 @@ void pic_init(void) {
     outb(0xA1, 0xFF);
 }
 
+void pic_send_eoi(uint8_t irq) {
+    (void)irq;              // 今は IRQ1 しか使わない
+    outb(0x20, 0x20);
+}
+
 void pic_mask_irq(uint8_t irq) {
     uint16_t port;
     uint8_t mask;
