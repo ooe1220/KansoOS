@@ -35,3 +35,21 @@ void pic_mask_irq(uint8_t irq) {
     outb(port, mask);
 }
 
+
+void pic_unmask_irq(uint8_t irq) {
+    uint16_t port;
+    uint8_t mask;
+
+    if (irq < 8) {
+        port = 0x21;
+        mask = inb(port);
+        mask &= ~(1 << irq);  // ← 0 にする
+    } else {
+        port = 0xA1;
+        irq -= 8;
+        mask = inb(port);
+        mask &= ~(1 << irq);
+    }
+
+    outb(port, mask);
+}

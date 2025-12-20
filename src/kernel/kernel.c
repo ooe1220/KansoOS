@@ -26,10 +26,8 @@ void kernel_main() {
     pic_init(); // PIC初期化
     kputs("PIC initialized\n");
     
-    pic_mask_irq(1); // キーボード IRQ1初期化
+    pic_unmask_irq(1); // キーボード IRQ1初期化
     
-    
-
     asm volatile("sti");  // 割り込みを有効にする(PIC初期化しないと割り込みが常時発生)
     
     // asm volatile("ud2");  // 割り込み動作確認
