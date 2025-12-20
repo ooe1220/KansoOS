@@ -18,7 +18,7 @@ start:
     mov ax, 0xB800
     mov es, ax
     
-    ;call a20_enable_8042
+    call a20_enable_8042
 
     ; GDTロード
     lgdt [gdt_descriptor]
