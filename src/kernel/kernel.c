@@ -1,8 +1,7 @@
-#include "arch/x86/io.h"    // inb/outb
+#include "arch/x86/io.h"
 #include "arch/x86/console.h"
 #include "arch/x86/rtc.h"
 #include "arch/x86/pic.h"
-#include "arch/x86/a20.h"
 #include "arch/x86/idt.h"
 #include "arch/x86/ata.h"
 #include "lib/stdint.h"
@@ -19,21 +18,20 @@ void kernel_main() {
     kputs("         ");
     kputs(boot_time);
     kputs("\n-----------------------------------\n");
-
-    enable_a20();
-    kputs("A20 initialized\n");
+        
+    idt_init(); // IDT初期化
+    kputs("IDT initialized\n");
+    pic_init(); // PIC初期化
+    kputs("PIC initialized\n");
     
-    pic_init();
     pic_mask_irq(1); // キーボード IRQ1初期化
-    kputs("Interrupt initialized\n");
     
-    idt_init();
+    
 
     asm volatile("sti");  // 割り込みを有効にする(PIC初期化しないと割り込みが常時発生)
     
     // asm volatile("ud2");  // 割り込み動作確認
-    
-    ata_read_lba28(0, 1, (void*)0x10000);
+    // ata_read_lba28(0, 1, (void*)0x10000); // ATAドライバ動作確認
     
     while(1){
         asm volatile("hlt");  // 割り込みが来るまでCPU停止

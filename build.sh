@@ -16,7 +16,6 @@ gcc -m32 -ffreestanding -I./src -c src/arch/x86/cmos.c -o build/cmos.o
 gcc -m32 -ffreestanding -I./src -c src/arch/x86/console.c -o build/console.o
 gcc -m32 -ffreestanding -I./src -c src/arch/x86/rtc.c -o build/rtc.o
 gcc -m32 -ffreestanding -I./src -c src/arch/x86/pic.c -o build/pic.o
-gcc -m32 -ffreestanding -I./src -c src/arch/x86/a20.c -o build/a20.o
 gcc -m32 -ffreestanding -I./src -c src/arch/x86/idt.c -o build/idt.o
 gcc -m32 -ffreestanding -I./src -c src/arch/x86/ata.c -o build/ata.o
 gcc -m32 -ffreestanding -I./src -c src/lib/string.c -o build/string.o
@@ -29,7 +28,6 @@ ld -m elf_i386 -T src/linker.ld -o build/kernel.elf \
   build/console.o \
   build/rtc.o \
   build/pic.o \
-  build/a20.o \
   build/idt.o \
   build/isr.o \
   build/ata.o \

@@ -35,8 +35,6 @@ void idt_init(void) {
     idtp.base  = (uint32_t)&idt;
 
     asm volatile("lidt (%0)" :: "r"(&idtp));
-
-    kputs("IDT loaded\n");
 }
 
 void exception_handler(void) {
