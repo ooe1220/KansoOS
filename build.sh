@@ -14,7 +14,6 @@ nasm -f elf32 src/arch/x86/isr.asm -o build/isr.o
 gcc -m32 -ffreestanding -I./src -c src/kernel/kernel.c -o build/kernel.o
 gcc -m32 -ffreestanding -I./src -c src/arch/x86/cmos.c -o build/cmos.o
 gcc -m32 -ffreestanding -I./src -c src/arch/x86/console.c -o build/console.o
-gcc -m32 -ffreestanding -I./src -c src/arch/x86/rtc.c -o build/rtc.o
 gcc -m32 -ffreestanding -I./src -c src/arch/x86/pic.c -o build/pic.o
 gcc -m32 -ffreestanding -I./src -c src/arch/x86/idt.c -o build/idt.o
 gcc -m32 -ffreestanding -I./src -c src/arch/x86/ata.c -o build/ata.o
@@ -26,7 +25,6 @@ ld -m elf_i386 -T src/linker.ld -o build/kernel.elf \
   build/kernel.o \
   build/cmos.o \
   build/console.o \
-  build/rtc.o \
   build/pic.o \
   build/idt.o \
   build/isr.o \
