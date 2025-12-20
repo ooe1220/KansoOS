@@ -12,5 +12,7 @@ char *strcpy(char *dst, const char *src);
 /* 文字列連結 */
 char *strcat(char *dst, const char *src);
 
+int strcmp(const char *s1, const char *s2);
+
 #endif
 

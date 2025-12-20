@@ -13,6 +13,7 @@ nasm -f elf32 src/arch/x86/irq1.asm -o build/irq1.o
 
 # 3. カーネル C をオブジェクトファイルに
 gcc -m32 -ffreestanding -I./src -c src/kernel/kernel.c -o build/kernel.o
+gcc -m32 -ffreestanding -I./src -c src/kernel/command.c -o build/command.o
 gcc -m32 -ffreestanding -I./src -c src/arch/x86/cmos.c -o build/cmos.o
 gcc -m32 -ffreestanding -I./src -c src/arch/x86/console.c -o build/console.o
 gcc -m32 -ffreestanding -I./src -c src/arch/x86/pic.c -o build/pic.o
@@ -25,6 +26,7 @@ gcc -m32 -ffreestanding -I./src -c src/lib/string.c -o build/string.o
 ld -m elf_i386 -T src/linker.ld -o build/kernel.elf \
   build/switch32.o \
   build/kernel.o \
+  build/command.o \
   build/cmos.o \
   build/console.o \
   build/pic.o \
@@ -59,5 +61,5 @@ qemu-system-i386 -hda build/disk.img
 
 # USBメモリへ書き込む　sdXはlsblkの結果を参照する
 # lsblk
-# sudo dd if=build/disk.img of=/dev/sdb bs=512 count=33 conv=notrunc
+# sudo dd if=build/disk.img of=/dev/sdb bs=512 count=10000 conv=notrunc
 

@@ -50,4 +50,12 @@ char *strcat(char *dst, const char *src) {
     return dst;
 }
 
+int strcmp(const char *s1, const char *s2) {
+    while (*s1 && (*s1 == *s2)) {  // 両方の文字が同じなら進む
+        s1++;
+        s2++;
+    }
+    // 最初に違う文字が出た時の差を返す
+    return (uint8_t)(*s1) - (uint8_t)(*s2);
+}
 

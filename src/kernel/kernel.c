@@ -7,6 +7,7 @@
 #include "arch/x86/keyboard.h"
 #include "lib/stdint.h"
 #include "lib/string.h"
+#include "command.h"
 
 void format_date_time(char* buf);
 
@@ -38,12 +39,13 @@ void kernel_main() {
     char line[128]; // コマンド入力バッファ
     int len = 0; // 現在の入力位置（文字数）
     
+    kputs("\n> ");
     while(1){
         char c = keyboard_getchar(); // キーボード
 
         if (c == '\n') {
             line[len] = 0;
-            //execute_command(line);
+            execute_command(line);
             len = 0;
             kputs("\n> ");
         } else if (c == '\b') {
