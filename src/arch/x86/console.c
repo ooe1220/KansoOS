@@ -41,6 +41,14 @@ void kputc(char c) {
         scroll();
         return;
     }
+    
+    if (c == '\b') {
+        if (cursor_x > 0) {
+            cursor_x--;
+        }
+        hw_move_cursor(cursor_x, cursor_y);
+        return;
+    }
 
     // VRAM に書き込み
     VRAM[cursor_y * COLS + cursor_x] = ATTR | c;
