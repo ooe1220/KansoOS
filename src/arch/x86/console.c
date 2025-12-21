@@ -73,6 +73,7 @@ void console_clear() {
     }
     cursor_x = 0;
     cursor_y = 0;
+    hw_move_cursor(cursor_x, cursor_y);
 }
 
 /* ハードウェアカーソル移動 */

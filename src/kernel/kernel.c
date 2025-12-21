@@ -39,7 +39,7 @@ void kernel_main() {
     char line[128]; // コマンド入力バッファ
     int len = 0; // 現在の入力位置（文字数）
     
-    kputs("\n> ");
+    kputs("\n>");
     while(1){
         char c = keyboard_getchar(); // キーボード
 
@@ -47,7 +47,7 @@ void kernel_main() {
             line[len] = 0;
             execute_command(line);
             len = 0;
-            kputs("\n> ");
+            kputs("\n>");
         } else if (c == '\b') {
             if (len > 0) {
                 len--;
