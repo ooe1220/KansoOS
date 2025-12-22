@@ -42,3 +42,8 @@ int ata_read_lba28(uint32_t lba, uint8_t sector_cnt, void* buffer) {
     return 0;
 }
 
+/* 1セクタ読み込み */
+int ata_read_sector(uint32_t lba, void* buffer) {
+    return ata_read_lba28(lba, 1, buffer);
+}
+

@@ -1,0 +1,57 @@
+BITS 16
+org 0
+
+; =========================
+; FAT #1
+; =========================
+fat1:
+    dw 0xFFF8        ; cluster 0
+    dw 0xFFFF        ; cluster 1
+    times (512 - 4) db 0
+
+
+; =========================
+; FAT #2
+; =========================
+fat2:
+    dw 0xFFF8
+    dw 0xFFFF
+    times (512 - 4) db 0
+
+
+; =========================
+; Root Directory (32 entries)
+; =========================
+rootdir:
+
+; ---- KERNEL.BIN ----
+db 'KERNEL  BIN'     ; 8.3 name
+db 0x20              ; ATTR = archive
+db 0                 ; NT
+db 0                 ; create time fine
+dw 0                 ; create time
+dw 0                 ; create date
+dw 0                 ; access date
+dw 0                 ; high cluster (FAT16)
+dw 0                 ; write time
+dw 0                 ; write date
+dw 2                 ; start cluster (仮)
+dd 0                 ; file size (未使用)
+
+; ---- TEST.TXT ----
+db 'TEST    TXT'
+db 0x20
+db 0
+db 0
+dw 0
+dw 0
+dw 0
+dw 0
+dw 0
+dw 0
+dw 3
+dd 0
+
+; ---- 残り 項目 ----
+times (32*32 - 64) db 0
+

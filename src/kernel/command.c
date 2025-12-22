@@ -4,6 +4,7 @@
 #include "lib/string.h"
 #include "lib/string.h"
 #include "lib/stdint.h"
+#include "fs/dir.h"
 
 void execute_command(const char *line) {
     if (strcmp(line, "help") == 0) {
@@ -12,11 +13,12 @@ void execute_command(const char *line) {
         kputs("  clear  - Clear screen\n");
         kputs("  reboot - Reboot CPU\n");
     } else if (strcmp(line, "clear") == 0) {
-        //for (uint16_t *vga = (uint16_t*)0xB8000; vga < (uint16_t*)(0xB8000 + 80*25*2); vga++)
-        //    *vga = 0x0700;
         console_clear();
     } else if (strcmp(line, "reboot") == 0) {
         outb(0x64, 0xFC);
+    } else if (strcmp(line, "ls") == 0 || strcmp(line, "dir") == 0) {
+        kputs("\n");
+        fs_dir_list();
     } else if (line[0] != 0) {
         kputs("\nUnknown command: ");
         kputs(line);

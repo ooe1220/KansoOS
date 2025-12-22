@@ -15,5 +15,7 @@
  */
 int ata_read_lba28(uint32_t lba, uint8_t sector_cnt, void* buffer);
 
+int ata_read_sector(uint32_t lba, void* buffer);
+
 #endif /* ATA_H */
 

@@ -21,6 +21,7 @@ gcc -m32 -ffreestanding -I./src -c src/arch/x86/idt.c -o build/idt.o
 gcc -m32 -ffreestanding -I./src -c src/arch/x86/ata.c -o build/ata.o
 gcc -m32 -ffreestanding -I./src -c src/arch/x86/keyboard.c -o build/keyboard.o
 gcc -m32 -ffreestanding -I./src -c src/lib/string.c -o build/string.o
+gcc -m32 -ffreestanding -I./src -c src/fs/dir.c -o build/dir.o
 
 # 4. リンカで ELF 作成
 ld -m elf_i386 -T src/linker.ld -o build/kernel.elf \
@@ -35,7 +36,8 @@ ld -m elf_i386 -T src/linker.ld -o build/kernel.elf \
   build/ata.o \
   build/keyboard.o \
   build/irq1.o \
-  build/string.o
+  build/string.o \
+  build/dir.o
 
 # 5. ELF → バイナリ
 objcopy -O binary build/kernel.elf build/kernel.bin
@@ -51,6 +53,10 @@ dd if=build/vbr.bin of=build/disk.img bs=512 count=1 seek=63 conv=notrunc
 
 # kernel.binを LBA 126 に書く (C=0, H=2, S=1)
 dd if=build/kernel.bin of=build/disk.img bs=512 seek=126 conv=notrunc
+
+## FAT16形式で初期化
+nasm -f bin src/fs/disk_ini.asm -o build/disk_ini.bin
+dd if=build/disk_ini.bin of=build/disk.img bs=512 seek=64 conv=notrunc
 
 
 # 7. QEMU で実行
