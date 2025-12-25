@@ -10,6 +10,7 @@
 #include "command.h"
 
 void format_date_time(char* buf);
+static inline void jump_to_user(void* entry);
 
 void kernel_main() {
 
@@ -34,7 +35,19 @@ void kernel_main() {
     asm volatile("sti");  // 割り込みを有効にする(PIC初期化しないと割り込みが常時発生)
     
     // asm volatile("ud2");  // 割り込み動作確認
-    // ata_read_lba28(0, 1, (void*)0x10000); // ATAドライバ動作確認
+    // ata_read_lba28(0, 1, (void*)0x10000);
+    
+    
+    /* ************************************************************** */
+    // test.binを固定の位置から読み込み実行する
+    // 今後はXXX.binの名前を自分で入力して実行するようにする予定 
+    // disk.img LBA1800から10セクタ分読み込みメモリ0x10000上へ展開する
+    
+    ata_read_lba28(1800, 10, (void*)0x10000);
+    jump_to_user((void*)0x10000);
+    
+    /* ************************************************************** */
+    
     
     char line[128]; // コマンド入力バッファ
     int len = 0; // 現在の入力位置（文字数）
@@ -62,6 +75,19 @@ void kernel_main() {
     }
 
 }
+
+static inline void jump_to_user(void* entry)
+{
+    asm volatile (
+        "pushf\n"        /* EFLAGS 保存 */
+        "call *%0\n"     /* ユーザコード実行 */
+        "popf\n"         /* EFLAGS 復元 */
+        :
+        : "r"(entry)
+        : "memory", "cc"
+    );
+}
+
 
 // RTC データを CMOS から読み込んで文字列に変換
 void format_date_time(char* buf) {

@@ -59,11 +59,15 @@ nasm -f bin src/fs/disk_ini.asm -o build/disk_ini.bin
 dd if=build/disk_ini.bin of=build/disk.img bs=512 seek=64 conv=notrunc
 
 
-# 7. QEMU で実行
-qemu-system-i386 -hda build/disk.img
-# qemu-system-i386 -hda build/disk.img -monitor stdio
+## ユーザー空間
+gcc -m32 -ffreestanding -I./src -c user/test.c -o user/test.bin
+dd if=user/test.bin of=build/disk.img bs=512 seek=1800 conv=notrunc ## カーネルと被らないように後ろへ置く
 
-#  xp /512bx 0x9000 # 読み込まれているか確認
+# 7. QEMU で実行
+# qemu-system-i386 -hda build/disk.img
+qemu-system-i386 -hda build/disk.img -monitor stdio
+
+#  xp /512bx 0x10000 # 読み込まれているか確認
 
 # USBメモリへ書き込む　sdXはlsblkの結果を参照する
 # lsblk
