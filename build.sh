@@ -9,7 +9,6 @@ nasm -f bin src/boot/vbr.asm -o build/vbr.bin
 # 2. 追加アセンブリをオブジェクトに
 nasm -f elf32 src/kernel/switch32.asm -o build/switch32.o
 nasm -f elf32 src/arch/x86/isr.asm -o build/isr.o
-nasm -f elf32 src/arch/x86/irq1.asm -o build/irq1.o
 
 # 3. カーネル C をオブジェクトファイルに
 gcc -m32 -ffreestanding -I./src -c src/kernel/kernel.c -o build/kernel.o
@@ -35,7 +34,6 @@ ld -m elf_i386 -T src/linker.ld -o build/kernel.elf \
   build/isr.o \
   build/ata.o \
   build/keyboard.o \
-  build/irq1.o \
   build/string.o \
   build/dir.o
 

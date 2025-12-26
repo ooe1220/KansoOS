@@ -69,6 +69,20 @@ void keyboard_handler(void) {
 }
 
 /* ------------------------------
+ * IRQ1 Cハンドラ呼び出し
+ * ------------------------------ */
+__attribute__((naked))
+void irq1(void) {
+    __asm__ volatile (
+        "pusha\n"
+        "call keyboard_handler\n"
+        "popa\n"
+        "iret\n"
+    );
+}
+
+
+/* ------------------------------
  * 初期化
  * ------------------------------ */
 void keyboard_init(void) {
