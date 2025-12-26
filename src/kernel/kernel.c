@@ -5,6 +5,7 @@
 #include "arch/x86/idt.h"
 #include "arch/x86/ata.h"
 #include "arch/x86/keyboard.h"
+#include "arch/x86/panic.h"
 #include "lib/stdint.h"
 #include "lib/string.h"
 #include "command.h"
@@ -31,6 +32,8 @@ void kernel_main() {
     
     pic_unmask_irq(1); // キーボード IRQ1初期化
     keyboard_init();
+    
+    exception_init();
     
     asm volatile("sti");  // 割り込みを有効にする(PIC初期化しないと割り込みが常時発生)
     
