@@ -1,7 +1,7 @@
-#include "arch/x86/idt.h"
-#include "arch/x86/pic.h"
-#include "arch/x86/io.h"
-#include "arch/x86/console.h"
+#include "x86/idt.h"
+#include "x86/pic.h"
+#include "x86/io.h"
+#include "x86/console.h"
 #include "lib/stdint.h"
 
 extern void irq1(void);

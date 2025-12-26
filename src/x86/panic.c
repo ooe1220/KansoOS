@@ -1,5 +1,5 @@
-#include "arch/x86/console.h"
-#include "arch/x86/idt.h"
+#include "console.h"
+#include "idt.h"
 
 void exception_handler(void) {
     kputs("KERNEL PANIC!\n");

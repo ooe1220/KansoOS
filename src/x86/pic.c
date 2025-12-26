@@ -1,5 +1,5 @@
 // PIC.c
-#include "arch/x86/io.h"
+#include "io.h"
 
 // PIC初期化
 void pic_init(void) {

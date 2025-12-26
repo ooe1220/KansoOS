@@ -12,13 +12,13 @@ nasm -f elf32 src/kernel/switch32.asm -o build/switch32.o
 # 3. カーネル C をオブジェクトファイルに
 gcc -m32 -ffreestanding -I./src -c src/kernel/kernel.c -o build/kernel.o
 gcc -m32 -ffreestanding -I./src -c src/kernel/command.c -o build/command.o
-gcc -m32 -ffreestanding -I./src -c src/arch/x86/cmos.c -o build/cmos.o
-gcc -m32 -ffreestanding -I./src -c src/arch/x86/console.c -o build/console.o
-gcc -m32 -ffreestanding -I./src -c src/arch/x86/pic.c -o build/pic.o
-gcc -m32 -ffreestanding -I./src -c src/arch/x86/idt.c -o build/idt.o
-gcc -m32 -ffreestanding -I./src -c src/arch/x86/ata.c -o build/ata.o
-gcc -m32 -ffreestanding -I./src -c src/arch/x86/keyboard.c -o build/keyboard.o
-gcc -m32 -ffreestanding -I./src -c src/arch/x86/panic.c -o build/panic.o
+gcc -m32 -ffreestanding -I./src -c src/x86/cmos.c -o build/cmos.o
+gcc -m32 -ffreestanding -I./src -c src/x86/console.c -o build/console.o
+gcc -m32 -ffreestanding -I./src -c src/x86/pic.c -o build/pic.o
+gcc -m32 -ffreestanding -I./src -c src/x86/idt.c -o build/idt.o
+gcc -m32 -ffreestanding -I./src -c src/x86/ata.c -o build/ata.o
+gcc -m32 -ffreestanding -I./src -c src/x86/keyboard.c -o build/keyboard.o
+gcc -m32 -ffreestanding -I./src -c src/x86/panic.c -o build/panic.o
 gcc -m32 -ffreestanding -I./src -c src/lib/string.c -o build/string.o
 gcc -m32 -ffreestanding -I./src -c src/fs/dir.c -o build/dir.o
 

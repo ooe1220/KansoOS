@@ -1,5 +1,5 @@
-#include "arch/x86/idt.h"
-#include "arch/x86/console.h"
+#include "idt.h"
+#include "console.h"
 
 /*
  IDT 1個分の構造体

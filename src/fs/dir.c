@@ -1,8 +1,8 @@
 /* fs/dir.c */
 
 #include "fat16.h"
-#include "../arch/x86/ata.h"
-#include "../arch/x86/console.h"
+#include "../x86/ata.h"
+#include "../x86/console.h"
 
 // 8.3形式のファイル名を表示する
 static void print_name(const char* name) {
