@@ -16,6 +16,12 @@ void isr_stub(void) {
     );
 }
 
+/*
+ * CPU 例外の初期化
+ * IDT の 0〜31 番は CPU 例外として予約されている。
+ * 今の OS では全て同じ ISR に割り当て、
+ * 発生したら必ず hltする。
+ */
 void exception_init(void) {
     for (int i = 0; i < 32; i++) {
         idt_set_gate(i, (uint32_t)isr_stub);

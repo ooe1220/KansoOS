@@ -30,16 +30,14 @@ void kernel_main() {
     pic_init(); // PIC初期化
     kputs("PIC initialized\n");
     
-    pic_unmask_irq(1); // キーボード IRQ1初期化
-    keyboard_init();
+    pic_unmask_irq(1); // PICのIRQ1(キーボード割り込み)を有効化
     
-    exception_init();
+    keyboard_init(); //  IDT(0x21=33)へIRQ1（キーボード）処理を登録
+    exception_init();// IDT(0〜31=0x00〜0x1F)へCPU例外処理を登録(panic)
     
     asm volatile("sti");  // 割り込みを有効にする(PIC初期化しないと割り込みが常時発生)
     
     // asm volatile("ud2");  // 割り込み動作確認
-    // ata_read_lba28(0, 1, (void*)0x10000);
-    
     
     /* ************************************************************** */
     // test.binを固定の位置から読み込み実行する
