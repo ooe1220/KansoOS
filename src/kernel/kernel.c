@@ -6,6 +6,7 @@
 #include "x86/ata.h"
 #include "x86/keyboard.h"
 #include "x86/panic.h"
+#include "x86/syscall.h"
 #include "lib/stdint.h"
 #include "lib/string.h"
 #include "command.h"
@@ -33,7 +34,9 @@ void kernel_main() {
     pic_unmask_irq(1); // PICのIRQ1(キーボード割り込み)を有効化
     
     keyboard_init(); //  IDT(0x21=33)へIRQ1（キーボード）処理を登録
-    exception_init();// IDT(0〜31=0x00〜0x1F)へCPU例外処理を登録(panic)
+    exception_init(); // IDT(0〜31=0x00〜0x1F)へCPU例外処理を登録(panic)
+    
+    init_syscall(); // IDT 0x80へシステムコールを登録　Linuxの様にint0x80経由でシステムコールを呼び出す
     
     asm volatile("sti");  // 割り込みを有効にする(PIC初期化しないと割り込みが常時発生)
     
@@ -44,7 +47,10 @@ void kernel_main() {
     // 今後はXXX.binの名前を自分で入力して実行するようにする予定 
     // disk.img LBA1800から10セクタ分読み込みメモリ0x10000上へ展開する
     
-    ata_read_lba28(1800, 10, (void*)0x10000);
+    //ata_read_lba28(1800, 10, (void*)0x10000);
+    //jump_to_user((void*)0x10000);
+    
+    ata_read_lba28(1805, 10, (void*)0x10000);
     jump_to_user((void*)0x10000);
     
     /* ************************************************************** */

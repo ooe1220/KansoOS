@@ -19,6 +19,7 @@ gcc -m32 -ffreestanding -I./src -c src/x86/idt.c -o build/idt.o
 gcc -m32 -ffreestanding -I./src -c src/x86/ata.c -o build/ata.o
 gcc -m32 -ffreestanding -I./src -c src/x86/keyboard.c -o build/keyboard.o
 gcc -m32 -ffreestanding -I./src -c src/x86/panic.c -o build/panic.o
+gcc -m32 -ffreestanding -I./src -c src/x86/syscall.c -o build/syscall.o
 gcc -m32 -ffreestanding -I./src -c src/lib/string.c -o build/string.o
 gcc -m32 -ffreestanding -I./src -c src/fs/dir.c -o build/dir.o
 
@@ -35,6 +36,7 @@ ld -m elf_i386 -T src/linker.ld -o build/kernel.elf \
   build/panic.o \
   build/keyboard.o \
   build/string.o \
+  build/syscall.o \
   build/dir.o
 
 # 5. ELF → バイナリ
@@ -60,6 +62,13 @@ dd if=build/disk_ini.bin of=build/disk.img bs=512 seek=64 conv=notrunc
 ## ユーザー空間
 gcc -m32 -ffreestanding -I./src -c user/test.c -o build/test.bin
 dd if=build/test.bin of=build/disk.img bs=512 seek=1800 conv=notrunc ## カーネルと被らないように後ろへ置く
+
+## gcc -m32 -ffreestanding -I./src -c user/test2.c -o build/test2.bin
+## dd if=build/test2.bin of=build/disk.img bs=512 seek=1805 conv=notrunc
+
+gcc -m32 -ffreestanding -nostdlib -I./src -c user/test2.c -o build/test2.o
+ld -m elf_i386 -Ttext=0x10000 build/test2.o -o build/test2.elf
+dd if=build/test2.elf of=build/disk.img bs=512 seek=1805 conv=notrunc
 
 # 7. QEMU で実行
 # qemu-system-i386 -hda build/disk.img
