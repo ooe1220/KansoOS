@@ -10,4 +10,3 @@ static inline void write(const char *str) {
         : "eax", "ebx"
     );
 }
-
