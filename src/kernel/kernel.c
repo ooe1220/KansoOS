@@ -47,12 +47,8 @@ void kernel_main() {
     // 今後はXXX.binの名前を自分で入力して実行するようにする予定 
     // disk.img LBA1800から10セクタ分読み込みメモリ0x10000上へ展開する
     
-    //ata_read_lba28(1800, 10, (void*)0x10000);
-    //jump_to_user((void*)0x10000);
-    
-    ata_read_lba28(1805, 10, (void*)0x10000);
-    jump_to_user((void*)0x10000);
-    
+    ata_read_lba28(1800, 10, (void*)0x10000);
+    jump_to_user((void*)0x10016);
     /* ************************************************************** */
     
     

@@ -60,15 +60,16 @@ dd if=build/disk_ini.bin of=build/disk.img bs=512 seek=64 conv=notrunc
 
 
 ## ユーザー空間
-gcc -m32 -ffreestanding -I./src -c user/test.c -o build/test.bin
-dd if=build/test.bin of=build/disk.img bs=512 seek=1800 conv=notrunc ## カーネルと被らないように後ろへ置く
+gcc -ffreestanding -nostdlib -fno-pic -fno-pie -m32 -c user/test2.c -o build/test2.o
 
-## gcc -m32 -ffreestanding -I./src -c user/test2.c -o build/test2.bin
-## dd if=build/test2.bin of=build/disk.img bs=512 seek=1805 conv=notrunc
+ld -m elf_i386 \
+   -T user/linker.ld \
+   build/test2.o \
+   -o build/test2.elf
 
-gcc -m32 -ffreestanding -nostdlib -I./src -c user/test2.c -o build/test2.o
-ld -m elf_i386 -Ttext=0x10000 build/test2.o -o build/test2.elf
-dd if=build/test2.elf of=build/disk.img bs=512 seek=1805 conv=notrunc
+objcopy -O binary build/test2.elf build/test2.bin
+## objdump -D -b binary -m i386 build/test2.bin
+dd if=build/test2.bin of=build/disk.img bs=512 seek=1800 conv=notrunc
 
 # 7. QEMU で実行
 # qemu-system-i386 -hda build/disk.img
