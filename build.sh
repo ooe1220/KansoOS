@@ -71,13 +71,21 @@ nasm -f bin src/fs/disk_ini.asm -o build/disk_ini.bin
 dd if=build/disk_ini.bin of=build/disk.img bs=512 seek=64 conv=notrunc
 
 
-## ユーザー空間
+#ユーザー空間
 gcc -ffreestanding -nostdlib -fno-pic -fno-pie -m32 -c user/test2.c -o build/test2.o
+gcc -ffreestanding -nostdlib -fno-pic -fno-pie -m32 -c user/start.S -o build/start.o
 
 ld -m elf_i386 \
    -T user/linker.ld \
+   build/start.o \
    build/test2.o \
    -o build/test2.elf
+
+
+# ld -m elf_i386 \
+#    -T user/linker.ld \
+#    build/test2.o \
+#    -o build/test2.elf
 
 objcopy -O binary build/test2.elf build/test2.bin
 ## objdump -D -b binary -m i386 build/test2.bin
