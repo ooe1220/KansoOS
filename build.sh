@@ -9,6 +9,8 @@ nasm -f bin src/boot/vbr.asm -o build/vbr.bin
 # 2. 追加アセンブリをオブジェクトに
 nasm -f elf32 src/kernel/switch32.asm -o build/switch32.o
 
+# nasm -f elf32 src/x86/isr80.S -o build/isr80.o
+
 # 3. カーネル C をオブジェクトファイルに
 gcc -m32 -ffreestanding -I./src -c src/kernel/kernel.c -o build/kernel.o
 gcc -m32 -ffreestanding -I./src -c src/kernel/command.c -o build/command.o
@@ -22,6 +24,9 @@ gcc -m32 -ffreestanding -I./src -c src/x86/panic.c -o build/panic.o
 gcc -m32 -ffreestanding -I./src -c src/x86/syscall.c -o build/syscall.o
 gcc -m32 -ffreestanding -I./src -c src/lib/string.c -o build/string.o
 gcc -m32 -ffreestanding -I./src -c src/fs/dir.c -o build/dir.o
+
+gcc -m32 -ffreestanding -fno-pic -fno-pie -c src/x86/syscall_entry.S -o build/syscall_entry.o
+
 
 # 4. リンカで ELF 作成
 ld -m elf_i386 -T src/linker.ld -o build/kernel.elf \
@@ -37,7 +42,14 @@ ld -m elf_i386 -T src/linker.ld -o build/kernel.elf \
   build/keyboard.o \
   build/string.o \
   build/syscall.o \
+  build/syscall_entry.o \
   build/dir.o
+
+#  build/isr80.o \
+
+# objdump -d build/syscall.o
+
+
 
 # 5. ELF → バイナリ
 objcopy -O binary build/kernel.elf build/kernel.bin
