@@ -9,11 +9,10 @@ nasm -f bin src/boot/vbr.asm -o build/vbr.bin
 # 2. 追加アセンブリをオブジェクトに
 nasm -f elf32 src/kernel/switch32.asm -o build/switch32.o
 
-# nasm -f elf32 src/x86/isr80.S -o build/isr80.o
-
 # 3. カーネル C をオブジェクトファイルに
 gcc -m32 -ffreestanding -I./src -c src/kernel/kernel.c -o build/kernel.o
 gcc -m32 -ffreestanding -I./src -c src/kernel/command.c -o build/command.o
+gcc -m32 -ffreestanding -I./src -c src/kernel/user_exec.c -o build/user_exec.o
 gcc -m32 -ffreestanding -I./src -c src/x86/cmos.c -o build/cmos.o
 gcc -m32 -ffreestanding -I./src -c src/x86/console.c -o build/console.o
 gcc -m32 -ffreestanding -I./src -c src/x86/pic.c -o build/pic.o
@@ -24,9 +23,7 @@ gcc -m32 -ffreestanding -I./src -c src/x86/panic.c -o build/panic.o
 gcc -m32 -ffreestanding -I./src -c src/x86/syscall.c -o build/syscall.o
 gcc -m32 -ffreestanding -I./src -c src/lib/string.c -o build/string.o
 gcc -m32 -ffreestanding -I./src -c src/fs/dir.c -o build/dir.o
-
 gcc -m32 -ffreestanding -fno-pic -fno-pie -c src/x86/syscall_entry.S -o build/syscall_entry.o
-
 
 # 4. リンカで ELF 作成
 ld -m elf_i386 -T src/linker.ld -o build/kernel.elf \
@@ -43,14 +40,9 @@ ld -m elf_i386 -T src/linker.ld -o build/kernel.elf \
   build/string.o \
   build/syscall.o \
   build/syscall_entry.o \
+  build/user_exec.o \
   build/dir.o
-
-#  build/isr80.o \
-
-# objdump -d build/syscall.o
-
-
-
+  
 # 5. ELF → バイナリ
 objcopy -O binary build/kernel.elf build/kernel.bin
 
@@ -80,12 +72,6 @@ ld -m elf_i386 \
    build/start.o \
    build/test2.o \
    -o build/test2.elf
-
-
-# ld -m elf_i386 \
-#    -T user/linker.ld \
-#    build/test2.o \
-#    -o build/test2.elf
 
 objcopy -O binary build/test2.elf build/test2.bin
 ## objdump -D -b binary -m i386 build/test2.bin

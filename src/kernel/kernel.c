@@ -10,9 +10,9 @@
 #include "lib/stdint.h"
 #include "lib/string.h"
 #include "command.h"
+#include "user_exec.h"
 
 void format_date_time(char* buf);
-static inline void jump_to_user(void* entry);
 
 void kernel_main() {
 
@@ -48,7 +48,7 @@ void kernel_main() {
     // disk.img LBA1800から10セクタ分読み込みメモリ0x10000上へ展開する
     
     ata_read_lba28(1800, 10, (void*)0x10000);
-    jump_to_user((void*)0x10000);
+    user_exec((void*)0x10000);
     /* ************************************************************** */
     
     
@@ -77,18 +77,6 @@ void kernel_main() {
         }
     }
 
-}
-
-static inline void jump_to_user(void* entry)
-{
-    asm volatile (
-        "pushf\n"        /* EFLAGS 保存 */
-        "call *%0\n"     /* ユーザコード実行 */
-        "popf\n"         /* EFLAGS 復元 */
-        :
-        : "r"(entry)
-        : "memory", "cc"
-    );
 }
 
 
