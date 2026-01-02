@@ -22,6 +22,9 @@ void pic_send_eoi(uint8_t irq) {
     outb(0x20, 0x20);
 }
 
+// -------------------------
+// 指定したIRQを無効化
+// -------------------------
 void pic_mask_irq(uint8_t irq) {
     uint16_t port;
     uint8_t mask;
@@ -40,7 +43,9 @@ void pic_mask_irq(uint8_t irq) {
     outb(port, mask);
 }
 
-
+// -------------------------
+// 指定したIRQを有効化
+// -------------------------
 void pic_unmask_irq(uint8_t irq) {
     uint16_t port;
     uint8_t mask;

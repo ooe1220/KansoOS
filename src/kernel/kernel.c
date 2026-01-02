@@ -57,19 +57,19 @@ void kernel_main() {
     
     kputs("\n>");
     while(1){
-        char c = keyboard_getchar(); // キーボード
+        char c = keyboard_getchar(); // キーボード入力を待つ (内部的にはhlt→IRQ1割り込み)
 
-        if (c == '\n') {
+        if (c == '\n') { // ENTER : 命令実行及び改行
             line[len] = 0;
             execute_command(line);
             len = 0;
             kputs("\n>");
-        } else if (c == '\b') {
+        } else if (c == '\b') { // SPACE : 一文字削除
             if (len > 0) {
                 len--;
                 kputc('\b'); kputc(' '); kputc('\b');
             }
-        } else {
+        } else { // 入力された文字のASCIIコードをバッファに入れ、画面上に表示
             if (len < sizeof(line)-1) {
                 line[len++] = c;
                 kputc(c);
@@ -78,7 +78,6 @@ void kernel_main() {
     }
 
 }
-
 
 // RTC データを CMOS から読み込んで文字列に変換
 void format_date_time(char* buf) {

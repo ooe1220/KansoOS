@@ -9,9 +9,9 @@ syscall_handler:
     pusha
 
     ## 確認用：VRAMに 'B' を出す
-    #mov edi, 0xB8002
-    #mov byte ptr [edi], 'B'
-    #mov byte ptr [edi+1], 0x0F
+    # mov edi, 0xB8002
+    # mov byte ptr [edi], 'B'
+    # mov byte ptr [edi+1], 0x0F
     cmp eax, 1              # syscall番号分岐
     jne syscall_done
 

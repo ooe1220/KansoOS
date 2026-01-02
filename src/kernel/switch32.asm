@@ -11,24 +11,22 @@ start:
     mov ss, ax
     mov sp, 0x7C00
     
+    ; VGAテキストモード設定(mode3)
     mov ax, 0x0003
     int 0x10 
-
-    ; VGAリアルモード表示
-    mov ax, 0xB800
-    mov es, ax
     
+    ; A20有効
     call a20_enable_8042
 
-    ; GDTロード
+    ; GDT読み込み
     lgdt [gdt_descriptor]
 
-    ; プロテクトモード有効化
+    ; 32bitモード有効化
     mov eax, cr0
     or eax, 1
     mov cr0, eax
 
-    ; 32ビットコードへジャンプ
+    ; 32ビットコードへ跳ぶ
     jmp 0x08:pm_start
 
 ; -----------------------------
@@ -56,7 +54,7 @@ gdt_descriptor:
     dw gdt_end - gdt_start - 1
     dd gdt_start
     
-%include "src/kernel/a20.asm"
+%include "src/kernel/a20.asm"; A20有効処理の実装
 
 ; -----------------------------
 [bits 32]
@@ -70,7 +68,7 @@ pm_start:
     mov ss, ax
     mov esp, 0x9FC00
     
-    call kernel_main
+    call kernel_main ; kernel.cへ移行
 
 .hlt_loop:
     hlt
