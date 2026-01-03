@@ -48,10 +48,7 @@ void fs_dir_list(void) {
                 continue;
 
             print_name(ent[i].name);
-            
-            if(i != i < 512 / sizeof(fat_dirent_t) - 1){ // 最後のファイルの後は改行しない
-                kputs("\n");
-            }
+            kputs("\n");
         }
     }
 }

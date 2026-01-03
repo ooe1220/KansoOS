@@ -91,11 +91,7 @@ static int find_file_info(const char* filename, uint32_t* start_cluster, uint32_
                 continue;
 
             /* ファイル名比較 */
-            kputs(ent[i].name);///
-            kputs(target_name);///
-            kputs("\n");///
             if (string_compare(ent[i].name, target_name, 11)) {
-                kputs("hakken\n");
                 if (start_cluster) *start_cluster = ent[i].clus_lo | (ent[i].clus_hi << 16);
                 if (file_size) *file_size = ent[i].size;
                 return 1; // ファイルが見つかった
@@ -116,15 +112,18 @@ void execute_command(const char *line) {
         console_clear();
     } else if (strcmp(line, "reboot") == 0) {
         outb(0x64, 0xFC);
+    } else if (strcmp(line, "ls") == 0 || strcmp(line, "dir") == 0) {
+        kputs("\n");
+        fs_dir_list();
     } else if (line[0] != 0) {
         // 空行でなければ、それをファイル名として扱う
         uint32_t start_cluster, file_size;
         kputs("\n");
         
         if (find_file_info(line, &start_cluster, &file_size)) {            
-            // ファイルを読み込んで実行
-            //ata_read_lba28(start_cluster, 10, (void*)0x10000);
-            ata_read_lba28(1800, 10, (void*)0x10000); // 毎回固定でメモリ0x10000上へ展開して実行
+            // ファイルを毎回固定でメモリ0x10000上へ展開して実行
+            // 1クラスタ=8セクタ FAT表未実装により、固定で8セクタを読み込む
+            ata_read_lba28(1800, 8, (void*)0x10000); // 後から1800→start_clusterへ変更予定
             pic_mask_irq(1); // IRQ1キーボード無効化
             user_exec((void*)0x10000);
             pic_unmask_irq(1); // IRQ1キーボード有効化
