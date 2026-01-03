@@ -7,6 +7,7 @@
 #include "user_exec.h"
 #include "x86/ata.h"
 #include "../fs/fat16.h"
+#include "x86/pic.h"
 
 
 // 文字を大文字に変換（自作）
@@ -124,7 +125,9 @@ void execute_command(const char *line) {
             // ファイルを読み込んで実行
             //ata_read_lba28(start_cluster, 10, (void*)0x10000);
             ata_read_lba28(1800, 10, (void*)0x10000); // 毎回固定でメモリ0x10000上へ展開して実行
+            pic_mask_irq(1); // IRQ1キーボード無効化
             user_exec((void*)0x10000);
+            pic_unmask_irq(1); // IRQ1キーボード有効化
         } else {
             kputs("Unknown command or file not found: ");
             kputs(line);
