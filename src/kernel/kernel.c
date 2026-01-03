@@ -47,8 +47,8 @@ void kernel_main() {
     // 今後はXXX.binの名前を自分で入力して実行するようにする予定 
     // disk.img LBA1800から10セクタ分読み込みメモリ0x10000上へ展開する
     
-    ata_read_lba28(1800, 10, (void*)0x10000);
-    user_exec((void*)0x10000);
+    // ata_read_lba28(1800, 10, (void*)0x10000);
+    // user_exec((void*)0x10000);
     /* ************************************************************** */
     
     
@@ -61,7 +61,7 @@ void kernel_main() {
 
         if (c == '\n') { // ENTER : 命令実行及び改行
             line[len] = 0;
-            execute_command(line);
+            execute_command(line); // 内部命令或いは実行ファイルの実行(XXXX.BIN)
             len = 0;
             kputs("\n>");
         } else if (c == '\b') { // SPACE : 一文字削除

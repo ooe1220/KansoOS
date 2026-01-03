@@ -52,6 +52,19 @@ dw 0
 dw 3
 dd 0
 
+db 'TEST2   BIN'
+db 0x20
+db 0
+db 0
+dw 0
+dw 0
+dw 0
+dw 0
+dw 0
+dw 0
+dw 3
+dd 0
+
 ; ---- 残り 項目 ----
 times (32*32 - 64) db 0
 
