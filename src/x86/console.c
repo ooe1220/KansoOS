@@ -6,7 +6,8 @@ static void hw_move_cursor(int x, int y);
 #define VRAM       ((volatile unsigned short*)0xB8000)
 #define COLS       80
 #define ROWS       25
-#define ATTR       0x0F00  // 白文字・黒背景
+//#define ATTR       0x0F00  // 白文字・黒背景
+#define ATTR       0x0A00  // 黄緑文字・黒背景
 
 static int cursor_x = 0;
 static int cursor_y = 0;
