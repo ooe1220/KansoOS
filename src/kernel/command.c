@@ -123,9 +123,12 @@ void execute_command(const char *line) {
         if (find_file_info(line, &start_cluster, &file_size)) {            
             // ファイルを毎回固定でメモリ0x10000上へ展開して実行
             // 1クラスタ=8セクタ FAT表未実装により、固定で8セクタを読み込む
-            ata_read_lba28(1800, 8, (void*)0x10000); // 後から1800→start_clusterへ変更予定
+            // 前提:データ領域LBA126〜、1クラスタ=8セクタ
+            //kprintf_d("start_cluster=%d\n",start_cluster);
+            uint32_t start_sector = 126 + (start_cluster - 2) * 8;//開始クラスタ→開始セクタ変換式
+            ata_read_lba28(start_sector, 8, (void*)0x10000); // ユーザプログラムをメモリ0x10000上へ展開
             pic_mask_irq(1); // IRQ1キーボード無効化
-            user_exec((void*)0x10000);
+            user_exec((void*)0x10000); // ユーザプログラムへ遷移
             pic_unmask_irq(1); // IRQ1キーボード有効化
         } else {
             kputs("Unknown command or file not found: ");

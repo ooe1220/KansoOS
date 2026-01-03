@@ -75,7 +75,7 @@ ld -m elf_i386 \
 
 objcopy -O binary build/test2.elf build/test2.bin
 ## objdump -D -b binary -m i386 build/test2.bin
-dd if=build/test2.bin of=build/disk.img bs=512 seek=1800 conv=notrunc
+dd if=build/test2.bin of=build/disk.img bs=512 seek=1814 conv=notrunc
 
 # 7. QEMU で実行
 # qemu-system-i386 -hda build/disk.img

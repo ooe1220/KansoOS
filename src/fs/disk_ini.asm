@@ -49,7 +49,7 @@ dw 0
 dw 0
 dw 0
 dw 0
-dw 3
+dw 3 ; 偽値
 dd 0
 
 db 'TEST2   BIN'
@@ -62,7 +62,7 @@ dw 0
 dw 0
 dw 0
 dw 0
-dw 3
+dw 213 ; 1814セクタ目
 dd 0
 
 ; ---- 残り 項目 ----
