@@ -11,6 +11,7 @@
 #include "lib/string.h"
 #include "command.h"
 #include "user_exec.h"
+#include "mem/memory.h"
 
 void format_date_time(char* buf);
 
@@ -50,6 +51,15 @@ void kernel_main() {
         
     char line[128]; // コマンド入力バッファ
     int len = 0; // 現在の入力位置（文字数）
+    
+    //************************
+    // メモリ管理系関数動作確認中
+    //************************
+    char* buffer = kmalloc(100);
+    strcpy(buffer, "Hello World");
+    buffer = krealloc(buffer, 200);
+    kputs(buffer);
+    kputs("\n");
     
     kputs("\n>");
     while(1){
