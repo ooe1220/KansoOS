@@ -61,6 +61,18 @@ void kernel_main() {
     kputs(buffer);
     kputs("\n");
     
+    //************************
+    // kprintf動作確認中
+    //************************
+    kprintf("test1: %c\n", 'A');
+    kprintf("test2: %s\n", "hello");
+    kprintf("test3: %d\n", 123);
+    kprintf("test4: %d\n", -456);
+    kprintf("test5: %u\n", 789);
+    kprintf("test6: %x\n", 255);
+    kprintf("test7: %%\n");
+    kprintf("test8: %c %s %d %u %x\n", 'X', "test", -100, 200, 0xABCD);
+    
     kputs("\n>");
     while(1){
         char c = keyboard_getchar(); // キーボード入力を待つ (内部的にはhlt→IRQ1割り込み)

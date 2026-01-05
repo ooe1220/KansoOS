@@ -99,7 +99,11 @@ static void hw_move_cursor(int x, int y) {
     outb(0x3D5, (pos >> 8) & 0xFF);
 }
 
-
+/**
+ * 符号付き整数を文字列に変換
+ * @param value 入力整数
+ * @param buffer 出力文字列バッファ
+ */
 static void itoa(int value, char *buffer) {
     char temp[12];
     int i = 0, j;
@@ -117,6 +121,22 @@ static void itoa(int value, char *buffer) {
 
     if (negative)
         temp[i++] = '-';
+
+    for (j = 0; j < i; j++)
+        buffer[j] = temp[i - j - 1];
+
+    buffer[i] = '\0';
+}
+
+static void utoa(unsigned int value, char *buffer, int base) {
+    char temp[12];
+    int i = 0, j;
+
+    do {
+        int remainder = value % base;
+        temp[i++] = (remainder < 10) ? ('0' + remainder) : ('a' + remainder - 10);
+        value /= base;
+    } while (value);
 
     for (j = 0; j < i; j++)
         buffer[j] = temp[i - j - 1];
@@ -148,4 +168,59 @@ void kprintf_d(const char *fmt, int val) {
     buffer[j] = '\0';
 
     kputs(buffer);
+}
+
+void kprintf(const char* format, ...) {
+    // 可変数引数
+    char* arg_ptr = (char*)&format + sizeof(char*);
+    const char* p = format;
+    char buffer[32];
+    
+    while (*p) {
+        if (*p == '%') {
+            p++;
+            switch (*p) {
+                case '%':  // %% -> %
+                    kputc('%');
+                    break;
+                    
+                case 'c':  // %c -> 文字
+                    kputc(*((char*)arg_ptr));
+                    arg_ptr += sizeof(char);
+                    break;
+                    
+                case 's':  // %s -> 文字列
+                    kputs(*((char**)arg_ptr));
+                    arg_ptr += sizeof(char*);
+                    break;
+                    
+                case 'd':  // %d -> 符号付き整数
+                case 'i':
+                    itoa(*((int*)arg_ptr), buffer);
+                    kputs(buffer);
+                    arg_ptr += sizeof(int);
+                    break;
+                    
+                case 'u':  // %u -> 符号無し整数
+                    utoa(*((unsigned int*)arg_ptr), buffer, 10);
+                    kputs(buffer);
+                    arg_ptr += sizeof(unsigned int);
+                    break;
+                    
+                case 'x':  // %x -> 16進数
+                    utoa(*((unsigned int*)arg_ptr), buffer, 16);
+                    kputs(buffer);
+                    arg_ptr += sizeof(unsigned int);
+                    break;
+                    
+                default:  // 未定義はそのまま出す
+                    kputc('%');
+                    kputc(*p);
+                    break;
+            }
+        } else {
+            kputc(*p);
+        }
+        p++;
+    }
 }
