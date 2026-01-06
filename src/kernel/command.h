@@ -1,7 +1,8 @@
 #ifndef COMMAND_H
 #define COMMAND_H
 
-void execute_command(const char *line);
+int do_builtin(const char *line);
+void run_file(const char *line);
 
 #endif
 

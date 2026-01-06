@@ -102,20 +102,38 @@ static int find_file_info(const char* filename, uint32_t* start_cluster, uint32_
     return 0; // ファイルが見つからない
 }
 
-void execute_command(const char *line) {
+
+int do_builtin(const char *line){
+
     if (strcmp(line, "help") == 0) {
         kputs("\nAvailable commands:\n");
         kputs("  help   - Show this message\n");
         kputs("  clear  - Clear screen\n");
         kputs("  reboot - Reboot CPU\n");
-    } else if (strcmp(line, "clear") == 0) {
+        return 0;
+    }
+    
+    if (strcmp(line, "clear") == 0) {
         console_clear();
-    } else if (strcmp(line, "reboot") == 0) {
+        return 0;
+    }
+    
+    if (strcmp(line, "reboot") == 0) {
         outb(0x64, 0xFC);
-    } else if (strcmp(line, "ls") == 0 || strcmp(line, "dir") == 0) {
+        return 0;
+    }
+    
+    if (strcmp(line, "ls") == 0 || strcmp(line, "dir") == 0) {
         kputs("\n");
         fs_dir_list();
-    } else if (line[0] != 0) {
+        return 0;
+    }
+    
+    return -1;
+}
+
+void run_file(const char *line){
+    if (line[0] != 0) {
         // 空行でなければ、それをファイル名として扱う
         uint32_t start_cluster, file_size;
         kputs("\n");
@@ -137,6 +155,7 @@ void execute_command(const char *line) {
         }
     }
 }
+
 
 
 

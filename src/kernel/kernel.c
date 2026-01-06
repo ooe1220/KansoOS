@@ -59,7 +59,9 @@ void kernel_main() {
 
         if (c == '\n') { // ENTER : 命令実行及び改行
             line[len] = 0;
-            execute_command(line); // 内部命令或いは実行ファイルの実行(XXXX.BIN)
+            if(do_builtin(line) != 0){ // 内部コマンド実行
+                run_file(line); // 内部コマンドと一致しない場合、実行ファイルとして実行を試みる
+            }
             len = 0;
             kputs("\n>");
         } else if (c == '\b') { // SPACE : 一文字削除
