@@ -12,6 +12,7 @@
 #include "command.h"
 #include "user_exec.h"
 #include "mem/memory.h"
+#include "debug.h"
 
 void format_date_time(char* buf);
 
@@ -46,32 +47,11 @@ void kernel_main() {
     kputs("System call handler (int 0x80) registered\n");
     
     asm volatile("sti");  // 割り込みを有効にする(PIC初期化しないと割り込みが常時発生)
-    
-    // asm volatile("ud2");  // 割り込み動作確認
         
     char line[128]; // コマンド入力バッファ
     int len = 0; // 現在の入力位置（文字数）
     
-    //************************
-    // メモリ管理系関数動作確認中
-    //************************
-    char* buffer = kmalloc(100);
-    strcpy(buffer, "Hello World");
-    buffer = krealloc(buffer, 200);
-    kputs(buffer);
-    kputs("\n");
-    
-    //************************
-    // kprintf動作確認中
-    //************************
-    kprintf("test1: %c\n", 'A');
-    kprintf("test2: %s\n", "hello");
-    kprintf("test3: %d\n", 123);
-    kprintf("test4: %d\n", -456);
-    kprintf("test5: %u\n", 789);
-    kprintf("test6: %x\n", 255);
-    kprintf("test7: %%\n");
-    kprintf("test8: %c %s %d %u %x\n", 'X', "test", -100, 200, 0xABCD);
+    test_code();
     
     kputs("\n>");
     while(1){

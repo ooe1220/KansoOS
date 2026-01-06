@@ -13,6 +13,7 @@ nasm -f elf32 src/kernel/switch32.asm -o build/switch32.o
 gcc -m32 -ffreestanding -I./src -c src/kernel/kernel.c -o build/kernel.o
 gcc -m32 -ffreestanding -I./src -c src/kernel/command.c -o build/command.o
 gcc -m32 -ffreestanding -I./src -c src/kernel/user_exec.c -o build/user_exec.o
+gcc -m32 -ffreestanding -I./src -c src/kernel/debug.c -o build/debug.o
 gcc -m32 -ffreestanding -I./src -c src/x86/cmos.c -o build/cmos.o
 gcc -m32 -ffreestanding -I./src -c src/x86/console.c -o build/console.o
 gcc -m32 -ffreestanding -I./src -c src/x86/pic.c -o build/pic.o
@@ -28,6 +29,7 @@ gcc -m32 -ffreestanding -I./src -c src/mem/malloc.c -o build/malloc.o
 gcc -m32 -ffreestanding -I./src -c src/mem/memory_utils.c -o build/memory_utils.o
 gcc -m32 -ffreestanding -I./src -c src/mem/calloc_realloc.c -o build/calloc_realloc.o
 gcc -m32 -ffreestanding -I./src -c src/mem/free.c -o build/free.o
+
 gcc -m32 -ffreestanding -fno-pic -fno-pie -c src/x86/syscall_entry.S -o build/syscall_entry.o
 
 # 4. リンカで ELF 作成
@@ -51,6 +53,7 @@ ld -m elf_i386 -T src/linker.ld -o build/kernel.elf \
   build/memory_utils.o \
   build/calloc_realloc.o \
   build/free.o \
+  build/debug.o \
   build/dir.o
   
 # 5. ELF → バイナリ
