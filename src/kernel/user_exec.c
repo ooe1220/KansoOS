@@ -1,13 +1,15 @@
 #include "user_exec.h"
 
-void user_exec(void* entry)
+int user_exec(void* entry)
 {
+    int ret;
+
     asm volatile (
-        "pushf\n"        /* EFLAGS 保存 */
-        "call *%0\n"     /* ユーザコード実行 */
-        "popf\n"         /* EFLAGS 復元 */
-        :
+        "call *%1"
+        : "=a"(ret)   // EAXに入った返り値を受け取りretへ格納
         : "r"(entry)
         : "memory", "cc"
     );
+
+    return ret;
 }

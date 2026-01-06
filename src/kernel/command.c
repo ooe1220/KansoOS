@@ -128,7 +128,8 @@ void execute_command(const char *line) {
             uint32_t start_sector = 126 + (start_cluster - 2) * 8;//開始クラスタ→開始セクタ変換式
             ata_read_lba28(start_sector, 8, (void*)0x10000); // ユーザプログラムをメモリ0x10000上へ展開
             pic_mask_irq(1); // IRQ1キーボード無効化
-            user_exec((void*)0x10000); // ユーザプログラムへ遷移
+            int ret = user_exec((void*)0x10000); // ユーザプログラムへ遷移
+            //kprintf("ret = %d\n",ret);
             pic_unmask_irq(1); // IRQ1キーボード有効化
         } else {
             kputs("Unknown command or file not found: ");
