@@ -12,7 +12,8 @@ start:
 
 read_and_print:
     ; --- Miscellaneous Output Register 読み取り ---
-    in al, 0x3CC    ; MORの現在値をALに取得
+    mov dx, 0x3CC
+    in  al, dx
 
     ; --- 取得したALの値を16進数で表示 ---
     push ax         ; 読み取った値を一時保存
