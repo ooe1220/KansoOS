@@ -1,54 +1,3 @@
-
-
-; Miscellaneous Output Register
-
-;----------------------------------------
-; Sequencer Registers
-;----------------------------------------
-; index 0
-mov dx, 0x3C4        ; Sequencer Index Port
-mov al, 0x00         ; index 0 : Reset
-out dx, al
-mov dx, 0x3C5        ; Sequencer Data Port
-mov al, 0x03         ; normal operation
-out dx, al
-
-
-; index 1
-mov dx, 0x3C4
-mov al, 0x01         ; index 1 : Clocking Mode
-out dx, al
-mov dx, 0x3C5
-mov al, 0x00         ; 8-dot chars, screen on
-out dx, al
-
-
-; index 2
-mov dx, 0x3C4
-mov al, 0x02         ; index 2 : Map Mask
-out dx, al
-mov dx, 0x3C5
-mov al, 0x03         ; enable plane 0 and 1
-out dx, al
-
-
-; index 3
-mov dx, 0x3C4
-mov al, 0x03         ; index 3 : Character Map Select
-out dx, al
-mov dx, 0x3C5
-mov al, 0x00         ; font from plane 0
-out dx, al
-
-
-; index 4
-mov dx, 0x3C4
-mov al, 0x04         ; index 4 : Memory Mode
-out dx, al
-mov dx, 0x3C5
-mov al, 0x02         ; odd/even enable, chain-4 off
-out dx, al
-
 ;----------------------------------------
 ; CRTC Registers
 ;----------------------------------------
@@ -165,27 +114,26 @@ mov dx, 0x3D5
 mov al, 0x4F ; 0100 1111
 out dx, al
 
-; 0x0A カーソルを表示するか、文字の枠内のどこから描き始めるか
-; bit 7	（未使用）	-	常に 0
-; bit 6	（未使用）	-	常に 0
-; bit 5	0	カーソルOFF	1にするとカーソルが消える → 0なので表示する
-; bit 0-4	00000 (0)	開始ドット位置	文字セル内のの何ドット目から描くか → 0ドット目から
+; 0x0A カーソル開始行
+; bit 0-4 : 開始行指定 1文字の枠内（縦0〜15行）のうち、13行目から塗り潰し始める。
+; bit 5 : カーソルON/OFF。 0 で表示、1 で非表示（透明）になります。
+; bit 6-7 : 未使用。
 mov dx, 0x3D4
 mov al, 0x0A
 out dx, al
 mov dx, 0x3D5
-mov al, 0x00 ; 0000 0000
+mov al, 0x0D ; 00001101
 out dx, al
 
-; 0x0B カーソル終了位置
-; bit 7	0　常に 0
-; bit 5-6	00　表示のズレ補正無効
-; bit 0-4	01111 (15)　何ドット目で描くのを終えるか → 15ドット目
+; 0x0B カーソル終了行
+; bit 0-4 (値: 0x0E) : 終了ライン指定。 14行目で塗り潰しを終了
+; bit 5-6 (値: 00) : 表示のズレ（Skew）。 文字に対してカーソルを右に何ドットずらすかを決める。00 はズレなし。
+; bit 7 : 未使用。
 mov dx, 0x3D4
 mov al, 0x0B
 out dx, al
 mov dx, 0x3D5
-mov al, 0x0F
+mov al, 0x0E ; 00001110
 out dx, al
 
 ; 0x0C 表示開始アドレス　上位8ビット
@@ -205,7 +153,7 @@ mov dx, 0x3D5
 mov al, 0x00
 out dx, al
 
-; 0x0E カーソルを画面のどこに置くか　上位8ビット
+; 0x0E カーソルを画面のどこに置くか　上位8ビット　　　０２
 mov dx, 0x3D4
 mov al, 0x0E
 out dx, al
@@ -213,7 +161,7 @@ mov dx, 0x3D5
 mov al, 0x00
 out dx, al
 
-; 0x0F カーソルを画面のどこに置くか　下位8ビット
+; 0x0F カーソルを画面のどこに置くか　下位8ビット　　　AD
 ; 注意：座標では無く左上から数えて何文字目か
 ; 例
 ; 0 を指定した場合：画面の左上端（1行目の1文字目）にカーソルが出る
@@ -233,7 +181,7 @@ mov dx, 0x3D5
 mov al, 0x9C
 out dx, al
 
-; 0x11 Vertical Retrace End
+; 0x11 Vertical Retrace End　　　　８E
 mov dx, 0x3D4
 mov al, 0x11
 out dx, al
@@ -257,7 +205,7 @@ mov dx, 0x3D5
 mov al, 0x28
 out dx, al
 
-; 0x14 Underline Location
+; 0x14 Underline Location　　　１f
 mov dx, 0x3D4
 mov al, 0x14
 out dx, al
