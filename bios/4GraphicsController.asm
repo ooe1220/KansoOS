@@ -11,6 +11,7 @@ mov dx, 0x3CF
 mov al, 0x00       ; すべてリセット
 out dx, al
 
+
 ; --- 0x01: Enable Set/Reset ---
 ; bit 0-3 : 各プレーンに対して Set/Reset を有効にする（1=有効）
 ; bit 4-7 : 未使用
@@ -57,7 +58,8 @@ mov dx, 0x3CE
 mov al, 0x05       ; Graphics Mode
 out dx, al
 mov dx, 0x3CF
-mov al, 0x10
+;mov al, 0x10
+mov al, 0x00
 out dx, al
 
 ; --- 0x06: Miscellaneous Graphics ---
@@ -69,7 +71,8 @@ mov dx, 0x3CE
 mov al, 0x06       ; Misc Graphics
 out dx, al
 mov dx, 0x3CF
-mov al, 0x0E
+;mov al, 0x0E
+mov al, 0x0D
 out dx, al
 
 ; --- 0x07: Color Don't Care ---
@@ -82,12 +85,20 @@ mov dx, 0x3CF
 mov al, 0x0F       ; すべての色を関心対象
 out dx, al
 
+    mov dx, 0x3F8
+    mov al, '*'
+    out dx, al
+
 ; --- 0x08: Bit Mask ---
 ; bit0-7 : 書き込みマスク（1=書き込み許可）
 mov dx, 0x3CE
 mov al, 0x08       ; Bit Mask
 out dx, al
+
+    mov dx, 0x3F8
+    mov al, '*'
+    out dx, al
+
 mov dx, 0x3CF
 mov al, 0xFF       ; すべて書き込み許可
 out dx, al
-
