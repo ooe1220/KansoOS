@@ -86,7 +86,7 @@ start:
     dec dx
     inc bl
     loop .crtc_loop
-
+    
 ; 4. Graphics Controller Registers
     mov dx, 0x3CE
     mov si, grap_data
@@ -101,7 +101,7 @@ start:
     dec dx
     inc bl
     loop .grap_loop
-
+    
 ; 5. Attribute Controller Registers
     ; フリップフロップをリセットするために 0x3DA を Read
     mov dx, 0x3DA
@@ -128,7 +128,6 @@ mov es, ax
 mov word [es:0],  0x0441   ; 'A' 赤
 mov word [es:2],  0x0E42   ; 'B' 黄
 
-
 ; --- VRAM全体を 'A' (黄色) で埋める ---
     mov ax, 0xB800      ; テキストモードのVRAMセグメント
     mov es, ax
@@ -144,11 +143,11 @@ rep stosw               ; ES:[DI] に AX を書き込み、DI を 2 増やす。
     hlt
     jmp .halt                ; 完全停止
     
-; QEMU初期化のVGAレジスタダンプ値に基づいたデータ
+; QEMU初期化のVGAレジスタダンプ値に基づいたデータ(CRTC 0x0E,0x0Fのカーソル以外)
 seq_data  db 0x03, 0x00, 0x03, 0x00, 0x02
     
 crtc_data db 0x5F, 0x4F, 0x50, 0x82, 0x55, 0x81, 0xBF, 0x1F, \
-                 0x00, 0x4F, 0x0D, 0x0E, 0x00, 0x00, 0x04, 0xDD, \
+                 0x00, 0x4F, 0x0D, 0x0E, 0x00, 0x00, 0x00, 0x00, \
                  0x9C, 0x8E, 0x8F, 0x28, 0x1F, 0x96, 0xB9, 0xA3, 0xFF
 
 grap_data db 0x00, 0x00, 0x00, 0x00, 0x00, 0x10, 0x0E, 0x0F, 0xFF
