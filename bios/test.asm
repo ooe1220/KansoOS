@@ -9,23 +9,8 @@ start:
     ; mode 13h : 320x200 256色
     ; MODE3に切り替わったことを証明する為一度MODE13に切り替え
     ; ----------------------------
-    mov ax, 0x0013
-    int 0x10
-
-    ; ----------------------------
-    ; VRAM (A000:0000) を赤で塗る
-    ; ----------------------------
-    mov ax, 0xA000
-    mov es, ax
-    xor di, di               ; DI = 0
-
-    mov al, 4                ; 色番号 4 = 赤
-    mov cx, 320*200          ; 64000 バイト
-
-.fill:
-    stosb                    ; ES:DI ← AL, DI++
-    loop .fill
-    
+     mov ax, 0x0013
+     int 0x10
 
 ; 1. Miscellaneous Output Register の設定
     mov dx, 0x3C2
@@ -33,33 +18,45 @@ start:
     out dx, al
 
 ; 2. Sequencer Registers (Reset)
+    mov dx, 0x3C4       ; Sequencer Index ポート
+
+    ; Index 0
+    mov al, 0
+    out dx, al           ; Index 0 指定
+    mov dx, 0x3C5        ; Data ポートに切り替え
+    mov al, 0x03
+    out dx, al
+
+    ; Index 1
     mov dx, 0x3C4
-    mov al, 0x00    ; Index 0: Reset
+    mov al, 1
     out dx, al
-    inc dx
-    mov al, 0x01    ; Binary Reset
-    out dx, al
-
-    ; Sequencer Index 1-4 の書き込み
-    dec dx
-    mov si, seq_data
-    mov cx, 4
-    mov bl, 1       ; Index 1 から開始
-.seq_loop:
-    mov al, bl
-    out dx, al      ; Index 指定
-    inc dx
-    lodsb           ; ds:si から値を読み込み
-    out dx, al      ; Data 書き込み
-    dec dx
-    inc bl
-    loop .seq_loop
-
-    ; Sequencer Reset 解除
+    mov dx, 0x3C5
     mov al, 0x00
     out dx, al
-    inc dx
-    mov al, 0x03    ; Normal Operation
+
+    ; Index 2
+    mov dx, 0x3C4
+    mov al, 2
+    out dx, al
+    mov dx, 0x3C5
+    mov al, 0x03
+    out dx, al
+
+    ; Index 3
+    mov dx, 0x3C4
+    mov al, 3
+    out dx, al
+    mov dx, 0x3C5
+    mov al, 0x00
+    out dx, al
+
+    ; Index 4
+    mov dx, 0x3C4
+    mov al, 4
+    out dx, al
+    mov dx, 0x3C5
+    mov al, 0x02
     out dx, al
 
 ; 3. CRTC Registers (Unlock Index 0-7)
@@ -122,11 +119,49 @@ start:
     ; 映像出力を有効化 (PAS bit をセット)
     mov al, 0x20
     out dx, al
+    
+; --- 2. プレーン2 (フォント領域) への書き込み準備 ---
+    mov dx, 0x3C4
+    mov ax, 0x0402      ; Sequencer Index 2: Plane 2 に書き込み許可
+    out dx, ax
+    mov ax, 0x0704      ; Sequencer Index 4: Sequential Access (Chain4解除)
+    out dx, ax
 
-mov ax, 0xB800
-mov es, ax
-mov word [es:0],  0x0441   ; 'A' 赤
-mov word [es:2],  0x0E42   ; 'B' 黄
+    mov dx, 0x3CE
+    mov ax, 0x0004      ; Graphics Index 4: Read Plane 2
+    out dx, ax
+    mov ax, 0x0005      ; Graphics Index 5: Write Mode 0
+    out dx, ax
+    mov ax, 0x0406      ; Graphics Index 6: Map to 0xA0000 (64KB)
+    out dx, ax
+
+; --- 3. BIOSフォントをVRAMにコピー ---
+mov ax, 0xA000
+    mov es, ax
+    xor di, di
+    
+    mov al, 0xFF        ; 全ドット点灯（豆腐のデータ）
+    mov cx, 256         ; 256文字分
+.loop_font:
+    push cx
+    mov cx, 16          ; 16ライン分
+    rep stosb           ; 16バイト書く (豆腐)
+    add di, 16          ; 残り16バイトを飛ばして32バイト境界へ
+    pop cx
+    loop .loop_font
+
+; --- 4. 通常のテキストモード表示設定に戻す ---
+    mov dx, 0x3C4
+    mov ax, 0x0302      ; Sequencer Index 2: Plane 0,1 に書き込み許可
+    out dx, ax
+    mov ax, 0x0304      ; Sequencer Index 4: Odd/Even モード
+    out dx, ax
+
+    mov dx, 0x3CE
+    mov ax, 0x1005      ; Graphics Index 5: Odd/Even モード
+    out dx, ax
+    mov ax, 0x0E06      ; Graphics Index 6: Map to 0xB8000
+    out dx, ax
 
 ; --- VRAM全体を 'A' (黄色) で埋める ---
     mov ax, 0xB800      ; テキストモードのVRAMセグメント
@@ -139,12 +174,22 @@ mov word [es:2],  0x0E42   ; 'B' 黄
     cld                 ; 方向に注意（増加方向）
 rep stosw               ; ES:[DI] に AX を書き込み、DI を 2 増やす。これを CX 回繰り返す。
 
-.halt:
+cli
+hlt_loop:
     hlt
-    jmp .halt                ; 完全停止
+    jmp hlt_loop
+    
+dummy_font:
+    ; 文字コード 0x00 用 (空の文字)
+    db 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+    db 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+
+    ; 文字コード 0x01 用 (テスト用の 'A' っぽい形)
+    db 0x18, 0x3C, 0x66, 0x66, 0x7E, 0x66, 0x66, 0x66
+    db 0x66, 0x66, 0x66, 0x00, 0x00, 0x00, 0x00, 0x00
     
 ; QEMU初期化のVGAレジスタダンプ値に基づいたデータ(CRTC 0x0E,0x0Fのカーソル以外)
-seq_data  db 0x03, 0x00, 0x03, 0x00, 0x02
+;seq_data  db 0x03, 0x00, 0x03, 0x00, 0x02
     
 crtc_data db 0x5F, 0x4F, 0x50, 0x82, 0x55, 0x81, 0xBF, 0x1F, \
                  0x00, 0x4F, 0x0D, 0x0E, 0x00, 0x00, 0x00, 0x00, \
