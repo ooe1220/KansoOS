@@ -136,19 +136,38 @@ start:
     out dx, ax
 
 ; --- 3. BIOSフォントをVRAMにコピー ---
-mov ax, 0xA000
-    mov es, ax
-    xor di, di
+;mov ax, 0xA000
+;    mov es, ax
+;    xor di, di
     
-    mov al, 0xFF        ; 全ドット点灯（豆腐のデータ）
-    mov cx, 256         ; 256文字分
-.loop_font:
+;    mov al, 0xFF        ; 全ドット点灯（豆腐のデータ）
+;    mov cx, 256         ; 256文字分
+;.loop_font:
+;    push cx
+;    mov cx, 16          ; 16ライン分
+;    rep stosb           ; 16バイト書く (豆腐)
+;    add di, 16          ; 残り16バイトを飛ばして32バイト境界へ
+;    pop cx
+;    loop .loop_font
+
+mov ax, 0xA000
+mov es, ax
+xor di, di
+
+mov si, font_A
+mov cx, 256              ; 256文字
+.loop_char:
     push cx
-    mov cx, 16          ; 16ライン分
-    rep stosb           ; 16バイト書く (豆腐)
-    add di, 16          ; 残り16バイトを飛ばして32バイト境界へ
+    mov cx, 16           ; 16ライン
+    push si
+.loop_line:
+    lodsb                ; AL = font_A[line]
+    stosb
+    loop .loop_line
+    pop si
+    add di, 16           ; 32バイト境界に揃える
     pop cx
-    loop .loop_font
+    loop .loop_char
 
 ; --- 4. 通常のテキストモード表示設定に戻す ---
     mov dx, 0x3C4
@@ -179,14 +198,24 @@ hlt_loop:
     hlt
     jmp hlt_loop
     
-dummy_font:
-    ; 文字コード 0x00 用 (空の文字)
-    db 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
-    db 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+font_A:
+    db 00011000b
+    db 00100100b
+    db 01000010b
+    db 01000010b
+    db 01111110b
+    db 01000010b
+    db 01000010b
+    db 01000010b
+    db 00000000b
+    db 00000000b
+    db 00000000b
+    db 00000000b
+    db 00000000b
+    db 00000000b
+    db 00000000b
+    db 00000000b
 
-    ; 文字コード 0x01 用 (テスト用の 'A' っぽい形)
-    db 0x18, 0x3C, 0x66, 0x66, 0x7E, 0x66, 0x66, 0x66
-    db 0x66, 0x66, 0x66, 0x00, 0x00, 0x00, 0x00, 0x00
     
 ; QEMU初期化のVGAレジスタダンプ値に基づいたデータ(CRTC 0x0E,0x0Fのカーソル以外)
 ;seq_data  db 0x03, 0x00, 0x03, 0x00, 0x02
