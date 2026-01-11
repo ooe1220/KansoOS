@@ -3,11 +3,13 @@
 
 start:
     cli                     ; 割り込み禁止
+    cld
 
     ; ----------------------------
     ; VGA グラフィックモード設定
     ; mode 13h : 320x200 256色
-    ; MODE3に切り替わったことを証明する為一度MODE13に切り替え
+    ; BIOSが設定したMODE3の設定及び字体を上書き
+    ; その後自力でVGAをMODE3へ再設定
     ; ----------------------------
     mov ax, 0x0013
     int 0x10
@@ -136,9 +138,9 @@ start:
     out dx, ax
     
 ; --- 3. font.asmの字体をVGAへ登録 ---
-    mov dx, 0x3F8     ; COM1 ポート
-    mov al, '-'       ; 出す文字
-    out dx, al
+    ;mov dx, 0x3F8     ; COM1 ポート
+    ;mov al, '-'       ; 出す文字
+    ;out dx, al
     call register_char
 
 
@@ -196,97 +198,29 @@ attr_data db 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x14, 0x07, \
 ;%include "font_load.asm";
 
 register_char:
-
     mov ax, 0xA000
     mov es, ax
-    xor di, di
+
+    mov di, 0x41 * 32           ; 'A' の書き込み開始位置
+    mov si, font_A              ; メモリ上のフォントデータ先頭
+    mov cx, 14                  ; A(0x41)からN(0x4E)までの14文字分
+
+.loop_copy:
+    push cx                     ; 外側ループのカウンターを保存
     
-    ; A = ASCII 0x41
-    mov di, 0x41*32
-    mov si, font_A
+    ; --- 1文字分のフォントデータ(16バイト)をコピー ---
     mov cx, 16
-    rep movsb
+    rep movsb                   ; ds:si から es:di へ16バイト転送
+                                ; 実行後、siは次のフォントへ、diは+16進む
 
-    ; B = ASCII 0x42
-    mov di, 0x42*32
-    mov si, font_B
-    mov cx, 16
-    rep movsb
-
-    ; C = ASCII 0x43
-    mov di, 0x43*32
-    mov si, font_C
-    mov cx, 16
-    rep movsb
-
-    ; D = ASCII 0x44
-    mov di, 0x44*32
-    mov si, font_D
-    mov cx, 16
-    rep movsb
+    ; --- 次の文字の境界(32バイト目)まで di を調整 ---
+    ; 今 di は 16バイト進んだ状態なので、残り16バイト飛ばす
+    add di, 16                  
     
-    ; E = ASCII 0x45
-    mov di, 0x45*32
-    mov si, font_E
-    mov cx, 16
-    rep movsb
+    pop cx                      ; カウンターを戻す
+    loop .loop_copy             ; 残り文字数分繰り返す
 
-    ; F = ASCII 0x46
-    mov di, 0x46*32
-    mov si, font_F
-    mov cx, 16
-    rep movsb
-
-    ; G = ASCII 0x47
-    mov di, 0x47*32
-    mov si, font_G
-    mov cx, 16
-    rep movsb
-
-    ; H = ASCII 0x48
-    mov di, 0x48*32
-    mov si, font_H
-    mov cx, 16
-    rep movsb
-
-    ; I = ASCII 0x49
-    mov di, 0x49*32
-    mov si, font_I
-    mov cx, 16
-    rep movsb
-
-    ; J = ASCII 0x4A
-    ;mov di, 0x4A*32
-    ;mov si, font_J
-    ;mov cx, 16
-    ;rep movsb
-
-    ; K = ASCII 0x4B
-    ; mov di, 0x4B*32
-    ; mov si, font_K
-    ; mov cx, 16
-    ; rep movsb
-
-    ; L = ASCII 0x4C
-    ; mov di, 0x4C*32
-    ; mov si, font_L
-    ; mov cx, 16
-    ; rep movsb
-
-    ; M = ASCII 0x4D
-    ; mov di, 0x4D*32
-    ; mov si, font_M
-    ; mov cx, 16
-    ; rep movsb
-
-    ; N = ASCII 0x4E
-    ; mov di, 0x4E*32
-    ; mov si, font_N
-    ; mov cx, 16
-    ; rep movsb
-
-
-ret
+    ret
 
 font_A:
     db 00011000b
