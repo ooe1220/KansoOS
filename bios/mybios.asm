@@ -18,7 +18,6 @@ bios_start:
     mov ss, ax
     mov sp, 0x7C00 
     
-
     ; --- COM1 init (115200 / 8N1) ---
     mov dx, 0x3F8 + 1      ; IER
     xor al, al
@@ -48,17 +47,12 @@ bios_start:
     mov al, 0x0B
     out dx, al
 
-    ; --- test output ---
-    mov dx, 0x3F8
-    mov al, '-'
-    out dx, al
-
     cld
     
-    mov dx, 0x3F8     ; COM1 ポート
-    mov al, '-'       ; 出す文字
+    mov dx, 0x3F8
+    mov al, '*'
     out dx, al
-
+    
 ; 1. Miscellaneous Output Register の設定
     mov dx, 0x3C2
     mov al, 0x67
@@ -183,12 +177,7 @@ bios_start:
     out dx, ax
     
 ; --- 3. font.asmの字体をVGAへ登録 ---
-    ;mov dx, 0x3F8     ; COM1 ポート
-    ;mov al, '-'       ; 出す文字
-    ;out dx, al
     call register_char
-
-
 
 ; --- 4. 通常のテキストモード表示設定に戻す ---
     mov dx, 0x3C4
