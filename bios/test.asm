@@ -193,18 +193,18 @@ grap_data db 0x00, 0x00, 0x00, 0x00, 0x00, 0x10, 0x0E, 0x0F, 0xFF
 attr_data db 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x14, 0x07, \
                  0x38, 0x09, 0x3A, 0x0B, 0x3C, 0x0D, 0x3E, 0x0F, \
                  0x0C, 0x01, 0x0F, 0x13, 0x00
-                 
-;%include "font.asm";
-;%include "font_load.asm";
 
 register_char:
+    mov ax, cs
+    mov ds, ax
     mov ax, 0xA000
     mov es, ax
+
     cld                         ; 方向フラグをクリア（前進）
 
     mov di, 0x41 * 32           ; 'A' の書き込み開始位置
     mov si, font_A              ; メモリ上のフォントデータ先頭
-    mov cx, 14                  ; A(0x41)からN(0x4E)までの14文字分
+    mov cx, 18                 ; A(0x41)からN(0x4E)までの14文字分
 
 .loop_copy:
     push cx                     ; 外側ループのカウンターを保存
@@ -220,6 +220,27 @@ register_char:
     
     pop cx                      ; カウンターを戻す
     loop .loop_copy             ; 残り文字数分繰り返す
+    
+    
+    ; --- 未定義の字体を■で仮登録 ---
+    ; ここで登録した■が表示されるため、VRAMの設定は正しい
+;    mov al, 0xFF                ; 全点灯の豆腐
+;    mov cx, 16                  ; 1文字分 16バイト
+;    mov bx, 0x53                ; 'S' の ASCII
+
+;.next_dummy:
+;    ; DI は文字の開始位置
+;    shl bx, 5                   ; 32バイト幅に変換
+;    mov di, bx
+;    mov cx, 16
+;    rep stosb                   ; 1文字分書き込み
+
+    ; 次の文字
+;    mov bx, bx                  ; 元の文字コードに戻す
+;    shr bx, 5                    ; 32バイトシフトを戻す
+;    inc bx
+;    cmp bx, 0x80                ; 'O'～127まで
+;    jb .next_dummy
 
     ret
 
@@ -476,4 +497,75 @@ font_N:
     db 00000000b
     db 00000000b
 
+font_O:
+    db 00000000b
+    db 00000000b
+    db 00111100b
+    db 01100110b
+    db 01100110b
+    db 01100110b
+    db 01100110b
+    db 01100110b
+    db 01100110b
+    db 01100110b
+    db 00111100b
+    db 00000000b
+    db 00000000b
+    db 00000000b
+    db 00000000b
+    db 00000000b
+
+font_P:
+    db 00000000b
+    db 00000000b
+    db 01111100b
+    db 01100110b
+    db 01100110b
+    db 01111100b
+    db 01100000b
+    db 01100000b
+    db 01100000b
+    db 01100000b
+    db 01100000b
+    db 00000000b
+    db 00000000b
+    db 00000000b
+    db 00000000b
+    db 00000000b
+
+font_Q:
+    db 00000000b
+    db 00000000b
+    db 00111100b
+    db 01100110b
+    db 01100110b
+    db 01100110b
+    db 01100110b
+    db 01100110b
+    db 01100110b
+    db 00111100b
+    db 00001100b
+    db 00000110b
+    db 00000000b
+    db 00000000b
+    db 00000000b
+    db 00000000b
+
+font_R:
+    db 00000000b
+    db 00000000b
+    db 01111100b
+    db 01100110b
+    db 01100110b
+    db 01111100b
+    db 01110000b
+    db 01111000b
+    db 01101100b
+    db 01100110b
+    db 01100110b
+    db 00000000b
+    db 00000000b
+    db 00000000b
+    db 00000000b
+    db 00000000b
 
