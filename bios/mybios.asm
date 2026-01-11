@@ -1,6 +1,6 @@
 ; nasm -f bin mybios.asm -o mybios.bin
 ; hexdump -C mybios.bin | tail
-;  qemu-system-i386   -bios mybios.bin   -vga std   -no-reboot   -no-shutdown   -serial stdio
+; qemu-system-i386   -bios mybios.bin   -vga std   -no-reboot   -no-shutdown   -serial stdio
 
 [BITS 16]
 
@@ -10,8 +10,6 @@
 org 0x0000
 
 bios_start:
-
-
 
     cli
     mov ax, 0xF000
