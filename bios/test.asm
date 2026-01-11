@@ -202,9 +202,9 @@ register_char:
 
     cld                         ; 方向フラグをクリア（前進）
 
-    mov di, 0x41 * 32           ; 'A' の書き込み開始位置
-    mov si, font_A              ; メモリ上のフォントデータ先頭
-    mov cx, 18                 ; A(0x41)からN(0x4E)までの14文字分
+    mov di, 0x30 * 32           ; 'A' の書き込み開始位置
+    mov si, font_0              ; メモリ上のフォントデータ先頭
+    mov cx, 75                 ; A(0x41)からN(0x4E)までの14文字分
 
 .loop_copy:
     push cx                     ; 外側ループのカウンターを保存

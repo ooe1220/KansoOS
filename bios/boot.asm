@@ -12,7 +12,7 @@ start:
 
     ; --- INT 13h CHS 読み込み ---
     mov ah, 0x02         ; BIOS: Read Sectors
-    mov al, 2            ; 読み込むセクタ数 (1)
+    mov al, 3            ; 読み込むセクタ数 (1)
     mov ch, 0            ; シリンダ = 0
     mov dh, 0            ; ヘッド = 0
     mov cl, 2            ; セクタ = 2 (ブートローダの次)
