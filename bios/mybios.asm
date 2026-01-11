@@ -1,18 +1,65 @@
+; nasm -f bin mybios.asm -o mybios.bin
+; hexdump -C mybios.bin | tail
+;  qemu-system-i386   -bios mybios.bin   -vga std   -no-reboot   -no-shutdown   -serial stdio
+
 [BITS 16]
-[ORG 0x7E00]
 
-start:
-    cli                     ; 割り込み禁止
+; ===============================
+; BIOS本体
+; ===============================
+org 0x0000
+
+bios_start:
+
+
+
+    cli
+    mov ax, 0xF000
+    mov ds, ax
+    mov es, ax
+    mov ss, ax
+    mov sp, 0x7C00 
+    
+
+    ; --- COM1 init (115200 / 8N1) ---
+    mov dx, 0x3F8 + 1      ; IER
+    xor al, al
+    out dx, al
+
+    mov dx, 0x3F8 + 3      ; LCR
+    mov al, 0x80           ; DLAB=1
+    out dx, al
+
+    mov dx, 0x3F8 + 0      ; DLL
+    mov al, 1              ; 115200 baud
+    out dx, al
+
+    mov dx, 0x3F8 + 1      ; DLM
+    xor al, al
+    out dx, al
+
+    mov dx, 0x3F8 + 3      ; LCR
+    mov al, 0x03           ; 8bit, no parity, 1 stop
+    out dx, al
+
+    mov dx, 0x3F8 + 2      ; FCR
+    mov al, 0xC7
+    out dx, al
+
+    mov dx, 0x3F8 + 4      ; MCR
+    mov al, 0x0B
+    out dx, al
+
+    ; --- test output ---
+    mov dx, 0x3F8
+    mov al, '-'
+    out dx, al
+
     cld
-
-    ; ----------------------------
-    ; VGA グラフィックモード設定
-    ; mode 13h : 320x200 256色
-    ; BIOSが設定したMODE3の設定及び字体を上書き
-    ; その後自力でVGAをMODE3へ再設定
-    ; ----------------------------
-    mov ax, 0x0013
-    int 0x10
+    
+    mov dx, 0x3F8     ; COM1 ポート
+    mov al, '-'       ; 出す文字
+    out dx, al
 
 ; 1. Miscellaneous Output Register の設定
     mov dx, 0x3C2
@@ -224,3 +271,21 @@ register_char:
     ret
 
 %include "font_data.asm"
+
+
+; ===============================
+; Reset Vector を FFF0 に置く
+; ===============================
+
+times 0xFFF0-($-$$) db 0xFF
+
+; 存在確認hexdump -C mybios.bin | tail
+reset_vector:
+    jmp 0xF000:bios_start
+
+; ===============================
+; ROMサイズを64KBに揃える
+; ===============================
+
+times 65536-($-$$) db 0xFF
+
