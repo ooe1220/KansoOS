@@ -151,16 +151,23 @@ call register_char
     mov ax, 0x0E06      ; Graphics Index 6: Map to 0xB8000
     out dx, ax
 
-; --- VRAM全体を 'A' (黄色) で埋める ---
-    mov ax, 0xB800      ; テキストモードのVRAMセグメント
-    mov es, ax
-    xor di, di          ; オフセット 0 から開始
-    
-    mov ax, 0x0E41      ; AH = 0x0E (黄色属性), AL = 0x41 ('A')
-    mov cx, 2000        ; 80文字 × 25行 = 2000文字
-    
-    cld                 ; 方向に注意（増加方向）
-rep stosw               ; ES:[DI] に AX を書き込み、DI を 2 増やす。これを CX 回繰り返す。
+; --- VRAMにASCIIコードを順番に表示 ---
+mov ax, 0xB800
+mov es, ax
+xor di, di          ; VRAM先頭
+
+mov bl, 0x0E        ; 文字色（黄色）
+xor bh, bh          ; BH=0
+
+xor cx, cx          ; CX = 文字コード 0～255
+
+.next_char:
+    mov al, cl      ; AL = 文字コード（CLに0～255が入る）
+    mov ah, bl      ; AH = 属性
+    stosw            ; ES:[DI] = AX
+    inc cl           ; 次の文字コード
+    cmp cl, 0        ; 256でラップ（CLは8bitなので0に戻る）
+    jne .next_char   ; CL != 0 なら続行
 
 cli
 hlt_loop:
