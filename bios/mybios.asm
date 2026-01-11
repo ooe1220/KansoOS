@@ -49,10 +49,6 @@ bios_start:
 
     cld
     
-    mov dx, 0x3F8
-    mov al, '*'
-    out dx, al
-    
 ; 1. Miscellaneous Output Register の設定
     mov dx, 0x3C2
     mov al, 0x67
@@ -177,7 +173,16 @@ bios_start:
     out dx, ax
     
 ; --- 3. font.asmの字体をVGAへ登録 ---
+
+    mov dx, 0x3F8
+    mov al, '*'
+    out dx, al
+    
     call register_char
+    
+    mov dx, 0x3F8
+    mov al, '*'
+    out dx, al
 
 ; --- 4. 通常のテキストモード表示設定に戻す ---
     mov dx, 0x3C4
@@ -191,6 +196,7 @@ bios_start:
     out dx, ax
     mov ax, 0x0E06      ; Graphics Index 6: Map to 0xB8000
     out dx, ax
+
     
 ; --- VRAMにASCIIコードを順番に表示 ---
 mov ax, 0xB800
@@ -240,8 +246,16 @@ register_char:
     mov si, font_0              ; メモリ上のフォントデータ先頭
     mov cx, 75                 ; A(0x41)からN(0x4E)までの14文字分
 
+        mov dx, 0x3F8
+    mov al, '*'
+    out dx, al
+
 .loop_copy:
     push cx                     ; 外側ループのカウンターを保存
+    
+    mov dx, 0x3F8
+    mov al, '*'
+    out dx, al
     
     ; --- 1文字分のフォントデータ(16バイト)をコピー ---
     mov cx, 16
