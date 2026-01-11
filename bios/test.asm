@@ -9,8 +9,8 @@ start:
     ; mode 13h : 320x200 256色
     ; MODE3に切り替わったことを証明する為一度MODE13に切り替え
     ; ----------------------------
-     mov ax, 0x0013
-     int 0x10
+    mov ax, 0x0013
+    int 0x10
 
 ; 1. Miscellaneous Output Register の設定
     mov dx, 0x3C2
@@ -134,9 +134,14 @@ start:
     out dx, ax
     mov ax, 0x0406      ; Graphics Index 6: Map to 0xA0000 (64KB)
     out dx, ax
-
+    
 ; --- 3. font.asmの字体をVGAへ登録 ---
-call register_char
+    mov dx, 0x3F8     ; COM1 ポート
+    mov al, '-'       ; 出す文字
+    out dx, al
+    call register_char
+
+
 
 ; --- 4. 通常のテキストモード表示設定に戻す ---
     mov dx, 0x3C4
@@ -150,7 +155,7 @@ call register_char
     out dx, ax
     mov ax, 0x0E06      ; Graphics Index 6: Map to 0xB8000
     out dx, ax
-
+    
 ; --- VRAMにASCIIコードを順番に表示 ---
 mov ax, 0xB800
 mov es, ax
@@ -187,5 +192,351 @@ attr_data db 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x14, 0x07, \
                  0x38, 0x09, 0x3A, 0x0B, 0x3C, 0x0D, 0x3E, 0x0F, \
                  0x0C, 0x01, 0x0F, 0x13, 0x00
                  
-%include "font.asm";
-%include "font_load.asm";
+;%include "font.asm";
+;%include "font_load.asm";
+
+register_char:
+
+    mov ax, 0xA000
+    mov es, ax
+    xor di, di
+    
+    ; A = ASCII 0x41
+    mov di, 0x41*32
+    mov si, font_A
+    mov cx, 16
+    rep movsb
+
+    ; B = ASCII 0x42
+    mov di, 0x42*32
+    mov si, font_B
+    mov cx, 16
+    rep movsb
+
+    ; C = ASCII 0x43
+    mov di, 0x43*32
+    mov si, font_C
+    mov cx, 16
+    rep movsb
+
+    ; D = ASCII 0x44
+    mov di, 0x44*32
+    mov si, font_D
+    mov cx, 16
+    rep movsb
+    
+    ; E = ASCII 0x45
+    mov di, 0x45*32
+    mov si, font_E
+    mov cx, 16
+    rep movsb
+
+    ; F = ASCII 0x46
+    mov di, 0x46*32
+    mov si, font_F
+    mov cx, 16
+    rep movsb
+
+    ; G = ASCII 0x47
+    mov di, 0x47*32
+    mov si, font_G
+    mov cx, 16
+    rep movsb
+
+    ; H = ASCII 0x48
+    mov di, 0x48*32
+    mov si, font_H
+    mov cx, 16
+    rep movsb
+
+    ; I = ASCII 0x49
+    mov di, 0x49*32
+    mov si, font_I
+    mov cx, 16
+    rep movsb
+
+    ; J = ASCII 0x4A
+    ;mov di, 0x4A*32
+    ;mov si, font_J
+    ;mov cx, 16
+    ;rep movsb
+
+    ; K = ASCII 0x4B
+    ; mov di, 0x4B*32
+    ; mov si, font_K
+    ; mov cx, 16
+    ; rep movsb
+
+    ; L = ASCII 0x4C
+    ; mov di, 0x4C*32
+    ; mov si, font_L
+    ; mov cx, 16
+    ; rep movsb
+
+    ; M = ASCII 0x4D
+    ; mov di, 0x4D*32
+    ; mov si, font_M
+    ; mov cx, 16
+    ; rep movsb
+
+    ; N = ASCII 0x4E
+    ; mov di, 0x4E*32
+    ; mov si, font_N
+    ; mov cx, 16
+    ; rep movsb
+
+
+ret
+
+font_A:
+    db 00011000b
+    db 00111100b
+    db 00111100b
+    db 01100110b
+    db 01100110b
+    db 01111110b
+    db 01111110b
+    db 01100110b
+    db 01100110b
+    db 00000000b
+    db 00000000b
+    db 00000000b
+    db 00000000b
+    db 00000000b
+    db 00000000b
+    db 00000000b
+    
+font_B:
+    db 01111100b
+    db 01100110b
+    db 01100110b
+    db 01100110b
+    db 01111100b
+    db 01100110b
+    db 01100110b
+    db 01100110b
+    db 01111100b
+    db 00000000b
+    db 00000000b
+    db 00000000b
+    db 00000000b
+    db 00000000b
+    db 00000000b
+    db 00000000b
+
+font_C:
+    db 00111100b
+    db 01100110b
+    db 01100000b
+    db 01100000b
+    db 01100000b
+    db 01100000b
+    db 01100110b
+    db 00111100b
+    db 00000000b
+    db 00000000b
+    db 00000000b
+    db 00000000b
+    db 00000000b
+    db 00000000b
+    db 00000000b
+    db 00000000b
+
+font_D:
+    db 01111100b
+    db 01100110b
+    db 01100110b
+    db 01100110b
+    db 01100110b
+    db 01100110b
+    db 01100110b
+    db 01100110b
+    db 01111100b
+    db 00000000b
+    db 00000000b
+    db 00000000b
+    db 00000000b
+    db 00000000b
+    db 00000000b
+    db 00000000b
+
+font_E:
+    db 01111110b
+    db 01100000b
+    db 01100000b
+    db 01100000b
+    db 01111100b
+    db 01100000b
+    db 01100000b
+    db 01100000b
+    db 01111110b
+    db 00000000b
+    db 00000000b
+    db 00000000b
+    db 00000000b
+    db 00000000b
+    db 00000000b
+    db 00000000b
+
+font_F:
+    db 01111110b
+    db 01100000b
+    db 01100000b
+    db 01100000b
+    db 01111100b
+    db 01100000b
+    db 01100000b
+    db 01100000b
+    db 01100000b
+    db 00000000b
+    db 00000000b
+    db 00000000b
+    db 00000000b
+    db 00000000b
+    db 00000000b
+    db 00000000b
+
+font_G:
+    db 00111100b
+    db 01100110b
+    db 01100000b
+    db 01100000b
+    db 01100110b
+    db 01100110b
+    db 01100110b
+    db 00111110b
+    db 00000110b
+    db 00000000b
+    db 00000000b
+    db 00000000b
+    db 00000000b
+    db 00000000b
+    db 00000000b
+    db 00000000b
+
+font_H:
+    db 01100110b
+    db 01100110b
+    db 01100110b
+    db 01100110b
+    db 01111110b
+    db 01100110b
+    db 01100110b
+    db 01100110b
+    db 01100110b
+    db 00000000b
+    db 00000000b
+    db 00000000b
+    db 00000000b
+    db 00000000b
+    db 00000000b
+    db 00000000b
+
+font_I:
+    db 00111100b
+    db 00011000b
+    db 00011000b
+    db 00011000b
+    db 00011000b
+    db 00011000b
+    db 00011000b
+    db 00011000b
+    db 00111100b
+    db 00000000b
+    db 00000000b
+    db 00000000b
+    db 00000000b
+    db 00000000b
+    db 00000000b
+    db 00000000b
+
+font_J:
+    db 00011110b
+    db 00001100b
+    db 00001100b
+    db 00001100b
+    db 00001100b
+    db 01101100b
+    db 01101100b
+    db 00111000b
+    db 00000000b
+    db 00000000b
+    db 00000000b
+    db 00000000b
+    db 00000000b
+    db 00000000b
+    db 00000000b
+    db 00000000b
+
+font_K:
+    db 01100110b
+    db 01101100b
+    db 01111000b
+    db 01110000b
+    db 01111000b
+    db 01101100b
+    db 01100110b
+    db 01100110b
+    db 01100110b
+    db 00000000b
+    db 00000000b
+    db 00000000b
+    db 00000000b
+    db 00000000b
+    db 00000000b
+    db 00000000b
+
+font_L:
+    db 01100000b
+    db 01100000b
+    db 01100000b
+    db 01100000b
+    db 01100000b
+    db 01100000b
+    db 01100000b
+    db 01111110b
+    db 00000000b
+    db 00000000b
+    db 00000000b
+    db 00000000b
+    db 00000000b
+    db 00000000b
+    db 00000000b
+    db 00000000b
+
+font_M:
+    db 01100011b
+    db 01110111b
+    db 01111111b
+    db 01101011b
+    db 01100011b
+    db 01100011b
+    db 01100011b
+    db 01100011b
+    db 01100011b
+    db 00000000b
+    db 00000000b
+    db 00000000b
+    db 00000000b
+    db 00000000b
+    db 00000000b
+    db 00000000b
+
+font_N:
+    db 01100011b
+    db 01110011b
+    db 01111011b
+    db 01101111b
+    db 01100111b
+    db 01100011b
+    db 01100011b
+    db 01100011b
+    db 01100011b
+    db 00000000b
+    db 00000000b
+    db 00000000b
+    db 00000000b
+    db 00000000b
+    db 00000000b
+    db 00000000b
+
