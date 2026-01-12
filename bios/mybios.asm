@@ -15,6 +15,7 @@ bios_start:
     mov ax, 0xF000
     mov ds, ax
     mov es, ax
+    mov ax, 0x0000
     mov ss, ax
     mov sp, 0x7C00 
     
