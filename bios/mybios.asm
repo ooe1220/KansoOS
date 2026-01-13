@@ -225,7 +225,7 @@ xor cx, cx          ; CX = 文字コード 0～255
     mov di, 0x7C00          ; ES:DI = 0x0000:0xCE00
     
     ; LBA 1 (第2セクタ) の設定
-    mov bl, 0x01           ; LBA 0-7
+    mov bl, 0x00           ; LBA 0-7
     mov bh, 0x00           ; LBA 8-15
     mov cl, 0x00           ; LBA 16-23
     call read_sector
