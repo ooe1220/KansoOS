@@ -1,7 +1,3 @@
-; nasm -f bin mybios.asm -o mybios.bin
-; hexdump -C mybios.bin | tail
-; qemu-system-i386   -bios mybios.bin   -vga std   -no-reboot   -no-shutdown   -serial stdio
-
 [BITS 16]
 
 ; ===============================
@@ -188,17 +184,8 @@ set_palette_loop:
     out dx, ax
     
 ; --- 3. font.asmの字体をVGAへ登録 ---
-
-    mov dx, 0x3F8
-    mov al, '*'
-    out dx, al
-    
     call register_char
     
-    mov dx, 0x3F8
-    mov al, '*'
-    out dx, al
-
 ; --- 4. 通常のテキストモード表示設定に戻す ---
     mov dx, 0x3C4
     mov ax, 0x0302      ; Sequencer Index 2: Plane 0,1 に書き込み許可
@@ -230,11 +217,46 @@ xor cx, cx          ; CX = 文字コード 0～255
     inc cl           ; 次の文字コード
     cmp cl, 0        ; 256でラップ（CLは8bitなので0に戻る）
     jne .next_char   ; CL != 0 なら続行
+    
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ; LBA 2(第2セクタ)を0x0000:0x7E00へ読み込む
+    mov ax, 0x0000
+    mov es, ax
+    mov di, 0x7C00          ; ES:DI = 0x0000:0xCE00
+    
+    ; LBA 1 (第2セクタ) の設定
+    mov bl, 0x01           ; LBA 0-7
+    mov bh, 0x00           ; LBA 8-15
+    mov cl, 0x00           ; LBA 16-23
+    call read_sector
+
+    
+    jc disk_error
+    
+    mov dx, 0x3F8
+    mov al, 'l'
+    out dx, al
+    
+    jmp 0x0000:0x7C00
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 cli
 hlt_loop:
     hlt
     jmp hlt_loop
+    
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+disk_error:
+    
+    mov dx, 0x3F8
+    mov al, 'E'
+    out dx, al    
+    
+    jmp $
+   
+    
+error_msg db "Disk read error!", 0x0D, 0x0A, 0
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     
 ; QEMU初期化のVGAレジスタダンプ値に基づいたデータ(CRTC 0x0E,0x0Fのカーソル以外)
 ;seq_data  db 0x03, 0x00, 0x03, 0x00, 0x02
@@ -248,6 +270,7 @@ grap_data db 0x00, 0x00, 0x00, 0x00, 0x00, 0x10, 0x0E, 0x0F, 0xFF
 attr_data db 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x14, 0x07, \
                  0x38, 0x09, 0x3A, 0x0B, 0x3C, 0x0D, 0x3E, 0x0F, \
                  0x0C, 0x01, 0x0F, 0x13, 0x00
+                 
                  
                  
 palette2:
@@ -273,16 +296,8 @@ register_char:
     mov si, font_0              ; メモリ上のフォントデータ先頭
     mov cx, 75                 ; A(0x41)からN(0x4E)までの14文字分
 
-        mov dx, 0x3F8
-    mov al, '*'
-    out dx, al
-
 .loop_copy:
     push cx                     ; 外側ループのカウンターを保存
-    
-    mov dx, 0x3F8
-    mov al, '*'
-    out dx, al
     
     ; --- 1文字分のフォントデータ(16バイト)をコピー ---
     mov cx, 16
@@ -299,6 +314,8 @@ register_char:
     ret
 
 %include "font_data.asm"
+
+%include "readdisk.asm"
 
 
 ; ===============================
