@@ -154,23 +154,23 @@ set_palette_loop:
     out dx, ax
 
     
-; --- VRAMにASCIIコードを順番に表示 ---
-mov ax, 0xB800
-mov es, ax
-xor di, di          ; VRAM先頭
+; --- VRAMにASCIIコードを順番に表示(字体の確認に使用) ---
+;mov ax, 0xB800
+;mov es, ax
+;xor di, di          ; VRAM先頭
 
-mov bl, 0x0E        ; 文字色（黄色）
-xor bh, bh          ; BH=0
+;mov bl, 0x0E        ; 文字色（黄色）
+;xor bh, bh          ; BH=0
 
-xor cx, cx          ; CX = 文字コード 0～255
+;xor cx, cx          ; CX = 文字コード 0～255
 
-.next_char:
-    mov al, cl      ; AL = 文字コード（CLに0～255が入る）
-    mov ah, bl      ; AH = 属性
-    stosw            ; ES:[DI] = AX
-    inc cl           ; 次の文字コード
-    cmp cl, 0        ; 256でラップ（CLは8bitなので0に戻る）
-    jne .next_char   ; CL != 0 なら続行
+;.next_char:
+;    mov al, cl      ; AL = 文字コード（CLに0～255が入る）
+;    mov ah, bl      ; AH = 属性
+;    stosw            ; ES:[DI] = AX
+;    inc cl           ; 次の文字コード
+;    cmp cl, 0        ; 256でラップ（CLは8bitなので0に戻る）
+;    jne .next_char   ; CL != 0 なら続行
     
 ret
 
@@ -216,9 +216,7 @@ grap_data db 0x00, 0x00, 0x00, 0x00, 0x00, 0x10, 0x0E, 0x0F, 0xFF
 attr_data db 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x14, 0x07, \
                  0x38, 0x09, 0x3A, 0x0B, 0x3C, 0x0D, 0x3E, 0x0F, \
                  0x0C, 0x01, 0x0F, 0x13, 0x00
-                 
-                 
-                 
+                               
 palette2:
     ; 1行あたり8色（24バイト）ずつ配置
     db 0x00,0x00,0x00, 0x00,0x00,0x2a, 0x00,0x2a,0x00, 0x00,0x2a,0x2a, 0x2a,0x00,0x00, 0x2a,0x00,0x2a, 0x2a,0x2a,0x00, 0x2a,0x2a,0x2a

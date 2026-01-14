@@ -19,6 +19,13 @@ bios_start:
     
     call vga_init
     
+    mov al, 'P'
+    ;int 0x10
+    call int10_put_char
+    
+    mov al, 'O'
+    call int10_put_char
+    
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     ; LBA 2(第2セクタ)を0x0000:0x7E00へ読み込む
     mov ax, 0x0000
@@ -31,12 +38,7 @@ bios_start:
     mov cl, 0x00           ; LBA 16-23
     call read_sector
 
-    
     jc disk_error
-    
-    mov dx, 0x3F8
-    mov al, 'l'
-    out dx, al
     
     jmp 0x0000:0x7C00
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -48,11 +50,7 @@ hlt_loop:
     
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 disk_error:
-    
-    mov dx, 0x3F8
-    mov al, 'E'
-    out dx, al    
-    
+        
     jmp $
     
 cli
@@ -63,6 +61,7 @@ hlt_loop2:
     
 
 %include "vga.asm"
+%include "int10.asm"
 %include "font_data.asm"
 %include "readdisk.asm"
 

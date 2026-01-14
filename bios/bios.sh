@@ -8,3 +8,10 @@ nasm -f bin bootsector.asm -o ../build/bootsector.bin
 
 # 確認用ブートローダをQEMU標準で立ち上げる
 # qemu-system-i386 ../build/bootsector.bin
+
+
+# 動作確認で使うコード
+#    mov dx, 0x3F8
+#    mov al, '-'
+#    out dx, al
+
