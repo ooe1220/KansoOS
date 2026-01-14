@@ -1,7 +1,3 @@
-; nasm -f bin bootsector.asm -o bootsector.bin
-;nasm -f bin boot.asm -o ../build/boot.bin
-
-; qemu-system-i386 bootsector.bin
 org 0x7C00
 
     ; セグメント初期化
