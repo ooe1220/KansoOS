@@ -2,6 +2,9 @@
 mkdir build # githubにbuildフォルダをあげていない為ここで追加。
 clear
 
+# 自作BIOSのビルド
+nasm -f bin bios/mybios.asm -o build/mybios.bin
+
 # 1. ブートローダーを bin に
 nasm -f bin src/boot/mbr.asm -o build/mbr.bin
 nasm -f bin src/boot/vbr.asm -o build/vbr.bin
@@ -91,8 +94,15 @@ objcopy -O binary build/test2.elf build/test2.bin
 dd if=build/test2.bin of=build/disk.img bs=512 seek=1814 conv=notrunc
 
 # 7. QEMU で実行
-# qemu-system-i386 -hda build/disk.img
-qemu-system-i386 -hda build/disk.img -monitor stdio
+# 標準BIOSで立ち上げる
+ qemu-system-i386 -hda build/disk.img -monitor stdio
+
+# 自作BIOSで立ち上げる
+#   qemu-system-i386 \
+#   -bios build/mybios.bin\
+#   -drive file=build/disk.img,format=raw,if=ide,index=0 \
+#   -monitor stdio
+#   -serial stdio
 
 #  xp /512bx 0x10000 # 読み込まれているか確認
 

@@ -18,7 +18,7 @@ start:
     mov sp, 0x7C00
     
     mov si, msg_loading
-    call print_string
+    ;call print_string
     
     ; 0x0600にジャンプして処理を続行
     jmp 0x0000:(continue - start + 0x0600)
@@ -26,7 +26,7 @@ start:
 continue:
 
     mov si, msg_relocated
-    call print_string
+    ;call print_string
 
     ; 4. VBRを0x7C00に読み込む（このコードを上書き）
     mov ah, 0x02

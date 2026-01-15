@@ -38,7 +38,7 @@ db "FAT16   "     ; 空白で8バイトに調整
 start:
 
     mov si, msg_loaded
-    call print_string
+    ;call print_string
 
     ; kernelは64セクタ分(32KB)，LBA=126
     ; KERNEL.BIN は LBA 126 セクタ目から始まる

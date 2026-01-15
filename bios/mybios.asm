@@ -42,17 +42,17 @@ hlt_loop:
     hlt
     jmp hlt_loop
 
-%include "vga.asm"
-%include "int10h.asm"
-%include "int13h.asm"
-%include "int19h.asm"
-%include "font_data.asm"
-%include "readdisk.asm"
+%include "bios/vga.asm"
+%include "bios/int10h.asm"
+%include "bios/int13h.asm"
+%include "bios/int19h.asm"
+%include "bios/font_data.asm"
+%include "bios/readdisk.asm"
 
 ; Reset Vector を FFF0 に置く
 times 0xFFF0-($-$$) db 0xFF
 
-; 存在確認 hexdump -C mybios.bin | tail
+; 存在確認 hexdump -C ../build/mybios.bin | tail
 reset_vector:
     jmp 0xF000:bios_start
 
