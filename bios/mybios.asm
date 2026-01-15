@@ -14,6 +14,8 @@ bios_start:
     mov es, ax 
     mov word [es:0x13 * 4],     int13h_handler
     mov word [es:0x13 * 4 + 2], cs
+    mov word [es:0x19 * 4],     int19h_handler
+    mov word [es:0x19 * 4 + 2], cs
 
     mov ax, 0xF000; セグメントレジスタES及びDS設定
     mov ds, ax
@@ -32,55 +34,28 @@ bios_start:
     
     mov al, 'O'
     call int10_put_char
+        
+    int 0x19
     
-    ;;開発中;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    
-    mov ah, 0x02
-    mov al, 1       ; 読み込むセクタ数
-    mov ch, 0       ; シリンダ番号
-    mov cl, 1       ; セクタ番号（1〜63）
-    mov dh, 1       ; ヘッド番号(1枚目表:0、裏:1 2枚目表:3、裏:4)
-    mov dl, 0x80    ; 一台目のHDDを読み込む
-    mov bx, 0x7C00
-    int 0x13
-
-    jmp 0x0000:0x7C00
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 cli
 hlt_loop:
     hlt
     jmp hlt_loop
 
-disk_error:        
-    jmp $
-
-cli
-hlt_loop2:
-    hlt
-    jmp hlt_loop2
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    
-
 %include "vga.asm"
 %include "int10h.asm"
 %include "int13h.asm"
+%include "int19h.asm"
 %include "font_data.asm"
 %include "readdisk.asm"
 
-; ===============================
 ; Reset Vector を FFF0 に置く
-; ===============================
-
 times 0xFFF0-($-$$) db 0xFF
 
-; 存在確認hexdump -C mybios.bin | tail
+; 存在確認 hexdump -C mybios.bin | tail
 reset_vector:
     jmp 0xF000:bios_start
 
-; ===============================
 ; ROMサイズを64KBに揃える
-; ===============================
-
 times 65536-($-$$) db 0xFF
 

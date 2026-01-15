@@ -37,6 +37,8 @@ int13h_handler:
     call read_sector
 
     jc disk_error
-    
+
     iret
     
+disk_error:        
+    jmp $
