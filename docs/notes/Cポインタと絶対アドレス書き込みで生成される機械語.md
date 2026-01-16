@@ -9,6 +9,39 @@ void foo(void) {
 }
 ```
 
+```linker.ld
+ENTRY(foo) # 実行開始する関数
+
+SECTIONS {
+    /* 0x8000〜の領域に読み込む想定 */
+    . = 0x8000;
+
+    .text : {
+        *(.text*)
+    }
+
+    .rodata : {
+        *(.rodata*)
+    }
+
+    .data : {
+        *(.data*)
+    }
+
+    .bss : {
+        *(.bss*)
+        *(COMMON)
+    }
+    
+    /DISCARD/ : {
+        *(.eh_frame*)
+        *(.eh_frame_hdr*)
+        *(.comment*)
+        *(.note*)
+    }
+}
+```
+
 ```
 gcc -m32 -ffreestanding -fno-pic -fno-pie -c test.c -o test.o
 
