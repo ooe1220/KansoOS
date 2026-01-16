@@ -12,6 +12,8 @@ bios_start:
     ; IVTに登録
     xor ax, ax
     mov es, ax 
+    mov word [es:0x10 * 4],     int10h_handler
+    mov word [es:0x10 * 4 + 2], cs
     mov word [es:0x13 * 4],     int13h_handler
     mov word [es:0x13 * 4 + 2], cs
     mov word [es:0x19 * 4],     int19h_handler
@@ -28,12 +30,21 @@ bios_start:
     
     call vga_init
     
-    mov al, 'P'
-    ;int 0x10
-    call int10_put_char
+    mov al, 'B'
+    mov ah, 0x1F     ; 青背景・白文字
+    int 0x10
     
-    mov al, 'O'
-    call int10_put_char
+    ;mov al, 'I'
+    ;mov ah, 0x1F     ; 青背景・白文字
+    ;int 0x10
+    
+    ;mov al, 'O'
+    ;mov ah, 0x1F     ; 青背景・白文字
+    ;int 0x10
+    
+    ;mov al, 'S'
+    ;mov ah, 0x1F     ; 青背景・白文字
+    ;int 0x10
         
     int 0x19
     
