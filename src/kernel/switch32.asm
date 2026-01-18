@@ -11,6 +11,10 @@ start:
     mov ss, ax
     mov sp, 0x7C00
     
+    mov dx, 0x3F8
+    mov al, 's'
+    out dx, al
+    
     ; VGAテキストモード設定(mode3)
     mov ax, 0x0003
     int 0x10 

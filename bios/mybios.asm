@@ -58,7 +58,6 @@ hlt_loop:
 %include "bios/int13h.asm"
 %include "bios/int19h.asm"
 %include "bios/font_data.asm"
-%include "bios/readdisk.asm"
 
 ; Reset Vector を FFF0 に置く
 times 0xFFF0-($-$$) db 0xFF

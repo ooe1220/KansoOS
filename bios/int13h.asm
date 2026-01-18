@@ -1,44 +1,150 @@
-saved_ax dw 0
-saved_dx dw 0
+[BITS 16]
+
+; QEMUでは問題ないが本来BIOS領域は書き込み不可の為、0x0500〜へ退避する
+; RAM上の変数アドレス定義 (0x0500から順に配置)
+%define VAR_BASE 0x0500
+
+sector_count   equ VAR_BASE + 0   ; db (1 byte)  - 読み込むセクタ数
+cylinder_num   equ VAR_BASE + 1   ; db (1 byte)  - シリンダ番号
+head_num       equ VAR_BASE + 2   ; db (1 byte)  - ヘッド番号
+sector_num     equ VAR_BASE + 3   ; db (1 byte)  - セクタ番号
+
+lba_low16      equ VAR_BASE + 4   ; dw (2 byte)  - 変換後のLBA下位16ビット
+load_address   equ VAR_BASE + 6   ; dw (2 byte)  - 読み込み先アドレス
+lba_calc_tmp   equ VAR_BASE + 8   ; dw (2 byte)  - LBA計算途中結果
+
 
 int13h_handler:
-    ; --- CHS to LBA変換---
-    mov [saved_ax], ax
-    mov [saved_dx], dx
 
-    mov ax, 0               ; AX = 0初期化
-    mov al, ch              ; AL = シリンダ番号
-    mov bl, 63 * 2          ; BL = 1シリンダあたりのセクタ数（63セクタ × 2ヘッド）
-    mul bl                  ; AX = AL(シリンダ番号) * BL(126) → AX
-    mov di, ax              ; DI = シリンダ部分
-
-    mov dx,[saved_dx]
-    mov ax, 0               ; AX = 0初期化  
-    mov al, dh              ; AL = ヘッド番号
-    mov bl, 63              ; BL = 1トラックあたりのセクタ数
-    mul bl                  ; AX = ヘッド × 63
-    add di, ax              ; DI = シリンダ部分 + ヘッド部分
-
-    mov al, cl              ; AL = セクタ番号
-    dec al                  ; 0ベースに変換
-    add di, ax              ; DI = 最終LBA（シリンダ + ヘッド + セクタ）
-    ; 結果：DIレジスタにLBAアドレスが格納される
+    ; レジスタ保存
+    pusha
+    push es
     
-    ; LBA 0(第0セクタ)を0x0000:0x7C00へ読み込む
-    mov ax, 0x0000
+    ; ES=0に設定
+    push ax
+    xor ax, ax
     mov es, ax
-    mov di, 0x7C00          ; ES:DI = 0x0000:0x7C00
+    pop ax
     
-    ; LBA 0 (第0セクタ) の設定
-    mov al, 0x01 ;読み込みセクタ数 今回追加したから後から実装
-    mov bl, 0x00           ; LBA 0-7
-    mov bh, 0x00           ; LBA 8-15
-    mov cl, 0x00           ; LBA 16-23
-    call read_sector
+    mov [es:sector_count], al   ; 読み込むセクタ数    
+    mov [es:cylinder_num], ch   ; シリンダ番号
+    mov [es:head_num], dh       ; ヘッド番号
+    mov [es:sector_num], cl     ; セクタ番号
+    mov [es:load_address], bx   ; 読み込み先アドレスオフセット(ES:オフセット)
 
-    jc disk_error
+; ----------------------------
+    ; CHS → LBA
+    ; LBA = (C * 16 + H) * 63 + (S - 1)
 
+    xor ax, ax
+    
+    ; --- C * 16 ---
+    mov al, [es:cylinder_num] ; AL = cylinder
+    mov bl, 16
+    mul bl                 ; AX = C * 16
+    mov [es:lba_calc_tmp], ax         ; 一時退避
+
+    ; --- + H ---
+    mov al, [es:head_num]
+    mov ah, 0
+    add ax, [es:lba_calc_tmp]         ; AX = C*16 + H
+    mov [es:lba_calc_tmp], ax         ; 再度退避
+
+    ; --- * 63 ---
+    mov ax, [es:lba_calc_tmp]
+    mov bx, 63
+    mul bx                 ; DX:AX = (C*16 + H) * 63
+    mov [es:lba_calc_tmp], ax         ; 下位16bitだけ退避
+
+    ; --- + (S - 1) ---
+    mov al, [es:sector_num]
+    dec al                 ; sector - 1
+    mov ah, 0
+    add ax, [es:lba_calc_tmp]         ; AX = LBA 下位16bit
+    ; AXに最終的なLBA下位16bitが入る
+    mov [es:lba_low16], ax
+
+; ----------------------------
+    ; ATA BSY 待ち
+.wait_bsy:
+    mov dx, 0x1F7
+    in al, dx
+    test al, 0x80
+    jnz .wait_bsy
+
+    ; Drive / LBA / Master
+    mov dx, 0x1F6
+    mov al, 0xE0 ; LBA24-27（上位4ビット）は0固定
+    out dx, al
+
+    ; セクタ数指定
+    mov dx, 0x1F2
+    mov al, [es:sector_count]
+    out dx, al
+    
+    mov ax, [es:lba_low16]
+
+    ; LBA 下位 24bit
+    mov dx, 0x1F3
+    mov al, al              ; LBA[7:0]
+    out dx, al
+
+    mov dx, 0x1F4
+    mov al, ah              ; LBA[15:8]
+    out dx, al
+
+    mov dx, 0x1F5
+    xor al, al              ; LBA[23:16] = 0 ; 一旦固定で0にする(今後対応)
+    out dx, al
+
+; ----------------------------
+    ; 読み込み開始の命令をHDDへ送る
+    mov dx, 0x1F7
+    mov al, 0x20
+    out dx, al
+
+; ----------------------------
+    ; セクタ数分 読み込み
+    xor cx, cx
+    mov al, [es:sector_count]
+    mov cl, al              ; CX = sector count
+    
+    ;hlt ;info registers EAX=00000001 ECX=00000001
+
+
+mov bx, [es:load_address]
+.read_sector:
+.wait_drq:
+
+    mov dx, 0x1F7
+    in al, dx
+    test al, 0x08
+    jz .wait_drq
+    
+    mov dx, 0x1F0
+    mov di, 256             ; 512 bytes / 2
+
+.read_word:
+    in ax, dx
+    mov [es:bx], ax
+    add bx, 2
+    dec di
+    jnz .read_word
+    
+    loop .read_sector
+    
+    ; ----------------------------
+    ; 成功
+    clc ; CF=0
+    xor ah, ah
+    jmp .done
+
+.error:
+    stc ; CF=1
+    mov ah, 0x01
+
+.done:
+    pop es
+    popa
     iret
-    
-disk_error:        
-    jmp $
+

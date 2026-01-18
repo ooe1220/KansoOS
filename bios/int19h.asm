@@ -7,11 +7,14 @@ int19h_handler:
     mov dh, 1       ; ヘッド番号(1枚目表:0、裏:1 2枚目表:3、裏:4)
     mov dl, 0x80    ; 一台目のHDDを読み込む
     mov bx, 0x7C00
-    int 0x13
+    int 0x13  
 
     jmp 0x0000:0x7C00
-
+    
 cli
 int19_err:
     hlt
     jmp int19_err
+    
+    
+    

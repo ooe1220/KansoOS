@@ -13,6 +13,10 @@ nasm -f bin src/boot/vbr.asm -o build/vbr.bin
 nasm -f elf32 src/kernel/switch32.asm -o build/switch32.o
 
 # 3. C をオブジェクトファイルに
+# -m32 : 32ビットの機械語を生成
+# -ffreestanding : OS標準ライブラリを使わない。開始点がmain()でなくても良くなる
+# -O2 : 最適化する
+# -c : コンパイルのみ、リンクはしない　これがないと gcc は最終的な実行ファイル（.exe や a.out）を作ろうとする
 gcc -m32 -ffreestanding -I./src -O2 -c src/kernel/kernel.c -o build/kernel.o
 gcc -m32 -ffreestanding -I./src -O2 -c src/kernel/command.c -o build/command.o
 gcc -m32 -ffreestanding -I./src -c src/kernel/user_exec.c -o build/user_exec.o
@@ -95,18 +99,26 @@ dd if=build/test2.bin of=build/disk.img bs=512 seek=1814 conv=notrunc
 
 # 7. QEMU で実行
 # 標準BIOSで立ち上げる
- qemu-system-i386 -hda build/disk.img -monitor stdio
+# qemu-system-i386 -hda build/disk.img -monitor stdio
 
 # 自作BIOSで立ち上げる
-#   qemu-system-i386 \
-#   -bios build/mybios.bin\
-#   -drive file=build/disk.img,format=raw,if=ide,index=0 \
-#   -monitor stdio
-#   -serial stdio
+   qemu-system-i386 \
+   -bios build/mybios.bin\
+   -drive file=build/disk.img,format=raw,if=ide,index=0 \
+   -monitor stdio
+   #-serial stdio
 
-#  xp /512bx 0x10000 # 読み込まれているか確認
+
 
 # USBメモリへ書き込む　sdXはlsblkの結果を参照する
 # lsblk
 # sudo dd if=build/disk.img of=/dev/sdb bs=512 count=10000 conv=notrunc
+
+
+## レジスタ退避方法
+# ```
+# saved_ax dw 0
+# mov [saved_ax], ax
+# mov dx,[saved_dx]
+# ```
 

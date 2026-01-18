@@ -14,11 +14,7 @@ BIOS開発ではprintf()やint10hが使用出来ない為、以下の方法で�
 ## レジスタ値確認可能
 `hlt`で止めて、`(qemu)info registers`実行
 
-## レジスタ退避方法
+`xp /512bx 0x7c00` メモリ上に読み込まれているか確認
 
-```
-saved_ax dw 0
-
-mov [saved_ax], ax
-mov dx,[saved_dx]
-```
+xp /512bx 0x8000
+xp /3000bx 0x8000

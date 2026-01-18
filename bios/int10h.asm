@@ -39,6 +39,7 @@ set_cursor_1d:
 
 int10h_handler:
     pusha
+    push es
     push ax
 
     ; 現在のカーソル取得
@@ -63,6 +64,7 @@ int10h_handler:
     
 
     popa
+    pop es
     iret
 
 

@@ -39,7 +39,7 @@ start:
 
     mov si, msg_loaded
     ;call print_string
-
+    
     ; kernelは64セクタ分(32KB)，LBA=126
     ; KERNEL.BIN は LBA 126 セクタ目から始まる
     mov ah, 0x02
@@ -74,5 +74,6 @@ error_msg db "Failed to load KERNEL.BIN", 0x0D, 0x0A, 0
 ; 残りの領域を512バイトまで埋める
 times 510-($-$$) db 0
 
-dw 0xAA55
+;dw 0xAA55
+dw 0xBB66 ; メモリ上でMBRとVBRを区別する為、便宜的に(本来はこんな書き方をすべきではない)
 

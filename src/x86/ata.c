@@ -3,7 +3,7 @@
 
 /* BUSY待ち */
 static void ata_wait_busy(void) {
-    while (inb(0x1F7) & 0x80);  // STATUS.BSY
+    while (inb(0x1F7) & 0x80);  // 0x80 = 1000 0000b bit7=1:ディスクがまだ処理中
 }
 
 /* DRQ待ち */
@@ -11,8 +11,8 @@ static int ata_wait_drq(void) {
     uint8_t s;
     while (1) {
         s = inb(0x1F7);
-        if (s & 0x01) return -1; // ERR
-        if (s & 0x08) return 0;  // DRQ
+        if (s & 0x01) return -1; // bit0=1:エラー発生
+        if (s & 0x08) return 0;
     }
 }
 
@@ -33,7 +33,7 @@ int ata_read_lba28(uint32_t lba, uint8_t sector_cnt, void* buffer) {
         if (ata_wait_drq() < 0)
             return -1;
 
-        for (int i = 0; i < 256; i++) {
+        for (int i = 0; i < 256; i++) { // 16bit(1wordずつ読み込む) 1セクタ(512バイト)=256ワード
             buf[i] = inw(0x1F0);
         }
         buf += 256;

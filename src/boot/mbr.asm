@@ -5,6 +5,7 @@ start:
     ; 1. MBRを安全な領域（0x0600）へ退避
     xor ax, ax
     mov ds, ax
+    mov es, ax
     mov si, 0x7C00
     mov di, 0x0600
     mov cx, 512
@@ -16,6 +17,10 @@ start:
     mov es, ax
     mov ss, ax
     mov sp, 0x7C00
+    
+    mov dx, 0x3F8
+    mov al, 'm'
+    out dx, al
     
     mov si, msg_loading
     ;call print_string
