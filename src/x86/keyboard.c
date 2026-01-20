@@ -21,18 +21,27 @@ static const char keymap[128] = {
  * ------------------------------ */
 #define KBD_BUF_SIZE 128
 
-static char buf[KBD_BUF_SIZE];
-static volatile int head = 0;
-static volatile int tail = 0;
+
+//buf: [ _ _ _ _ _ _ _ _ ]
+//      ↑       ↑
+//      tail    head
+static char buf[KBD_BUF_SIZE]; // キー入力をためておく配列
+static volatile int head = 0;  // バッファに文字を書き込む位置
+static volatile int tail = 0;  // バッファから文字を読む位置
 
 static void buf_push(char c) {
-    int next = (head + 1) % KBD_BUF_SIZE;
+    int next = (head + 1) % KBD_BUF_SIZE; // バッファは円形なので、最後まで行くと0に戻る % KBD_BUF_SIZE
     if (next != tail) {   // 満杯でなければ
         buf[head] = c;
         head = next;
     }
 }
 
+/*
+ バッファに文字があれば 1（真）
+ バッファが空なら 0（偽）
+ キーボードから取り出せる文字があるか？
+*/
 int keyboard_available(void) {
     return head != tail;
 }
@@ -40,7 +49,6 @@ int keyboard_available(void) {
 char keyboard_getchar(void) {
     while (!keyboard_available())
         asm volatile("hlt");   // 静かに待つ（ポーリングしない）
-
     char c = buf[tail];
     tail = (tail + 1) % KBD_BUF_SIZE;
     return c;
@@ -51,7 +59,7 @@ char keyboard_getchar(void) {
  * ------------------------------ */
 void keyboard_handler(void) {
     uint8_t sc = inb(0x60);
-    
+        
     //kputs("yobareta"); // 割り込みが呼ばれたかの確認一回押すと2回表示される
 
     /* キーリリースは無視 */

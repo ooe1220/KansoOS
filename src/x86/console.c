@@ -12,6 +12,27 @@ static void hw_move_cursor(int x, int y);
 static int cursor_x = 0;
 static int cursor_y = 0;
 
+
+void init_cursor_from_hardware() {
+    unsigned short pos;
+
+    // ハードウェアカーソル取得
+    outb(0x3D4, 0x0F);           // 下位バイト
+    pos = inb(0x3D5);
+    outb(0x3D4, 0x0E);           // 上位バイト
+    pos |= ((unsigned short)inb(0x3D5)) << 8;
+
+    // 次の行の先頭から書きたい
+    cursor_x = 0;
+    cursor_y = (pos / COLS) + 1;
+
+    // 画面の範囲を超えないように
+    if (cursor_y >= ROWS) cursor_y = ROWS - 1;
+
+    hw_move_cursor(cursor_x, cursor_y);
+}
+
+
 /* 内部関数：画面スクロール */
 static void scroll() {
     // 最下行に到達していない場合はスクロール不要

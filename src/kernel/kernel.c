@@ -15,6 +15,8 @@
 #include "debug.h"
 
 void format_date_time(char* buf);
+void irq0_handler(void);
+void timer_tick(void);
 
 void kernel_main() {
 
@@ -45,6 +47,50 @@ void kernel_main() {
     
     init_syscall(); // IDT 0x80へシステムコールを登録　Linuxの様にint0x80経由でシステムコールを呼び出す
     kputs("System call handler (int 0x80) registered\n");
+    
+    init_cursor_from_hardware();
+    
+    /*
+    // 8042初期化（自作BIOS）
+// 1. 出力バッファをクリア
+while (inb(0x64) & 0x01) inb(0x60);
+
+// 2. キーボードリセット
+while (inb(0x64) & 0x02);  // 入力バッファ空きを待つ
+outb(0x60, 0xFF);          // キーボードリセット
+
+// 3. ACK + 自己テスト完了読み取り
+while (!(inb(0x64) & 0x01)); // 出力バッファに何か来るまで待つ
+inb(0x60);  // ACK (0xFA)
+while (!(inb(0x64) & 0x01));
+inb(0x60);  // Self-test OK (0xAA)
+
+// 4. IRQ有効化
+while (inb(0x64) & 0x02);  // 入力バッファ空きを待つ
+outb(0x64, 0xAE);          // IRQ1有効化
+*/
+
+#include "x86/io.h"
+#include "x86/console.h"
+
+void check_keyboard_buffer(void) {
+    kputs("Press keys. Output buffer check:\n");
+
+    while (1) {
+        uint8_t status = inb(0x64);
+
+        // bit0 = 出力バッファフル
+        if (status & 0x01) {
+            uint8_t scancode = inb(0x60);
+            kputs("Scancode: ");
+            char buf[4];
+            itoa(scancode, buf, 16); // 16進で表示
+            kputs(buf);
+            kputs("\n");
+        }
+    }
+}
+
     
     asm volatile("sti");  // 割り込みを有効にする(PIC初期化しないと割り込みが常時発生)
         
