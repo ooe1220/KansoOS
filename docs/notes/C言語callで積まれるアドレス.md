@@ -1,3 +1,4 @@
+20260120
 # 目的
 C言語で関数を呼び出した場合、スタックがどのように積まれるかを検証します。
 ※ 出来るだけ純粋な状態で確認したいので自作OS上で動作させたかったのですが、デバッグが面倒なので32ビットLinuxで検証します。
@@ -19,14 +20,12 @@ int main() {
 
 # GDB操作
 
-gcc -m32 -fno-pie -no-pie -O0 -o test test.c
--fno-pie → コンパイル時に PIE を作らない
--no-pie → リンカで PIE を作らない
-
 ```
-gcc -m32 -g -O0 test.c -o test
+gcc -m32 -fno-pie -no-pie -O0 -o test test.c
 gdb ./test
 ```
+-fno-pie → コンパイル時に PIE を作らない <br>
+-no-pie → リンカで PIE を作らない
 
 GDBの命令
 ```
