@@ -119,3 +119,61 @@ esp            0xffffd1a4          0xffffd1a4
 0xffffd1ba: 0xf9
 0xffffd1bb: 0xf7
 ```
+
+# call = push+jmpを証明
+
+Linux32ビット(ubuntu)で検証します。
+
+```bash
+test@test-fujitsu:~/kaihatsu/ctoasm$ ./call_push_ret 
+func1 entered
+func1 entered
+Returned to ret_label
+test@test-fujitsu:~/kaihatsu/ctoasm$ 
+```
+
+```call_push_ret.asm
+section .data
+msg1 db "func1 entered",10
+len1 equ $-msg1
+
+msg2 db "Returned to ret_label",10
+len2 equ $-msg2
+
+section .text
+global _start
+
+_start:
+    ; ==== callで呼ぶ ====
+    call func1
+
+    ; ==== push+jmpで再現 ====
+    push dword ret_label
+    jmp func1
+    
+ret_label:
+
+    ; 表示: ret_labelに戻ってきたことを確認
+    mov eax, 4      ; sys_write
+    mov ebx, 1      ; stdout
+    mov ecx, msg2
+    mov edx, len2
+    int 0x80
+
+    ; exit
+    mov eax, 1      ; sys_exit
+    mov ebx, 0
+    int 0x80
+
+; =====================
+func1:
+    ; 表示: func1に入ったことを確認
+    mov eax, 4      ; sys_write
+    mov ebx, 1      ; stdout
+    mov ecx, msg1
+    mov edx, len1
+    int 0x80
+
+    ret              ; 戻り先へ
+```
+
