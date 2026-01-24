@@ -109,6 +109,7 @@ test@test-fujitsu:~/kaihatsu/ctoasm$
 ```
 
 p = argv[i];
+※32ビット環境ではポインタの大きさは4バイト(アドレスは32ビット幅、例えば64ビット環境ならi*8になる)。
 ```
     100f:	8b 45 fc             	mov    eax,DWORD PTR [ebp-0x4]     ; eax = i
     1012:	8d 14 85 00 00 00 00 	lea    edx,[eax*4+0x0]             ; edx = i*4
