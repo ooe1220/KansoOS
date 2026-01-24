@@ -3,12 +3,12 @@
 #include "x86/io.h"
 #include "lib/string.h"
 #include "lib/stdint.h"
+#include "lib/stddef.h" // NULLの定義
 #include "fs/dir.h"
 #include "user_exec.h"
 #include "x86/ata.h"
 #include "../fs/fat16.h"
 #include "x86/pic.h"
-
 
 // 文字を大文字に変換（自作）
 static char to_upper_char(char c) {
@@ -102,7 +102,7 @@ static int find_file_info(const char* filename, uint32_t* start_cluster, uint32_
     return 0; // ファイルが見つからない
 }
 
-
+// 内部コマンド実行
 int do_builtin(const char *line){
 
     if (strcmp(line, "help") == 0) {
@@ -133,29 +133,91 @@ int do_builtin(const char *line){
 }
 
 void run_file(const char *line){
-    if (line[0] != 0) {
-        // 空行でなければ、それをファイル名として扱う
-        uint32_t start_cluster, file_size;
-        kputs("\n");
-        
-        if (find_file_info(line, &start_cluster, &file_size)) {            
-            // ファイルを毎回固定でメモリ0x10000上へ展開して実行
-            // 1クラスタ=8セクタ FAT表未実装により、固定で8セクタを読み込む
-            // 前提:データ領域LBA126〜、1クラスタ=8セクタ
-            //kprintf_d("start_cluster=%d\n",start_cluster);
-            uint32_t start_sector = 126 + (start_cluster - 2) * 8;//開始クラスタ→開始セクタ変換式
-            ata_read_lba28(start_sector, 8, (void*)0x10000); // ユーザプログラムをメモリ0x10000上へ展開
-            pic_mask_irq(1); // IRQ1キーボード無効化
-            int ret = user_exec((void*)0x10000); // ユーザプログラムへ遷移
-            //kprintf("ret = %d\n",ret);
-            pic_unmask_irq(1); // IRQ1キーボード有効化
-        } else {
-            kputs("Unknown command or file not found: ");
-            kputs(line);
+    if (line[0] == 0) return; // 空行なら何もしない
+    
+    //>>>>>>>>コマンドライン引数対応(argc, argv[])>>>>>>>>
+    char filename[64];
+    const char *argstr = NULL;
+    
+    // 空白で分割 (コマンドライン引数があった場合はファイル名の抽出が必要。例: hello.bin param1 param2 -> filename=hello.bin)
+    int i = 0;
+    while (line[i] && line[i] != ' ' && i < sizeof(filename)-1) {
+        filename[i] = line[i];
+        i++;
+    }
+    filename[i] = 0;
+    
+    // 空白の次から引数部分
+    if (line[i] == ' ') {
+        argstr = line + i + 1;
+    }
+    
+    // 引数をユーザプログラムが読む場所に複製
+    char *p = (char*)0x20000;
+    for (int j = 0; j < 256; j++) p[j] = 0; // 前回のデータを初期化
+    if (argstr) {
+        strcpy((char*)0x20000, argstr); // 引数文字列コピー
+    }
+    
+    // argc を計算
+    int argc = 1; // argv[0] = filename
+    if (argstr) {
+        int in_word = 0;
+        for (int j = 0; argstr[j]; j++) {
+            if (argstr[j] != ' ' && !in_word) {
+                in_word = 1;   // 新しい単語開始
+                argc++;        // 引数加算
+            } else if (argstr[j] == ' ') {
+                in_word = 0;   // 単語終了
+            }
         }
     }
-}
+    
+    // argv 配列を作る
+    char *argv[argc];
+    argv[0] = filename;
+    
+    if (argstr) {
+        int arg_index = 1;
+        char *s = (char*)0x20000; // 複製済みの引数文字列
+        argv[arg_index] = s;
+        for (int j = 0; s[j]; j++) {
+            if (s[j] == ' ') {
+                s[j] = 0; // 空白を終端に置換
+                arg_index++;
+                if (arg_index < argc) {
+                    argv[arg_index] = &s[j+1]; // 次の引数先頭番地
+                }
+            }
+        }
+    }
+    
+    //kputs("\n");kputs(filename);//ファイル名抽出の確認
+    //<<<<<<<<コマンドライン引数対応(argc, argv[])<<<<<<<<
+    
+    // 空行でなければ、それをファイル名として扱う
+    uint32_t start_cluster, file_size;
+    kputs("\n");
+        
+    if (find_file_info(line, &start_cluster, &file_size)) {            
+        // ファイルを毎回固定でメモリ0x10000上へ展開して実行
+        // 1クラスタ=8セクタ FAT表未実装により、固定で8セクタを読み込む
+        // 前提:データ領域LBA126〜、1クラスタ=8セクタ
+        //kprintf_d("start_cluster=%d\n",start_cluster);
+        uint32_t start_sector = 126 + (start_cluster - 2) * 8;//開始クラスタ→開始セクタ変換式
+        ata_read_lba28(start_sector, 8, (void*)0x10000); // ユーザプログラムをメモリ0x10000上へ展開
+        pic_mask_irq(1); // IRQ1キーボード無効化
+        //int ret = user_exec((void*)0x10000); // ユーザプログラムへ遷移
+        int ret = user_exec((void*)0x10000, argc, argv);
+        
+        //kprintf("ret = %d\n",ret);
+        pic_unmask_irq(1); // IRQ1キーボード有効化
+    } else {
+        kputs("Unknown command or file not found: ");
+        kputs(line);
+    }
 
+}
 
 
 

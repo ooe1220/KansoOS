@@ -84,8 +84,10 @@ dd if=build/disk_ini.bin of=build/disk.img bs=512 seek=64 conv=notrunc
 
 
 #ユーザー空間
-gcc -ffreestanding -nostdlib -fno-pic -fno-pie -m32 -c user/test2.c -o build/test2.o
 gcc -ffreestanding -nostdlib -fno-pic -fno-pie -m32 -c user/start.S -o build/start.o
+
+## test2.c
+gcc -ffreestanding -nostdlib -fno-pic -fno-pie -m32 -c user/test2.c -o build/test2.o
 
 ld -m elf_i386 \
    -T user/linker.ld \
@@ -97,15 +99,27 @@ objcopy -O binary build/test2.elf build/test2.bin
 ## objdump -D -b binary -m i386 build/test2.bin
 dd if=build/test2.bin of=build/disk.img bs=512 seek=1814 conv=notrunc
 
+## test3.c
+gcc -ffreestanding -nostdlib -fno-pic -fno-pie -m32 -c user/test3.c -o build/test3.o
+
+ld -m elf_i386 \
+   -T user/linker.ld \
+   build/start.o \
+   build/test3.o \
+   -o build/test3.elf
+   
+objcopy -O binary build/test3.elf build/test3.bin
+dd if=build/test3.bin of=build/disk.img bs=512 seek=1822 conv=notrunc
+
 # 7. QEMU で実行
 # 標準BIOSで立ち上げる
-# qemu-system-i386 -hda build/disk.img -monitor stdio
+ qemu-system-i386 -hda build/disk.img -monitor stdio
 
 # 自作BIOSで立ち上げる
-   qemu-system-i386 \
-   -bios build/mybios.bin\
-   -drive file=build/disk.img,format=raw,if=ide,index=0 \
-   -monitor stdio
+#   qemu-system-i386 \
+#   -bios build/mybios.bin\
+#   -drive file=build/disk.img,format=raw,if=ide,index=0 \
+#   -monitor stdio
    #-serial stdio
 
 

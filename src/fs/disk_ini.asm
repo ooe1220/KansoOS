@@ -65,6 +65,19 @@ dw 0
 dw 213 ; 1814セクタ目
 dd 0
 
+db 'TEST3   BIN'
+db 0x20
+db 0
+db 0
+dw 0
+dw 0
+dw 0
+dw 0
+dw 0
+dw 0
+dw 214 ; 1822セクタ目
+dd 0
+
 ; ---- 残り 項目 ----
 times (32*32 - 64) db 0
 
