@@ -22,13 +22,12 @@ int user_exec(void* entry, int argc, char **argv)
 {
     int ret;
     
-    //kprintf("argc: %d\n", argc); // test:引数の数
+    kprintf("user_exec.c argc: %d\n", argc); // test:引数の数
 
     asm volatile (
         "push %[argv]\n"   // argv のアドレスを push
         "push %[argc]\n"   // argc を push
         "call *%[entry]\n" // エントリポイントを呼び出す
-        "add $8, %%esp\n"  // スタックを掃除
         : "=a"(ret)        // EAX に返り値を受け取る
         : [entry]"r"(entry),
           [argc]"r"(argc),

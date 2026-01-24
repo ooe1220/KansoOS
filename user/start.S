@@ -28,8 +28,19 @@
 .extern main
 
 _start:
+
+##########
+    #mov eax, [esp + 4]   ; argc
+    #mov edx, [esp + 8]   ; argv
+
+    #push edx             ; argv
+    #push eax             ; argc
+############
+
     call main
 1:
+    #pop ebx
+    #pop ebx
     ret # kernel.cのuser_exec((void*)0x10000);直後へ戻る
 
 
