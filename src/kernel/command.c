@@ -105,11 +105,14 @@ static int find_file_info(const char* filename, uint32_t* start_cluster, uint32_
 // 内部コマンド実行
 int do_builtin(const char *line){
 
-    if (strcmp(line, "help") == 0) {
+if (strcmp(line, "help") == 0) {
         kputs("\nAvailable commands:\n");
-        kputs("  help   - Show this message\n");
-        kputs("  clear  - Clear screen\n");
-        kputs("  reboot - Reboot CPU\n");
+        kputs("  help     - Show this message\n");
+        kputs("  clear    - Clear screen\n");
+        kputs("  reboot   - Reboot CPU\n");
+        kputs("  shutdown - Shutdown system (QEMU only)\n");
+        kputs("  ls       - List files in current directory\n");
+        kputs("  dir      - Same as 'ls'\n");
         return 0;
     }
     
@@ -120,6 +123,11 @@ int do_builtin(const char *line){
     
     if (strcmp(line, "reboot") == 0) {
         outb(0x64, 0xFC);
+        return 0;
+    }
+    
+    if (strcmp(line, "shutdown") == 0) {
+        outw(0x604, 0x2000);//QEMU専用
         return 0;
     }
     
