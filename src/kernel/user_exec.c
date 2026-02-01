@@ -1,21 +1,6 @@
 #include "user_exec.h"
 #include "x86/console.h"
 
-/*
-int user_exec(void* entry)
-{
-    int ret;
-
-    asm volatile (
-        "call *%1"
-        : "=a"(ret)   // EAXに入った返り値を受け取りretへ格納
-        : "r"(entry)
-        : "memory", "cc"
-    );
-
-    return ret;
-}*/
-
 // argc: 引数個数, argv: 引数配列
 // 引数を指定しない場合、argc=1, argv[0]=ファイル名
 int user_exec(void* entry, int argc, char **argv)
