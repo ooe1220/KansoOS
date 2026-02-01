@@ -13,6 +13,7 @@ int user_exec(void* entry, int argc, char **argv)
         "push %[argv]\n"   // argv のアドレスを push
         "push %[argc]\n"   // argc を push
         "call *%[entry]\n" // エントリポイントを呼び出す
+        "add $8, %%esp\n"  // argv、argcの分のスタックを戻す
         : "=a"(ret)        // EAX に返り値を受け取る
         : [entry]"r"(entry),
           [argc]"r"(argc),
