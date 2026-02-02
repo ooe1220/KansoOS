@@ -13,9 +13,18 @@
 #include "command.h"
 #include "user_exec.h"
 #include "mem/memory.h"
+#include "x86/vga.h"
 
 void test_code(void) {
 
+    set_mode13();
+    uint8_t *vram = (uint8_t*)0xA0000;
+    for (int y = 0; y < 200; y++)
+        for (int x = 0; x < 320; x++)
+            vram[y * 320 + x] = 3;   // 赤
+    for (;;);
+
+/*
     kputs("==== DEBUG TEST START ====\n");
 
     //************************
@@ -46,5 +55,6 @@ void test_code(void) {
     // asm volatile("ud2");  // 割り込み動作確認
 
     kputs("==== DEBUG TEST END ====\n");
+    */
 }
 

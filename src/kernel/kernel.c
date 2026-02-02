@@ -7,6 +7,7 @@
 #include "x86/keyboard.h"
 #include "x86/panic.h"
 #include "x86/syscall.h"
+#include "x86/vga.h"//////
 #include "lib/stdint.h"
 #include "lib/string.h"
 #include "command.h"
