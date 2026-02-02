@@ -21,7 +21,7 @@ void test_code(void) {
     uint8_t *vram = (uint8_t*)0xA0000;
     for (int y = 0; y < 200; y++)
         for (int x = 0; x < 320; x++)
-            vram[y * 320 + x] = 3;   // 赤
+            vram[y * 320 + x] = 4;   // 赤
     for (;;);
 
 /*
