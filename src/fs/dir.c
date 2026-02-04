@@ -48,7 +48,8 @@ void fs_dir_list(void) {
                 continue;
 
             print_name(ent[i].name);
-            kputs("\n");
+            //kputs("\n"); // 縦表示
+            kputs(" "); // 横表示
         }
     }
 }
