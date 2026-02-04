@@ -58,7 +58,7 @@ static void to_83_format(const char* filename, char* result) {
 }
 
 // ファイルを検索して情報を取得
-static int find_file_info(const char* filename, uint32_t* start_cluster, uint32_t* file_size) {
+static int fat16_find_file(const char* filename, uint32_t* start_cluster, uint32_t* file_size) {
     uint8_t buf[512];
     fat_dirent_t* ent;
     char target_name[12];
@@ -146,7 +146,7 @@ void run_file(const char *line){
     //ファイルが存在するかを確認しない場合は抜ける
     uint32_t start_cluster, file_size;
     kputs("\n");    
-    if (!find_file_info(line, &start_cluster, &file_size)) {
+    if (!fat16_find_file(line, &start_cluster, &file_size)) {
         kputs("Unknown command or file not found: ");
         kputs(line);
         return;
