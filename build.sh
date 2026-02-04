@@ -37,6 +37,7 @@ gcc -m32 -ffreestanding -I./src -c src/mem/memory_utils.c -o build/memory_utils.
 gcc -m32 -ffreestanding -I./src -c src/mem/calloc_realloc.c -o build/calloc_realloc.o
 gcc -m32 -ffreestanding -I./src -c src/mem/free.c -o build/free.o
 gcc -m32 -ffreestanding -I./src -O2 -c src/x86/vga.c -o build/vga.o
+gcc -m32 -ffreestanding -I./src -O2 -c src/fs/fat16_file.c -o build/fat16_file.o
 
 gcc -m32 -ffreestanding -fno-pic -fno-pie -c src/x86/syscall_entry.S -o build/syscall_entry.o
 
@@ -63,6 +64,7 @@ ld -m elf_i386 -T src/linker.ld -o build/kernel.elf \
   build/free.o \
   build/debug.o \
   build/vga.o \
+  build/fat16_file.o \
   build/dir.o
   
 # 5. ELF → バイナリ
