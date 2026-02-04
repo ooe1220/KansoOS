@@ -64,7 +64,7 @@ void kernel_main() {
 
         if (c == '\n') { // ENTER : 命令実行及び改行
             line[len] = 0;
-            if(do_builtin(line) != 0){ // 内部コマンド実行
+            if(run_builtin_command(line) != 0){ // 内部コマンド実行
                 run_file(line); // 内部コマンドと一致しない場合、実行ファイルとして実行を試みる
             }
             len = 0;
