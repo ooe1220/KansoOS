@@ -57,17 +57,6 @@ static void to_83_format(const char* filename, char* result) {
     result[11] = '\0';
 }
 
-// 文字列比較関数
-static int string_compare(const char* s1, const char* s2, int length) {
-    int i;
-    for (i = 0; i < length; i++) {
-        if (s1[i] != s2[i]) {
-            return 0;
-        }
-    }
-    return 1;
-}
-
 // ファイルを検索して情報を取得
 static int find_file_info(const char* filename, uint32_t* start_cluster, uint32_t* file_size) {
     uint8_t buf[512];
@@ -91,7 +80,7 @@ static int find_file_info(const char* filename, uint32_t* start_cluster, uint32_
                 continue;
 
             /* ファイル名比較 */
-            if (string_compare(ent[i].name, target_name, 11)) {
+            if (memcmp(ent[i].name, target_name, 11)) {
                 if (start_cluster) *start_cluster = ent[i].clus_lo | (ent[i].clus_hi << 16);
                 if (file_size) *file_size = ent[i].size;
                 return 1; // ファイルが見つかった

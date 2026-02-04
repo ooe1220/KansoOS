@@ -14,5 +14,7 @@ char *strcat(char *dst, const char *src);
 
 int strcmp(const char *s1, const char *s2);
 
+int memcmp(const char* s1, const char* s2, int length);
+
 #endif
 

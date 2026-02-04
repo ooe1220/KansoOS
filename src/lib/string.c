@@ -59,3 +59,14 @@ int strcmp(const char *s1, const char *s2) {
     return (uint8_t)(*s1) - (uint8_t)(*s2);
 }
 
+// 文字列比較関数
+int memcmp(const char* s1, const char* s2, int length) {
+    int i;
+    for (i = 0; i < length; i++) {
+        if (s1[i] != s2[i]) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
