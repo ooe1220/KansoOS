@@ -38,20 +38,6 @@ dw 0                 ; write date
 dw 2                 ; start cluster (仮)
 dd 0                 ; file size (未使用)
 
-; ---- TEST.TXT ----
-db 'TEST    TXT'
-db 0x20
-db 0
-db 0
-dw 0
-dw 0
-dw 0
-dw 0
-dw 0
-dw 0
-dw 3 ; 偽値
-dd 0
-
 db 'TEST2   BIN'
 db 0x20
 db 0
@@ -76,6 +62,33 @@ dw 0
 dw 0
 dw 0
 dw 214 ; 1822セクタ目
+dd 0
+
+db 'TEST4   BIN'
+db 0x20
+db 0
+db 0
+dw 0
+dw 0
+dw 0
+dw 0
+dw 0
+dw 0
+dw 215 ; 1830セクタ目
+dd 0
+
+; ---- TEST.TXT ----
+db 'TEST    TXT'
+db 0x20
+db 0
+db 0
+dw 0
+dw 0
+dw 0
+dw 0
+dw 0
+dw 0
+dw 216 ; 1838セクタ目
 dd 0
 
 ; ---- 残り 項目 ----

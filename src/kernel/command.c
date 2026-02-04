@@ -130,7 +130,6 @@ void run_file(const char *line){
     int ret = user_exec((void*)USER_PROG_MEM, argc, argv);// ユーザプログラムへ遷移
     //kprintf("ret = %d\n",ret);
     pic_unmask_irq(1); // IRQ1キーボード有効化
-    kputs(line);
 }
 
 

@@ -7,7 +7,7 @@ int user_exec(void* entry, int argc, char **argv)
 {
     int ret;
     
-    kprintf("user_exec.c argc: %d\n", argc); // test:引数の数
+    //kprintf("user_exec.c argc: %d\n", argc); // test:引数の数
 
     asm volatile (
         "push %[argv]\n"   // argv のアドレスを push

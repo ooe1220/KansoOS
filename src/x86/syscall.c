@@ -2,6 +2,7 @@
 #include "console.h"
 #include "idt.h"
 #include "lib/stdint.h"
+#include "x86/ata.h"
 
 // -------------------------
 // システムコール用関数（ハンドラ）
@@ -35,4 +36,8 @@ uint32_t handle_write(const char *str) {
         kputs(str);  // カーネルの画面出力関数
     }
     return 0;
+}
+
+int handle_read_sector(uint32_t lba, uint8_t* buffer) {
+    return ata_read_lba28(lba, 1, buffer); // 1セクタ読み込み
 }
