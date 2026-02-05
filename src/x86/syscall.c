@@ -46,10 +46,10 @@ int handle_read_sector(uint32_t lba, uint8_t* buffer) {
 
 int handle_fs_open(const char* filename)
 {
-    //return fs_open(filename);  // カーネル内部の fs_open を呼ぶ
-    int fd = fs_open(filename);
-    kprintf("handle_fs_open fd=%d ",fd);
-    return fd;
+    return fs_open(filename);  // カーネル内部の fs_open を呼ぶ
+    //int fd = fs_open(filename);
+    //kprintf("handle_fs_open fd=%d ",fd);
+    //return fd;
 }
 
 int handle_fs_read(int fd, void* buf, int size)

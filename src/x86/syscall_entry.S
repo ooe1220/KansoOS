@@ -64,6 +64,7 @@ syscall_fs_close:
     jmp syscall_done
 
 syscall_done:
+    mov [esp+28], eax # pushaでスタックに積んだEAXを返り値に置き換える。そうしないとpopaで返り値が壊れる
     popa
     iret
 

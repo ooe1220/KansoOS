@@ -21,7 +21,6 @@ static int alloc_fd(void)
 
 static uint32_t cluster_to_lba(uint32_t start_cluster)
 {
-    //return DATA_LBA + (clus - 2) * SECTORS_PER_CLUSTER;
     return 126 + (start_cluster - 2) * 8;
 }
 
@@ -38,7 +37,6 @@ int fs_open(const char* filename)
     kfiles[fd].start_cluster = start_cluster; // ファイルの開始クラスタ
     kfiles[fd].size = file_size;              // ファイルの大きさ
     
-    kprintf("fs_open fd=%d ",fd);
     return fd;
 }
 
@@ -51,20 +49,12 @@ int fs_read(int fd, void* buf, int size)
 {
 
     if(fd<0||fd>=MAX_KFILES) return -1; // FDが存在しない fs_open未実行
-    kprintf("fs_read fd=%d ",fd);
     if(!kfiles[fd].used) return -1; // 開かれていない若しくは閉じた    
-    kprintf("ccccc");
 
-    kfile_t* f = &kfiles[fd];
-    if(f->pos >= f->size) return 0;
-
-    uint32_t lba = cluster_to_lba(f->start_cluster);
+    uint32_t lba = cluster_to_lba(kfiles[fd].start_cluster);
     ata_read_lba28(lba,8,buf);
 
-    kprintf("aaaaa");
-    //kprintf(buf);///////
-
-    f->pos += 8*512; // 最初は1クラスタだけ
+    kfiles[fd].pos += 8*512;  // 1クラスタだけ
     return 8*512;
 }
 
