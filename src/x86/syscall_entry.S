@@ -20,6 +20,15 @@ syscall_handler:
     cmp eax, 2
     je syscall_read_sector
     
+    cmp eax, 3
+    je syscall_fs_open
+
+    cmp eax, 4
+    je syscall_fs_read
+
+    cmp eax, 5
+    je syscall_fs_close
+    
 syscall_write:
     push ebx                # 引数（文字列ポインタ）
     call handle_write
@@ -32,6 +41,26 @@ syscall_read_sector:
     call handle_read_sector
     add esp, 8
     #返り値はEAXの中(成功コード0)
+    jmp syscall_done
+    
+syscall_fs_open:
+    push ebx                # filename
+    call handle_fs_open
+    add esp, 4
+    jmp syscall_done
+
+syscall_fs_read:
+    push edx                # size
+    push ecx                # buf
+    push ebx                # fd
+    call handle_fs_read
+    add esp, 12
+    jmp syscall_done
+
+syscall_fs_close:
+    push ebx                # fd
+    call handle_fs_close
+    add esp, 4
     jmp syscall_done
 
 syscall_done:

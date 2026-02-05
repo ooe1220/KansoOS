@@ -3,6 +3,7 @@
 #include "idt.h"
 #include "lib/stdint.h"
 #include "x86/ata.h"
+#include "../fs/fs_file.h"
 
 // -------------------------
 // システムコール用関数（ハンドラ）
@@ -38,6 +39,29 @@ uint32_t handle_write(const char *str) {
     return 0;
 }
 
+// ユーザの権限には不相応　今後削除予定
 int handle_read_sector(uint32_t lba, uint8_t* buffer) {
     return ata_read_lba28(lba, 1, buffer); // 1セクタ読み込み
 }
+
+int handle_fs_open(const char* filename)
+{
+    //return fs_open(filename);  // カーネル内部の fs_open を呼ぶ
+    int fd = fs_open(filename);
+    kprintf("handle_fs_open fd=%d ",fd);
+    return fd;
+}
+
+int handle_fs_read(int fd, void* buf, int size)
+{
+    return fs_read(fd, buf, size);  // カーネル内部の fs_read を呼ぶ
+}
+
+int handle_fs_close(int fd)
+{
+    return fs_close(fd);  // カーネル内部の fs_close を呼ぶ
+}
+
+
+
+
