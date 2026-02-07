@@ -106,7 +106,7 @@ objcopy -O binary build/test2.elf build/test2.bin
 dd if=build/test2.bin of=build/disk.img bs=512 seek=1814 conv=notrunc
 
 ## test3.c
-gcc -ffreestanding -nostdlib -fno-pic -fno-pie -m32 -c user/test3.c -o build/test3.o
+gcc -ffreestanding -O2 -nostdlib -fno-pic -fno-pie -m32 -c user/test3.c -o build/test3.o
 
 ld -m elf_i386 \
    -T user/linker.ld \
@@ -118,7 +118,7 @@ objcopy -O binary build/test3.elf build/test3.bin
 dd if=build/test3.bin of=build/disk.img bs=512 seek=1822 conv=notrunc
 
 ## test4.c
-gcc -ffreestanding -nostdlib -fno-pic -fno-pie -m32 -c user/test4.c -o build/test4.o
+gcc -ffreestanding -O2 -nostdlib -fno-pic -fno-pie -m32 -c user/test4.c -o build/test4.o
 
 ld -m elf_i386 \
    -T user/linker.ld \
