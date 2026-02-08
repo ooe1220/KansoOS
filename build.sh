@@ -117,17 +117,17 @@ ld -m elf_i386 \
 objcopy -O binary build/test3.elf build/test3.bin
 dd if=build/test3.bin of=build/disk.img bs=512 seek=1822 conv=notrunc
 
-## test4.c
-gcc -ffreestanding -O2 -nostdlib -fno-pic -fno-pie -m32 -c user/test4.c -o build/test4.o
+## cat.c
+gcc -ffreestanding -O2 -nostdlib -fno-pic -fno-pie -m32 -c user/cat.c -o build/cat.o
 
 ld -m elf_i386 \
    -T user/linker.ld \
    build/start.o \
-   build/test4.o \
-   -o build/test4.elf
+   build/cat.o \
+   -o build/cat.elf
    
-objcopy -O binary build/test4.elf build/test4.bin
-dd if=build/test4.bin of=build/disk.img bs=512 seek=1830 conv=notrunc
+objcopy -O binary build/cat.elf build/cat.bin
+dd if=build/cat.bin of=build/disk.img bs=512 seek=1830 conv=notrunc
 
 ## HELLO.TXT
 echo -n "HELLO" | dd of=build/disk.img bs=512 seek=1838 conv=notrunc

@@ -1,12 +1,17 @@
 #include "lib/mystdio.h"
 #include "lib/stdint.h"
 
-int main(int argc, char **argv){   
+int main(int argc, char **argv){ 
+
+    if(argc < 2){
+        write("Usage: cat <filename>\n");
+        return -1;
+    }  
     
     uint8_t buf[4096];
 
     // ファイルを開く
-    int fd = open("TEST.TXT");
+    int fd = open(argv[1]);
     if(fd < 0){
         write("open error\n");
         return -1;

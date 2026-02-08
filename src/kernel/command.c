@@ -66,10 +66,26 @@ void run_file(const char *line){
     }
     filename[i] = 0;
     
+    // 末尾が ".bin" か確認して、なければ追加
+    int len = strlen(filename);
+    if(len < 4 || strcmp(filename + len - 4, ".bin") != 0){
+        if(len + 4 < sizeof(filename)){
+            filename[len] = '.';
+            filename[len+1] = 'b';
+            filename[len+2] = 'i';
+            filename[len+3] = 'n';
+            filename[len+4] = 0;
+        } else {
+            kputs("Filename too long: ");
+            kputs(filename);
+            return;
+        }
+    }
+    
     //ファイルが存在するかを確認しない場合は抜ける
     uint32_t start_cluster, file_size;
     kputs("\n");    
-    if (!fat16_find_file(line, &start_cluster, &file_size)) {
+    if (!fat16_find_file(filename, &start_cluster, &file_size)) {
         kputs("Unknown command or file not found: ");
         kputs(line);
         return;

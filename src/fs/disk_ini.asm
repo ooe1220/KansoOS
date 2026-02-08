@@ -64,7 +64,7 @@ dw 0
 dw 214 ; 1822セクタ目
 dd 0
 
-db 'TEST4   BIN'
+db 'CAT     BIN'
 db 0x20
 db 0
 db 0
