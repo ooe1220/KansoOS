@@ -56,7 +56,7 @@ void kernel_main() {
     char line[128]; // コマンド入力バッファ
     int len = 0; // 現在の入力位置（文字数）
     
-    //test_code();
+    test_code();
     
     kputs("\n>");
     while(1){

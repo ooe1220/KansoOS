@@ -17,12 +17,29 @@
 
 void test_code(void) {
 
+
+    //xxd -g 2 -s -1024 build/disk.img
+    const uint32_t total_sectors = 2048;    // 1MBディスク / 512B
+    const uint32_t lba_start = total_sectors - 2; // 最後から2セクタ分
+    uint16_t buffer[512];   // 2セクタ分 = 512ワード（1ワード=2B）
+    // 書き込みバッファを0x1234で埋める
+    for (int i = 0; i < 512; i++) {
+        buffer[i] = 0x1234;
+    }
+    // 書き込み実行
+    if (ata_write_lba28(lba_start, 2, buffer) != 0) {
+        kprintf("ATA書き込みエラー\n");
+        return;
+    }
+
+/*
     set_mode13();
     uint8_t *vram = (uint8_t*)0xA0000;
     for (int y = 0; y < 200; y++)
         for (int x = 0; x < 320; x++)
             vram[y * 320 + x] = 4;   // 赤
     for (;;);
+*/
 
 /*
     kputs("==== DEBUG TEST START ====\n");
