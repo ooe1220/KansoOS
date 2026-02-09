@@ -4,11 +4,10 @@
 #include "lib/string.h"
 #include "lib/stdint.h"
 #include "lib/stddef.h" // NULLの定義
-#include "fs/dir.h"
 #include "fs/fat16_file.h"
 #include "user_exec.h"
 #include "drivers/ata.h"
-#include "../fs/fat16.h"
+#include "fs/fat16.h"
 #include "x86/pic.h"
 
 #define USER_PROG_MEM 0x10000 // ユーザプログラムを置くアドレス
@@ -45,7 +44,7 @@ if (strcmp(line, "help") == 0) {
     
     if (strcmp(line, "ls") == 0 || strcmp(line, "dir") == 0) {
         kputs("\n");
-        fs_dir_list();
+        fs_dir_list(); // fs/fat16.h
         return 0;
     }
     
@@ -85,7 +84,7 @@ void run_file(const char *line){
     //ファイルが存在するかを確認しない場合は抜ける
     uint32_t start_cluster, file_size;
     kputs("\n");    
-    if (!fat16_find_file(filename, &start_cluster, &file_size)) {
+    if (!fat16_find_file(filename, &start_cluster, &file_size)) { // (fs/fat16_file.h)
         kputs("Unknown command or file not found: ");
         kputs(line);
         return;
@@ -141,11 +140,11 @@ void run_file(const char *line){
     // 前提:データ領域LBA126〜、1クラスタ=8セクタ
     //kprintf_d("start_cluster=%d\n",start_cluster);
     uint32_t start_sector = 126 + (start_cluster - 2) * 8;//開始クラスタ→開始セクタ変換式
-    ata_read_lba28(start_sector, 8, (void*)USER_PROG_MEM); // ユーザプログラムをメモリ0x10000上へ展開
-    pic_mask_irq(1); // IRQ1キーボード無効化
-    int ret = user_exec((void*)USER_PROG_MEM, argc, argv);// ユーザプログラムへ遷移
+    ata_read_lba28(start_sector, 8, (void*)USER_PROG_MEM); // ユーザプログラムをメモリ0x10000上へ展開 (drivers/ata.h)
+    pic_mask_irq(1); // IRQ1キーボード無効化 (x86/pic.h)
+    int ret = user_exec((void*)USER_PROG_MEM, argc, argv);// ユーザプログラムへ遷移 (kernel/user_exec.h)
     //kprintf("ret = %d\n",ret);
-    pic_unmask_irq(1); // IRQ1キーボード有効化
+    pic_unmask_irq(1); // IRQ1キーボード有効化 (x86/pic.h)
 }
 
 

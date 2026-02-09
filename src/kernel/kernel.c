@@ -3,15 +3,13 @@
 #include "drivers/cmos.h"
 #include "x86/pic.h"
 #include "x86/idt.h"
-#include "drivers/ata.h"
 #include "drivers/keyboard.h"
 #include "x86/panic.h"
 #include "x86/syscall.h"
-#include "drivers/vga.h"//////
+#include "drivers/vga.h"
 #include "lib/stdint.h"
 #include "lib/string.h"
 #include "command.h"
-#include "user_exec.h"
 #include "mem/memory.h"
 #include "debug.h"
 
@@ -31,22 +29,22 @@ void kernel_main() {
     kputs(boot_time);
     kputs("\n-----------------------------------\n");
         
-    idt_init(); // IDT初期化
+    idt_init(); // IDT初期化 (x86/idt.h)
     kputs("IDT initialized\n");
     
-    pic_init(); // PIC初期化
+    pic_init(); // PIC初期化 (x86/pic.h)
     kputs("PIC initialized\n");
     
-    pic_unmask_irq(1); // PICのIRQ1(キーボード割り込み)を有効化
+    pic_unmask_irq(1); // PICのIRQ1(キーボード割り込み)を有効化 (x86/pic.h)
     kputs("IRQ1 (keyboard) unmasked\n");
     
-    keyboard_init(); //  IDT(0x21=33)へIRQ1（キーボード）処理を登録
+    keyboard_init(); //  IDT(0x21=33)へIRQ1（キーボード）処理を登録 (drivers/keyboard.h)
     kputs("Keyboard interrupt handler registered\n");
     
-    exception_init(); // IDT(0〜31=0x00〜0x1F)へCPU例外処理を登録(panic)
+    exception_init(); // IDT(0〜31=0x00〜0x1F)へCPU例外処理を登録 (x86/panic.h)
     kputs("CPU exception handlers registered\n");
     
-    init_syscall(); // IDT 0x80へシステムコールを登録　Linuxの様にint0x80経由でシステムコールを呼び出す
+    init_syscall(); // IDT 0x80へシステムコールを登録　Linuxの様にint0x80経由でシステムコールを呼び出す (x86/syscall.h)
     kputs("System call handler (int 0x80) registered\n");
     
     init_cursor_from_hardware();
@@ -60,12 +58,12 @@ void kernel_main() {
     
     kputs("\n>");
     while(1){
-        char c = keyboard_getchar(); // キーボード入力を待つ (内部的にはhlt→IRQ1割り込み)
+        char c = keyboard_getchar(); // キーボード入力を待つ (内部的にはhlt→IRQ1割り込み) (drivers/keyboard.h)
 
         if (c == '\n') { // ENTER : 命令実行及び改行
             line[len] = 0;
-            if(run_builtin_command(line) != 0){ // 内部コマンド実行
-                run_file(line); // 内部コマンドと一致しない場合、実行ファイルとして実行を試みる
+            if(run_builtin_command(line) != 0){ // 内部コマンド実行 (kernel/command.h)
+                run_file(line); // 内部コマンドと一致しない場合、実行ファイルとして実行を試みる (kernel/command.h)
             }
             len = 0;
             kputs("\n>");
