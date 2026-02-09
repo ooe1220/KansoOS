@@ -21,12 +21,12 @@ gcc -m32 -ffreestanding -I./src -O2 -c src/kernel/kernel.c -o build/kernel.o
 gcc -m32 -ffreestanding -I./src -O2 -c src/kernel/command.c -o build/command.o
 gcc -m32 -ffreestanding -I./src -c src/kernel/user_exec.c -o build/user_exec.o
 gcc -m32 -ffreestanding -I./src -c src/kernel/debug.c -o build/debug.o
-gcc -m32 -ffreestanding -I./src -O2 -c src/x86/cmos.c -o build/cmos.o
+gcc -m32 -ffreestanding -I./src -O2 -c src/drivers/cmos.c -o build/cmos.o
 gcc -m32 -ffreestanding -I./src -O2 -c src/x86/console.c -o build/console.o
 gcc -m32 -ffreestanding -I./src -O2 -c src/x86/pic.c -o build/pic.o
 gcc -m32 -ffreestanding -I./src -c src/x86/idt.c -o build/idt.o
-gcc -m32 -ffreestanding -I./src -O2 -c src/x86/ata.c -o build/ata.o
-gcc -m32 -ffreestanding -I./src -O2 -c src/x86/keyboard.c -o build/keyboard.o
+gcc -m32 -ffreestanding -I./src -O2 -c src/drivers/ata.c -o build/ata.o
+gcc -m32 -ffreestanding -I./src -O2 -c src/drivers/keyboard.c -o build/keyboard.o
 gcc -m32 -ffreestanding -I./src -c src/x86/panic.c -o build/panic.o
 gcc -m32 -ffreestanding -I./src -c src/x86/syscall.c -o build/syscall.o
 gcc -m32 -ffreestanding -I./src -c src/lib/string.c -o build/string.o
@@ -36,7 +36,7 @@ gcc -m32 -ffreestanding -I./src -c src/mem/malloc.c -o build/malloc.o
 gcc -m32 -ffreestanding -I./src -c src/mem/memory_utils.c -o build/memory_utils.o
 gcc -m32 -ffreestanding -I./src -c src/mem/calloc_realloc.c -o build/calloc_realloc.o
 gcc -m32 -ffreestanding -I./src -c src/mem/free.c -o build/free.o
-gcc -m32 -ffreestanding -I./src -O2 -c src/x86/vga.c -o build/vga.o
+gcc -m32 -ffreestanding -I./src -O2 -c src/drivers/vga.c -o build/vga.o
 gcc -m32 -ffreestanding -I./src -O2 -c src/fs/fat16_file.c -o build/fat16_file.o
 gcc -m32 -ffreestanding -I./src -O2 -c src/fs/fs_file.c -o build/fs_file.o
 

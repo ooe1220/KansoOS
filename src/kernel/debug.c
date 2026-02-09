@@ -1,11 +1,11 @@
 #include "debug.h"
 #include "x86/io.h"
 #include "x86/console.h"
-#include "x86/cmos.h"
+#include "drivers/cmos.h"
 #include "x86/pic.h"
 #include "x86/idt.h"
-#include "x86/ata.h"
-#include "x86/keyboard.h"
+#include "drivers/ata.h"
+#include "drivers/keyboard.h"
 #include "x86/panic.h"
 #include "x86/syscall.h"
 #include "lib/stdint.h"
@@ -13,7 +13,7 @@
 #include "command.h"
 #include "user_exec.h"
 #include "mem/memory.h"
-#include "x86/vga.h"
+#include "drivers/vga.h"
 
 void test_code(void) {
 

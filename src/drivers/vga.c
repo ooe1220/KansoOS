@@ -1,4 +1,4 @@
-#include "io.h"
+#include "x86/io.h"
 
 static const uint8_t mode13_regs[] = {
     /* MISC */

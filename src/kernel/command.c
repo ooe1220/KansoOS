@@ -7,7 +7,7 @@
 #include "fs/dir.h"
 #include "fs/fat16_file.h"
 #include "user_exec.h"
-#include "x86/ata.h"
+#include "drivers/ata.h"
 #include "../fs/fat16.h"
 #include "x86/pic.h"
 

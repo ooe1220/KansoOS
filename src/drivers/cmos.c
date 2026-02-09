@@ -1,6 +1,6 @@
 // cmos.c
 #include "cmos.h"
-#include "io.h"  // inb/outb
+#include "x86/io.h"  // inb/outb
 
 static uint8_t cmos_read(uint8_t reg) {
     outb(0x70, reg);

@@ -1,5 +1,5 @@
 #include "ata.h"
-#include "io.h"
+#include "x86/io.h"
 
 /* BUSY待ち */
 static void ata_wait_busy(void) {

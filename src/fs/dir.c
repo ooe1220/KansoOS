@@ -1,7 +1,7 @@
 /* fs/dir.c */
 
 #include "fat16.h"
-#include "../x86/ata.h"
+#include "../drivers/ata.h"
 #include "../x86/console.h"
 
 // 8.3形式のファイル名を表示する

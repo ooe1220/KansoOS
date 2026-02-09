@@ -1,6 +1,6 @@
 #include "fs_file.h"
 #include "fat16_file.h"
-#include "x86/ata.h"
+#include "drivers/ata.h"
 #include "x86/console.h"
 
 kfile_t kfiles[MAX_KFILES]; // 開いているファイルの情報 fs_file.h中構造体定義

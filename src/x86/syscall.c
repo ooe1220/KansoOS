@@ -2,7 +2,7 @@
 #include "console.h"
 #include "idt.h"
 #include "lib/stdint.h"
-#include "x86/ata.h"
+#include "drivers/ata.h"
 #include "../fs/fs_file.h"
 
 // -------------------------

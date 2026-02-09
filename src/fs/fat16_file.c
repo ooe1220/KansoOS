@@ -1,4 +1,4 @@
-#include "x86/ata.h"
+#include "drivers/ata.h"
 #include "lib/string.h"
 #include "fat16.h"
 
