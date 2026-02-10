@@ -1,0 +1,133 @@
+# 目的
+
+C言語では
+型　関数(int count, ...)
+のように引数の数を可変にすることが出来ます。
+ライブラリ等以外で普通にプログラムを書いていて使うことはあまりないかもしれません。
+筆者はOS開発をしており、printf関数を実装するため、C言語の可変引数がどのような機械語になるのかを調べてみました。
+
+# 可変引数
+
+```bash
+gcc -m32 -O0 test.c -o test.out
+objdump -d test.out
+```
+
+```test.c
+#include <stdio.h>
+
+int sum(int count, ...)
+{
+    int *p = &count;
+    p++;   // countの次へ
+
+    int total = 0;
+
+    for(int i=0;i<count;i++){
+        total += *p;
+        p++;
+    }
+
+    return total;
+}
+
+int main() {
+    int result;
+
+    result = sum(3, 10, 20, 30); // 3個の整数を足す
+    printf("sum = %d\n", result); // 60
+
+    result = sum(5, 1, 2, 3, 4, 5);
+    printf("sum = %d\n", result); // 15
+
+    return 0;
+}
+```
+
+```bash
+test@test-fujitsu:~/kaihatsu/ctest$ ./test.out 
+sum = 60
+sum = 15
+```
+
+# 呼び出し側
+
+```
+000011e4 <main>:
+
+...(省略)...
+    1201:	6a 1e                	push   $0x1e
+    1203:	6a 14                	push   $0x14
+    1205:	6a 0a                	push   $0xa
+    1207:	6a 03                	push   $0x3
+    1209:	e8 8f ff ff ff       	call   119d <sum>
+...(省略)...
+
+```
+
+呼び出しを見ると、
+```
+push 30
+push 20
+push 10
+push 3
+```
+の順番にスタックへ積んでいます。
+※x64では関数への引数渡しにレジスタも併用する為このようにはなりません。
+
+# sum関数のアセンブリ
+
+```
+0000119d <sum>:
+    119d:	55                   	push   %ebp
+    119e:	89 e5                	mov    %esp,%ebp
+    11a0:	83 ec 10             	sub    $0x10,%esp
+    11a3:	e8 bf 00 00 00       	call   1267 <__x86.get_pc_thunk.ax>
+    11a8:	05 30 2e 00 00       	add    $0x2e30,%eax
+    11ad:	8d 45 08             	lea    0x8(%ebp),%eax
+    11b0:	89 45 f4             	mov    %eax,-0xc(%ebp)
+    11b3:	83 45 f4 04          	addl   $0x4,-0xc(%ebp)
+    11b7:	c7 45 f8 00 00 00 00 	movl   $0x0,-0x8(%ebp)
+    11be:	c7 45 fc 00 00 00 00 	movl   $0x0,-0x4(%ebp)
+    11c5:	eb 10                	jmp    11d7 <sum+0x3a>
+    11c7:	8b 45 f4             	mov    -0xc(%ebp),%eax
+    11ca:	8b 00                	mov    (%eax),%eax
+    11cc:	01 45 f8             	add    %eax,-0x8(%ebp)
+    11cf:	83 45 f4 04          	addl   $0x4,-0xc(%ebp)
+    11d3:	83 45 fc 01          	addl   $0x1,-0x4(%ebp)
+    11d7:	8b 45 08             	mov    0x8(%ebp),%eax
+    11da:	39 45 fc             	cmp    %eax,-0x4(%ebp)
+    11dd:	7c e8                	jl     11c7 <sum+0x2a>
+    11df:	8b 45 f8             	mov    -0x8(%ebp),%eax
+    11e2:	c9                   	leave  
+    11e3:	c3                   	ret    
+```
+
+`push   %ebp`を実行した時点で、スタックは以下のようになっています
+```
+ebp + 0 : 旧EBP
+ebp + 4 : 返りアドレス
+ebp + 8 : count (3)
+ebp +12 : 10
+ebp +16 : 20
+ebp +20 : 30
+```
+
+ここでcountのアドレスを取得しています
+```
+lea    0x8(%ebp),%eax  ; eax = count
+mov    %eax,-0xc(%ebp) ; p = eax
+addl   $0x4,-0xc(%ebp) ; p++ (int分4バイト進める)
+```
+
+pをずらしながら10,20,30の順番で取得しています。
+```
+mov    -0xc(%ebp),%eax ; eax = p
+mov    (%eax),%eax     ; eax = *p(pの指す値)
+add    %eax,-0x8(%ebp) ; total += *p
+addl   $0x4,-0xc(%ebp) ; p++
+```
+
+このようにポインタを後ろにずらしていくと可変数の引数でも関数側で処理できます。
+
+実際には`va_list`等の関数を使うことが一般的ですが、あまり抽象的にしたくないため、筆者のOSではこの方法で`printf`を実装する予定です。	
