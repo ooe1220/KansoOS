@@ -1,6 +1,6 @@
 #include "lib/mystdio.h"
 
-int main(int argc, char **argv){   
+int main(int argc, char **argv){
 
     printf_d("test3 argc = %d\n", argc);
     

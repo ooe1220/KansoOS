@@ -54,8 +54,8 @@ void kernel_main() {
     char line[128]; // コマンド入力バッファ
     int len = 0; // 現在の入力位置（文字数）
     
-    test_code();
-    
+    //test_code();
+       
     kputs("\n>");
     while(1){
         char c = keyboard_getchar(); // キーボード入力を待つ (内部的にはhlt→IRQ1割り込み) (drivers/keyboard.h)
