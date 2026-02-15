@@ -15,32 +15,32 @@ nasm -f elf32 src/kernel/switch32.asm -o build/switch32.o
 # 3. C をオブジェクトファイルに
 # -m32 : 32ビットの機械語を生成
 # -ffreestanding : OS標準ライブラリを使わない。開始点がmain()でなくても良くなる
-# -O2 : 最適化する
+# -O0 : スタックフレーム前提の為、最適化はしない
 # -c : コンパイルのみ、リンクはしない　これがないと gcc は最終的な実行ファイル（.exe や a.out）を作ろうとする
-gcc -m32 -ffreestanding -I./src -O2 -c src/kernel/kernel.c -o build/kernel.o
-gcc -m32 -ffreestanding -I./src -O2 -c src/kernel/command.c -o build/command.o
-gcc -m32 -ffreestanding -I./src -c src/kernel/user_exec.c -o build/user_exec.o
-gcc -m32 -ffreestanding -I./src -c src/kernel/debug.c -o build/debug.o
-gcc -m32 -ffreestanding -I./src -O2 -c src/drivers/cmos.c -o build/cmos.o
-gcc -m32 -ffreestanding -I./src -O2 -c src/x86/console.c -o build/console.o
-gcc -m32 -ffreestanding -I./src -O2 -c src/x86/pic.c -o build/pic.o
-gcc -m32 -ffreestanding -I./src -c src/x86/idt.c -o build/idt.o
-gcc -m32 -ffreestanding -I./src -O2 -c src/drivers/ata.c -o build/ata.o
-gcc -m32 -ffreestanding -I./src -O2 -c src/drivers/keyboard.c -o build/keyboard.o
-gcc -m32 -ffreestanding -I./src -c src/x86/panic.c -o build/panic.o
-gcc -m32 -ffreestanding -I./src -c src/x86/syscall.c -o build/syscall.o
-gcc -m32 -ffreestanding -I./src -c src/lib/string.c -o build/string.o
-gcc -m32 -ffreestanding -I./src -O2 -c src/fs/dir.c -o build/dir.o
-gcc -m32 -ffreestanding -I./src -c src/mem/heap.c -o build/heap.o
-gcc -m32 -ffreestanding -I./src -c src/mem/malloc.c -o build/malloc.o
-gcc -m32 -ffreestanding -I./src -c src/mem/memory_utils.c -o build/memory_utils.o
-gcc -m32 -ffreestanding -I./src -c src/mem/calloc_realloc.c -o build/calloc_realloc.o
-gcc -m32 -ffreestanding -I./src -c src/mem/free.c -o build/free.o
-gcc -m32 -ffreestanding -I./src -O2 -c src/drivers/vga.c -o build/vga.o
-gcc -m32 -ffreestanding -I./src -O2 -c src/fs/fat16_file.c -o build/fat16_file.o
-gcc -m32 -ffreestanding -I./src -O2 -c src/fs/fs_file.c -o build/fs_file.o
+gcc -m32 -ffreestanding -I./src -O0 -c src/kernel/kernel.c -o build/kernel.o
+gcc -m32 -ffreestanding -I./src -O0 -c src/kernel/command.c -o build/command.o
+gcc -m32 -ffreestanding -I./src -O0 -c src/kernel/debug.c -o build/debug.o
+gcc -m32 -ffreestanding -I./src -O0 -c src/drivers/cmos.c -o build/cmos.o
+gcc -m32 -ffreestanding -I./src -O0 -c src/x86/console.c -o build/console.o
+gcc -m32 -ffreestanding -I./src -O0 -c src/x86/pic.c -o build/pic.o
+gcc -m32 -ffreestanding -I./src -O0 -c src/x86/idt.c -o build/idt.o
+gcc -m32 -ffreestanding -I./src -O0 -c src/drivers/ata.c -o build/ata.o
+gcc -m32 -ffreestanding -I./src -O0 -c src/drivers/keyboard.c -o build/keyboard.o
+gcc -m32 -ffreestanding -I./src -O0 -c src/x86/panic.c -o build/panic.o
+gcc -m32 -ffreestanding -I./src -O0 -c src/x86/syscall.c -o build/syscall.o
+gcc -m32 -ffreestanding -I./src -O0 -c src/lib/string.c -o build/string.o
+gcc -m32 -ffreestanding -I./src -O0 -c src/fs/dir.c -o build/dir.o
+gcc -m32 -ffreestanding -I./src -O0 -c src/mem/heap.c -o build/heap.o
+gcc -m32 -ffreestanding -I./src -O0 -c src/mem/malloc.c -o build/malloc.o
+gcc -m32 -ffreestanding -I./src -O0 -c src/mem/memory_utils.c -o build/memory_utils.o
+gcc -m32 -ffreestanding -I./src -O0 -c src/mem/calloc_realloc.c -o build/calloc_realloc.o
+gcc -m32 -ffreestanding -I./src -O0 -c src/mem/free.c -o build/free.o
+gcc -m32 -ffreestanding -I./src -O0 -c src/drivers/vga.c -o build/vga.o
+gcc -m32 -ffreestanding -I./src -O0 -c src/fs/fat16_file.c -o build/fat16_file.o
+gcc -m32 -ffreestanding -I./src -O0 -c src/fs/fs_file.c -o build/fs_file.o
 
 gcc -m32 -ffreestanding -fno-pic -fno-pie -c src/x86/syscall_entry.S -o build/syscall_entry.o
+gcc -m32 -ffreestanding -fno-pic -fno-pie -c src/kernel/user_exec.S -o build/user_exec.o
 
 # 4. リンカで ELF 作成
 ld -m elf_i386 -T src/linker.ld -o build/kernel.elf \
@@ -68,7 +68,7 @@ ld -m elf_i386 -T src/linker.ld -o build/kernel.elf \
   build/fat16_file.o \
   build/fs_file.o \
   build/dir.o
-  
+
 # 5. ELF → バイナリ
 objcopy -O binary build/kernel.elf build/kernel.bin
 
@@ -93,7 +93,7 @@ dd if=build/disk_ini.bin of=build/disk.img bs=512 seek=64 conv=notrunc
 gcc -ffreestanding -nostdlib -fno-pic -fno-pie -m32 -c user/start.S -o build/start.o
 
 ## test2.c
-gcc -ffreestanding -nostdlib -fno-pic -fno-pie -m32 -c user/test2.c -o build/test2.o
+gcc -ffreestanding -O0 -nostdlib -fno-pic -fno-pie -m32 -c user/test2.c -o build/test2.o
 
 ld -m elf_i386 \
    -T user/linker.ld \
@@ -106,7 +106,7 @@ objcopy -O binary build/test2.elf build/test2.bin
 dd if=build/test2.bin of=build/disk.img bs=512 seek=1814 conv=notrunc
 
 ## test3.c
-gcc -ffreestanding -nostdlib -fno-pic -fno-pie -m32 -c user/test3.c -o build/test3.o
+gcc -ffreestanding -O0 -nostdlib -fno-pic -fno-pie -m32 -c user/test3.c -o build/test3.o
 
 ld -m elf_i386 \
    -T user/linker.ld \
@@ -118,7 +118,7 @@ objcopy -O binary build/test3.elf build/test3.bin
 dd if=build/test3.bin of=build/disk.img bs=512 seek=1822 conv=notrunc
 
 ## cat.c
-gcc -ffreestanding -nostdlib -fno-pic -fno-pie -m32 -c user/cat.c -o build/cat.o
+gcc -ffreestanding -O0 -nostdlib -fno-pic -fno-pie -m32 -c user/cat.c -o build/cat.o
 
 ld -m elf_i386 \
    -T user/linker.ld \

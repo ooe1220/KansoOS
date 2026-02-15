@@ -59,11 +59,14 @@ void kernel_main() {
     kputs("\n>");
     while(1){
         char c = keyboard_getchar(); // キーボード入力を待つ (内部的にはhlt→IRQ1割り込み) (drivers/keyboard.h)
-
         if (c == '\n') { // ENTER : 命令実行及び改行
             line[len] = 0;
             if(run_builtin_command(line) != 0){ // 内部コマンド実行 (kernel/command.h)
+                //asm volatile("cli");
+                //asm volatile("hlt"); // EBP=0009fbf8 ESP=0009fb50  0009fb50: 0x00000000 0x74000000 0x33747365 0x00000000
                 run_file(line); // 内部コマンドと一致しない場合、実行ファイルとして実行を試みる (kernel/command.h)
+                //asm volatile("cli");
+                //asm volatile("hlt");//EBP=0009fb48 ESP=0009fb34 0009fb34: 0x00009f06 0x0009fbf8 0x000081b5 0x0000ad95
             }
             len = 0;
             kputs("\n>");

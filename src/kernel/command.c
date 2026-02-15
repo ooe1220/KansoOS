@@ -5,13 +5,16 @@
 #include "lib/stdint.h"
 #include "lib/stddef.h" // NULLの定義
 #include "fs/fat16_file.h"
-#include "user_exec.h"
+//#include "user_exec.h"
 #include "drivers/ata.h"
 #include "fs/fat16.h"
 #include "x86/pic.h"
 
 #define USER_PROG_MEM 0x10000 // ユーザプログラムを置くアドレス
 #define USER_ARG_MEM  0x20000  // コマンドライン引数を置くアドレス、ユーザプログラムには実体でなくアドレスを渡す
+
+extern int user_exec(void* entry, int argc, char** argv);
+
 
 // 内部コマンド実行
 int run_builtin_command(const char *line){
@@ -143,7 +146,8 @@ void run_file(const char *line){
     ata_read_lba28(start_sector, 8, (void*)USER_PROG_MEM); // ユーザプログラムをメモリ0x10000上へ展開 (drivers/ata.h)
     pic_mask_irq(1); // IRQ1キーボード無効化 (x86/pic.h)
     int ret = user_exec((void*)USER_PROG_MEM, argc, argv);// ユーザプログラムへ遷移 (kernel/user_exec.h)
-    //kprintf("ret = %d\n",ret);
+    //asm volatile("hlt");
+    kprintf("ret = %d\n",ret);
     pic_unmask_irq(1); // IRQ1キーボード有効化 (x86/pic.h)
 }
 

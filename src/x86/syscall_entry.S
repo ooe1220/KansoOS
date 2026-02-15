@@ -3,17 +3,17 @@
 # コンパイラが勝手に`add $0x1,%eax`命令を追加しEAX(システムコール番号)が破壊される事象が
 # 発生した為、システムコール入口の処理は純アセンブリに書き換えた
 .intel_syntax noprefix
-.global syscall_handler
+.global syscall_handler // 外部から見えるようにする
+
+.extern user_exec_ret
 
 syscall_handler:
     pusha
 
-    ## 確認用：VRAMに 'B' を出す
-    # mov edi, 0xB8002
-    # mov byte ptr [edi], 'B'
-    # mov byte ptr [edi+1], 0x0F
-    
     # syscall番号分岐
+    cmp eax, 0
+    je syscall_exit # iretの必要が無いため、直接飛ぶ
+    
     cmp eax, 1
     je syscall_write
 
@@ -28,6 +28,10 @@ syscall_handler:
 
     cmp eax, 5
     je syscall_fs_close
+    
+syscall_exit:
+    add esp, 12
+    jmp user_exec_ret
     
 syscall_write:
     push ebx                # 引数（文字列ポインタ）

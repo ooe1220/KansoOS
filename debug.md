@@ -84,3 +84,47 @@ for(int i = 0; i < 8; i++) {
 
 [EBP-4]が返りアドレスとなる。
 返りアドレス-5(callの命令長)を`x/10i 0xXXXX`のXXXXに入れると`call`命令が見えるはず。
+
+# 到達確認
+
+```
+    mov edi, 0xB8000
+    mov byte ptr [edi], 'A'
+    mov byte ptr [edi+1], 0x0F
+```
+
+```c
+    volatile unsigned char* vram = (unsigned char*)0xB8000;
+    vram[4] = 'C';      // 文字
+    vram[5] = 0x0F;     // 白文字・黒背景
+```
+
+# hlt→GDB
+
+```c
+    asm volatile("cli");
+    asm volatile("hlt");
+```
+
+```
+info registers 
+x/4xw $esp 
+```
+
+# メモリ上のプログラム逆アセンブル
+
+```
+x/10i 0x9fa90
+```
+
+
+初めのHLT
+EBP=0009fb38 ESP=0009fa7c
+0009fa7c: 0x00008a9f 0x00010000 0x00000001 0x0009fa90
+
+返りのHLT
+EBP=0009fb38 ESP=0009fa7c
+0009fa7c: 0x00008a9f 0x00010000 0x00000001 0x0009fa90
+
+
+

@@ -11,7 +11,7 @@
 #include "lib/stdint.h"
 #include "lib/string.h"
 #include "command.h"
-#include "user_exec.h"
+//#include "user_exec.h"
 #include "mem/memory.h"
 #include "drivers/vga.h"
 
