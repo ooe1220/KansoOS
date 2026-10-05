@@ -1,3 +1,4 @@
+// 今は静的リンク
 #pragma once
 #include "stdint.h"
 
