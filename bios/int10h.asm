@@ -18,7 +18,6 @@ read_cursor_1d:
 
 set_cursor_1d:
     ; AX = カーソル位置
-
     mov cx, ax
 
     mov dx, 0x3D4

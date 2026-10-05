@@ -6,12 +6,11 @@
 #include "drivers/keyboard.h"
 #include "x86/panic.h"
 #include "x86/syscall.h"
-#include "drivers/vga.h"
 #include "lib/stdint.h"
 #include "lib/string.h"
 #include "command.h"
-#include "mem/memory.h"
-#include "debug.h"
+//#include "mem/memory.h"
+//#include "debug.h"
 
 void format_date_time(char* buf);
 void irq0_handler(void);
@@ -53,9 +52,7 @@ void kernel_main() {
         
     char line[128]; // コマンド入力バッファ
     int len = 0; // 現在の入力位置（文字数）
-    
-    //test_code();
-       
+           
     kputs("\n>");
     while(1){
         char c = keyboard_getchar(); // キーボード入力を待つ (内部的にはhlt→IRQ1割り込み) (drivers/keyboard.h)

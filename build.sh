@@ -20,7 +20,6 @@ nasm -f elf32 src/kernel/switch32.asm -o build/switch32.o
 gcc -m32 -ffreestanding -I./src -O2 -c src/kernel/kernel.c -o build/kernel.o
 gcc -m32 -ffreestanding -I./src -O2 -c src/kernel/command.c -o build/command.o
 gcc -m32 -ffreestanding -I./src -c src/kernel/user_exec.c -o build/user_exec.o
-gcc -m32 -ffreestanding -I./src -c src/kernel/debug.c -o build/debug.o
 gcc -m32 -ffreestanding -I./src -O2 -c src/drivers/cmos.c -o build/cmos.o
 gcc -m32 -ffreestanding -I./src -O2 -c src/x86/console.c -o build/console.o
 gcc -m32 -ffreestanding -I./src -O2 -c src/x86/pic.c -o build/pic.o
@@ -31,12 +30,6 @@ gcc -m32 -ffreestanding -I./src -c src/x86/panic.c -o build/panic.o
 gcc -m32 -ffreestanding -I./src -c src/x86/syscall.c -o build/syscall.o
 gcc -m32 -ffreestanding -I./src -c src/lib/string.c -o build/string.o
 gcc -m32 -ffreestanding -I./src -O2 -c src/fs/dir.c -o build/dir.o
-gcc -m32 -ffreestanding -I./src -c src/mem/heap.c -o build/heap.o
-gcc -m32 -ffreestanding -I./src -c src/mem/malloc.c -o build/malloc.o
-gcc -m32 -ffreestanding -I./src -c src/mem/memory_utils.c -o build/memory_utils.o
-gcc -m32 -ffreestanding -I./src -c src/mem/calloc_realloc.c -o build/calloc_realloc.o
-gcc -m32 -ffreestanding -I./src -c src/mem/free.c -o build/free.o
-gcc -m32 -ffreestanding -I./src -O2 -c src/drivers/vga.c -o build/vga.o
 gcc -m32 -ffreestanding -I./src -O2 -c src/fs/fat16_file.c -o build/fat16_file.o
 gcc -m32 -ffreestanding -I./src -O2 -c src/fs/fs_file.c -o build/fs_file.o
 
@@ -58,13 +51,6 @@ ld -m elf_i386 -T src/linker.ld -o build/kernel.elf \
   build/syscall.o \
   build/syscall_entry.o \
   build/user_exec.o \
-  build/heap.o \
-  build/malloc.o \
-  build/memory_utils.o \
-  build/calloc_realloc.o \
-  build/free.o \
-  build/debug.o \
-  build/vga.o \
   build/fat16_file.o \
   build/fs_file.o \
   build/dir.o
@@ -134,13 +120,13 @@ echo -n "HELLO" | dd of=build/disk.img bs=512 seek=1838 conv=notrunc
 
 # 7. QEMU で実行
 # 標準BIOSで立ち上げる
-#  qemu-system-i386 -hda build/disk.img -monitor stdio
+  qemu-system-i386 -hda build/disk.img -monitor stdio
 
 # 自作BIOSで立ち上げる
-   qemu-system-i386 \
-   -bios build/mybios.bin\
-   -drive file=build/disk.img,format=raw,if=ide,index=0 \
-   -monitor stdio
+   #qemu-system-i386 \
+   #-bios build/mybios.bin\
+   #-drive file=build/disk.img,format=raw,if=ide,index=0 \
+  # -monitor stdio
    #-serial stdio
 
 

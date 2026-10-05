@@ -151,28 +151,8 @@ set_palette_loop:
     mov ax, 0x1005      ; Graphics Index 5: Odd/Even モード
     out dx, ax
     mov ax, 0x0E06      ; Graphics Index 6: Map to 0xB8000
-    out dx, ax
-
-    
-; --- VRAMにASCIIコードを順番に表示(字体の確認に使用) ---
-;mov ax, 0xB800
-;mov es, ax
-;xor di, di          ; VRAM先頭
-
-;mov bl, 0x0E        ; 文字色（黄色）
-;xor bh, bh          ; BH=0
-
-;xor cx, cx          ; CX = 文字コード 0～255
-
-;.next_char:
-;    mov al, cl      ; AL = 文字コード（CLに0～255が入る）
-;    mov ah, bl      ; AH = 属性
-;    stosw            ; ES:[DI] = AX
-;    inc cl           ; 次の文字コード
-;    cmp cl, 0        ; 256でラップ（CLは8bitなので0に戻る）
-;    jne .next_char   ; CL != 0 なら続行
-    
-ret
+    out dx, ax    
+    ret
 
 register_char:
     mov ax, cs
@@ -209,7 +189,8 @@ register_char:
     
 crtc_data db 0x5F, 0x4F, 0x50, 0x82, 0x55, 0x81, 0xBF, 0x1F, \
                  0x00, 0x4F, 0x0D, 0x0E, 0x00, 0x00, 0x00, 0x00, \
-                 0x9C, 0x8E, 0x8F, 0x28, 0x1F, 0x96, 0xB9, 0xA3, 0xFF
+                 0x9C, 0x8E, 0x8F, 0x28, 0x0F, 0x96, 0xB9, 0xA3, 0xFF
+                 ;0x9C, 0x8E, 0x8F, 0x28, 0x1F, 0x96, 0xB9, 0xA3, 0xFF
 
 grap_data db 0x00, 0x00, 0x00, 0x00, 0x00, 0x10, 0x0E, 0x0F, 0xFF
 

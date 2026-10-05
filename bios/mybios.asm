@@ -29,6 +29,9 @@ bios_start:
     cld
     
     call vga_init
+    ; 強制でカーソル位置0に設定
+    ;xor ax, ax ;;;;;;;;;;;;;;;
+    ;call set_cursor_1d;;;;;;;;;;;;;
     
     mov al, 'B'
     mov ah, 0x1F     ; 青背景・白文字
