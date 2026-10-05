@@ -64,7 +64,7 @@ void kputc(char c) {
         return;
     }
     
-    if (c == '\b') {
+    if (c == '\b') {        // BACKSPACE
         if (cursor_x > 0) {
             cursor_x--;
         }

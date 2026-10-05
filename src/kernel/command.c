@@ -57,7 +57,7 @@ void run_file(const char *line){
     char filename[64];
     const char *argstr = NULL;
     
-    // 空白で分割 (コマンドライン引数があった場合はファイル名の抽出が必要。例: hello.bin param1 param2 -> filename=hello.bin)
+    // 空白で分割 (入力文字列から「最初の空白まで」をファイル名として切り出す。例: hello.bin param1 param2 -> filename=hello.bin)
     int i = 0;
     while (line[i] && line[i] != ' ' && i < sizeof(filename)-1) {
         filename[i] = line[i];

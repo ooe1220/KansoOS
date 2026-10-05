@@ -69,6 +69,11 @@ void kernel_main() {
             kputs("\n>");
         } else if (c == '\b') { // BACKSPACE : 一文字削除
             if (len > 0) {
+                // BACKSPACE処理
+                // 1. バッファから1文字削除
+                // 2. カーソルを左へ
+                // 3. その位置を空白で上書き（文字を消す）
+                // 4. 空白表示時にカーソルが右へ動く為カーソルを再び左へ
                 len--;
                 kputc('\b'); kputc(' '); kputc('\b');
             }
