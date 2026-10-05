@@ -9,8 +9,7 @@
 #include "lib/stdint.h"
 #include "lib/string.h"
 #include "command.h"
-//#include "mem/memory.h"
-//#include "debug.h"
+#include "mem.h"
 
 void format_date_time(char* buf);
 void irq0_handler(void);
@@ -27,6 +26,9 @@ void kernel_main() {
     kputs("         ");
     kputs(boot_time);
     kputs("\n-----------------------------------\n");
+    
+    heap_init(); // メモリ管理初期化
+    kputs("Heap initialized\n");
         
     idt_init(); // IDT初期化 (x86/idt.h)
     kputs("IDT initialized\n");

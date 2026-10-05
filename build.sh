@@ -29,6 +29,7 @@ gcc -m32 -ffreestanding -I./src -O2 -c src/drivers/keyboard.c -o build/keyboard.
 gcc -m32 -ffreestanding -I./src -c src/x86/panic.c -o build/panic.o
 gcc -m32 -ffreestanding -I./src -c src/x86/syscall.c -o build/syscall.o
 gcc -m32 -ffreestanding -I./src -c src/lib/string.c -o build/string.o
+gcc -m32 -ffreestanding -I./src -c src/kernel/mem.c -o build/mem.o
 gcc -m32 -ffreestanding -I./src -O2 -c src/fs/dir.c -o build/dir.o
 gcc -m32 -ffreestanding -I./src -O2 -c src/fs/fat16_file.c -o build/fat16_file.o
 gcc -m32 -ffreestanding -I./src -O2 -c src/fs/fs_file.c -o build/fs_file.o
@@ -48,6 +49,7 @@ ld -m elf_i386 -T src/linker.ld -o build/kernel.elf \
   build/panic.o \
   build/keyboard.o \
   build/string.o \
+  build/mem.o \
   build/syscall.o \
   build/syscall_entry.o \
   build/user_exec.o \

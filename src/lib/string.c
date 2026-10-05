@@ -70,3 +70,11 @@ int memcmp(const char* s1, const char* s2, int length) {
     return 1;
 }
 
+void* memset(void* dst, uint8_t val, uint32_t len) {
+    uint8_t* p = (uint8_t*)dst; // アドレスを1バイト単位で動かす為にuint8_t使用
+    for (uint32_t i = 0; i < len; i++) {
+        p[i] = val;
+    }
+    return dst;
+}
+

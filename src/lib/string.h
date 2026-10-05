@@ -16,5 +16,7 @@ int strcmp(const char *s1, const char *s2);
 
 int memcmp(const char* s1, const char* s2, int length);
 
+void* memset(void* dst, uint8_t val, uint32_t len);
+
 #endif
 
