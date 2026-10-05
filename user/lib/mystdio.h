@@ -53,3 +53,49 @@ static void printf_d(const char *fmt, int val) {
 
     write(buffer);
 }
+
+
+// -----------------
+// itoa_hex (16進数→文字列)
+// -----------------
+static void itoa_hex(unsigned int value, char *buffer) {
+    const char hex[] = "0123456789ABCDEF";
+    buffer[0] = '0';
+    buffer[1] = 'x';
+    
+    for (int i = 7; i >= 0; i--) {
+        buffer[2 + i] = hex[value & 0xF];
+        value >>= 4;
+    }
+    buffer[10] = '\0';
+}
+
+
+// -----------------
+// printf_x (%x 1個だけ)
+// -----------------
+static void printf_x(const char *fmt, unsigned int val) {
+    char buffer[128];
+    char hexbuf[12];
+    int i = 0, j = 0;
+
+    while (fmt[i] != '\0' && j < sizeof(buffer) - 1) {
+        if (fmt[i] == '%' && fmt[i+1] == 'x') {
+            itoa_hex(val, hexbuf);
+
+            int k = 0;
+            while (hexbuf[k] != '\0' && j < sizeof(buffer) - 1)
+                buffer[j++] = hexbuf[k++];
+
+            i += 2;
+        } else {
+            buffer[j++] = fmt[i++];
+        }
+    }
+    buffer[j] = '\0';
+
+    write(buffer);
+}
+
+
+

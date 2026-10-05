@@ -91,6 +91,20 @@ dw 0
 dw 216 ; 1838セクタ目
 dd 0
 
+; ---- MEMTEST.BIN ----
+db 'MEMTEST BIN'
+db 0x20
+db 0
+db 0
+dw 0
+dw 0
+dw 0
+dw 0
+dw 0
+dw 0
+dw 217 ; 1846セクタ目
+dd 0
+
 ; ---- 残り 項目 ----
 times (32*32 - 64) db 0
 

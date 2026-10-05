@@ -4,6 +4,7 @@
 #include "lib/stdint.h"
 #include "drivers/ata.h"
 #include "../fs/fs_file.h"
+#include "../kernel/mem.h"
 
 // -------------------------
 // システムコール用関数（ハンドラ）
@@ -25,14 +26,7 @@ void init_syscall(void) {
 // システムコール: 書き込み処理
 // 画面に文字列を出力
 // -------------------------
-uint32_t handle_write(const char *str) {
-
-    /* ==== 確認用：VRAMに 'C' を出す ==== */
-    //volatile unsigned char* vram = (unsigned char*)0xB8000;
-    //vram[4] = 'C';      // 文字
-    //vram[5] = 0x0F;     // 白文字・黒背景
-    /* ================================== */
-    
+uint32_t handle_write(const char *str) {    
     if (str) {
         kputs(str);  // カーネルの画面出力関数
     }
@@ -63,5 +57,18 @@ int handle_fs_close(int fd)
 }
 
 
+int handle_umalloc(size_t size) {
+    return (int)umalloc(size);
+}
 
+int handle_ufree(void* ptr) {
+    ufree(ptr);
+    return 0;
+}
+
+    /* ==== 確認用：VRAMに 'C' を出す ==== */
+    //volatile unsigned char* vram = (unsigned char*)0xB8000;
+    //vram[4] = 'C';      // 文字
+    //vram[5] = 0x0F;     // 白文字・黒背景
+    /* ================================== */
 

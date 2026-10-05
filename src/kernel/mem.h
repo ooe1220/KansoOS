@@ -3,8 +3,12 @@
 
 #include <stddef.h>
 
-void  heap_init(void);
+void  kheap_init(void);
 void* kmalloc(size_t size);
 void  kfree(void* ptr);
+
+void  uheap_init(void);
+void* umalloc(size_t size);
+void  ufree(void* ptr);
 
 #endif

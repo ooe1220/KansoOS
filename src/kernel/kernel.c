@@ -27,7 +27,9 @@ void kernel_main() {
     kputs(boot_time);
     kputs("\n-----------------------------------\n");
     
-    heap_init(); // メモリ管理初期化
+     // メモリ管理初期化
+    kheap_init(); // カーネル用
+    uheap_init(); // ユーザ用
     kputs("Heap initialized\n");
         
     idt_init(); // IDT初期化 (x86/idt.h)

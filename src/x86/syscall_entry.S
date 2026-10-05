@@ -29,6 +29,12 @@ syscall_handler:
     cmp eax, 5
     je syscall_fs_close
     
+    cmp eax, 6
+    je syscall_umalloc
+
+    cmp eax, 7
+    je syscall_ufree
+    
 syscall_write:
     push ebx                # 引数（文字列ポインタ）
     call handle_write
@@ -60,6 +66,19 @@ syscall_fs_read:
 syscall_fs_close:
     push ebx                # fd
     call handle_fs_close
+    add esp, 4
+    jmp syscall_done
+    
+    
+syscall_umalloc:
+    push ebx                # size
+    call handle_umalloc
+    add esp, 4
+    jmp syscall_done
+
+syscall_ufree:
+    push ebx                # ptr
+    call handle_ufree
     add esp, 4
     jmp syscall_done
 

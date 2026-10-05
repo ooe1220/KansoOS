@@ -3,6 +3,7 @@
 #include "stdint.h"
 
 static inline void write(const char *str) {
+    // 現在は画面表示専用、ディスク書き込み実装時にfdを足す
     asm volatile(
         "mov $1, %%eax\n"
         "int $0x80\n"
@@ -77,3 +78,25 @@ static inline int close(int fd) {
     );
     return ret;
 }
+
+
+static inline void* malloc(int size) {
+    void* ret;
+    asm volatile(
+        "mov $6, %%eax\n"
+        "int $0x80\n"
+        : "=a"(ret)
+        : "b"(size)
+    );
+    return ret;
+}
+
+static inline void free(void* ptr) {
+    asm volatile(
+        "mov $7, %%eax\n"
+        "int $0x80\n"
+        :
+        : "b"(ptr)
+    );
+}
+

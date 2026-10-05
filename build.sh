@@ -120,6 +120,19 @@ dd if=build/cat.bin of=build/disk.img bs=512 seek=1830 conv=notrunc
 ## HELLO.TXT
 echo -n "HELLO" | dd of=build/disk.img bs=512 seek=1838 conv=notrunc
 
+
+## MEMTEST.BIN
+gcc -ffreestanding -nostdlib -fno-pic -fno-pie -m32 -c user/memtest.c -o build/memtest.o
+
+ld -m elf_i386 \
+   -T user/linker.ld \
+   build/start.o \
+   build/memtest.o \
+   -o build/memtest.elf
+   
+objcopy -O binary build/memtest.elf build/memtest.bin
+dd if=build/memtest.bin of=build/disk.img bs=512 seek=1846 conv=notrunc
+
 # 7. QEMU で実行
 # 標準BIOSで立ち上げる
   qemu-system-i386 -hda build/disk.img -monitor stdio
