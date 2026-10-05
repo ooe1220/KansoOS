@@ -134,13 +134,13 @@ echo -n "HELLO" | dd of=build/disk.img bs=512 seek=1838 conv=notrunc
 
 # 7. QEMU で実行
 # 標準BIOSで立ち上げる
- qemu-system-i386 -hda build/disk.img -monitor stdio
+#  qemu-system-i386 -hda build/disk.img -monitor stdio
 
 # 自作BIOSで立ち上げる
-#   qemu-system-i386 \
-#   -bios build/mybios.bin\
-#   -drive file=build/disk.img,format=raw,if=ide,index=0 \
-#   -monitor stdio
+   qemu-system-i386 \
+   -bios build/mybios.bin\
+   -drive file=build/disk.img,format=raw,if=ide,index=0 \
+   -monitor stdio
    #-serial stdio
 
 

@@ -60,7 +60,7 @@ hlt_loop:
 %include "bios/int10h.asm"
 %include "bios/int13h.asm"
 %include "bios/int19h.asm"
-%include "bios/font_data.asm"
+font_8x16: incbin "bios/font_8x16.bin" 
 
 ; -----------------------------
 ; 8042 PS/2 キーボード初期化
