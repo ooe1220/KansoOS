@@ -10,6 +10,7 @@
 #include "lib/string.h"
 #include "command.h"
 #include "mem.h"
+#include "x86/cpuid.h"
 
 void format_date_time(char* buf);
 void irq0_handler(void);
@@ -21,11 +22,16 @@ void kernel_main() {
     char boot_time[20];
     format_date_time(boot_time);
     
-    kputs("-----------------------------------\n");
+    // CPU名取得
+    char cpuname[48];
+    get_cpu_name(cpuname);
+    
+    
+    kputs("-----------------------------------------\n");
     kputs("         C Kernel Booted           \n");
-    kputs("         ");
-    kputs(boot_time);
-    kputs("\n-----------------------------------\n");
+    kputs("         "); kputs(cpuname); kputs("\n");
+    kputs("         "); kputs(boot_time); kputs("\n");
+    kputs("-----------------------------------------\n");
     
      // メモリ管理初期化
     kheap_init(); // カーネル用
