@@ -31,6 +31,34 @@ struct __attribute__((packed)) dir_entry {
     uint32_t size;              // 28
 };
 
+struct fat16_bpb {
+    uint8_t  jmp[3];          // 0: jmp start nopの機械語
+    char     oem[8];          // 3: 名前
+
+    uint16_t byts_per_sec;    // 11: 1セクタあたりのバイト数（通常512）
+    uint8_t  sec_per_clus;    // 13: 1クラスタあたりのセクタ数
+    uint16_t rsvd_sec_cnt;    // 14: VBRからFAT開始までの予約セクタ数
+    uint8_t  num_fats;        // 16: FATの数（通常2）
+    uint16_t root_ent_cnt;    // 17: ルートディレクトリのエントリ数
+    uint16_t tot_sec_16;      // 19: ボリューム総セクタ数（小容量用）
+    uint8_t  media;           // 21: メディア種別（HDDなら通常0xF8）
+    uint16_t fat_sz_16;       // 22: 1つのFATが占めるセクタ数
+    uint16_t sec_per_trk;     // 24: 1トラックあたりのセクタ数（BIOS CHS用）
+    uint16_t num_heads;       // 26: ヘッド数（BIOS CHS用）
+    uint32_t hid_sec;         // 28: パーティション開始位置までの隠しセクタ数
+    uint32_t tot_sec_32;      // 32: ボリューム総セクタ数（大容量用）
+} __attribute__((packed));
+
+struct fat16_ebpb {
+    uint8_t  drive_num;       // 36: BIOSブートドライブ番号（0x80=HDD等）
+    uint8_t  reserved;        // 37: 予約領域
+    uint8_t  boot_sig;        // 38: 拡張BPBが存在することを示す署名（0x29）
+    uint32_t vol_id;          // 39: ボリューム固有のシリアル番号
+    char     vol_lab[11];     // 43: ボリュームラベル（11文字）
+    char     fil_sys_type[8]; // 54: ファイルシステム種別文字列（"FAT16   "）
+} __attribute__((packed));
+
+
 //備忘録 : fread(書き込み先, 1要素の大きさ（バイト）, 要素数, FILEポインタ);
 static int write_file(uint8_t *disk, const char *path, int lba) {
     FILE *f = fopen(path, "rb");
@@ -90,13 +118,51 @@ static void write_rootdir(uint8_t *disk, struct root_entry *files, int count) {
     printf("[mkfs] RootDir written at LBA 66 (%d entries)\n", count);
 }
 
+// VBRのPBPをここで書き換える
+static void patch_vbr(uint8_t *vbr)
+{
+    struct fat16_bpb  *bpb  = (struct fat16_bpb *)vbr;
+    struct fat16_ebpb *ebpb = (struct fat16_ebpb *)(vbr + 36);
+    
+    // jmp + nop
+    vbr[0] = 0xEB;
+    vbr[1] = 0x3C;
+    vbr[2] = 0x90;
+
+    // OEM名
+    memcpy(bpb->oem, "KANSO OS", 8);
+
+    bpb->byts_per_sec = 512;            // 1セクタあたりのバイト数（通常512）
+    bpb->sec_per_clus = 8;              // 1クラスタあたりのセクタ数
+    bpb->rsvd_sec_cnt = 1;              // VBRからFAT開始までの予約セクタ数
+    bpb->num_fats     = 2;              // FATの数
+    bpb->root_ent_cnt = 512;            // ルートディレクトリのエントリ数
+    bpb->tot_sec_16   = TOTAL_SECTORS;  // ボリューム総セクタ数（小容量用）
+    bpb->media        = 0xF8;           // 媒体種別
+    bpb->fat_sz_16    = 8;              // 1つのFATが占めるセクタ数
+    bpb->sec_per_trk  = 63;             // 1トラックあたりのセクタ数（BIOS CHS用）
+    bpb->num_heads    = 255;            // ヘッド数（BIOS CHS用）
+    bpb->hid_sec      = 63;             // パーティション開始位置までの隠しセクタ数
+    bpb->tot_sec_32   = 0;              // ボリューム総セクタ数（大容量用）
+
+    ebpb->drive_num = 0x80;             // BIOSブートドライブ番号（0x80=HDD等）
+    ebpb->reserved  = 0;                // 予約領域
+    ebpb->boot_sig  = 0x29;             // 拡張BPBが存在することを示す署名
+
+    ebpb->vol_id = 0x12345678;          // ボリューム固有の番号
+
+    memcpy(ebpb->vol_lab, "KANSO OS    ", 11); //ボリュームラベル（11文字）
+    memcpy(ebpb->fil_sys_type, "FAT16   ", 8); // ファイルシステム種別文字列
+}
+
 int main(void) {
     
     uint8_t *disk = calloc(1, DISK_SIZE); // 1MB の0埋めバッファ確保
     printf("[mkfs] 1MB disk image buffer allocated (zero-filled)\n");
     
     write_file(disk, "build/mbr.bin", 0);
-    write_file(disk, "build/vbr.bin", 63);     // PBPはこのmkfsから設定する予定
+    write_file(disk, "build/vbr.bin", 63);
+    patch_vbr(disk + 63 * SECTOR_SIZE); // dd if=build/disk.img bs=512 skip=63 count=1 | hexdump -C
     write_file(disk, "build/kernel.bin", 126);
     
     write_fat(disk); // FAT表生成(現在未使用)
