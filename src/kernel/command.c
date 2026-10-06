@@ -4,11 +4,11 @@
 #include "lib/string.h"
 #include "lib/stdint.h"
 #include "lib/stddef.h" // NULLの定義
-#include "fs/fat16_file.h"
 #include "user_exec.h"
 #include "drivers/ata.h"
 #include "fs/fat16.h"
 #include "x86/pic.h"
+#include "fs/fs_file.h"
 
 #define USER_PROG_MEM 0x10000 // ユーザプログラムを置くアドレス
 #define USER_ARG_MEM  0x20000  // コマンドライン引数を置くアドレス、ユーザプログラムには実体でなくアドレスを渡す
@@ -82,9 +82,9 @@ void run_file(const char *line){
     }
     
     //ファイルが存在するかを確認しない場合は抜ける
-    uint32_t start_cluster, file_size;
-    kputs("\n");    
-    if (!fat16_find_file(filename, &start_cluster, &file_size)) { // (fs/fat16_file.h)
+    int fd = fs_open(filename);
+    kputs("\n");
+    if (fd < 0) {   
         kputs("Unknown command or file not found: ");
         kputs(line);
         return;
@@ -136,12 +136,11 @@ void run_file(const char *line){
     }    
                  
     // ファイルを毎回固定でメモリ0x10000上へ展開して実行
-    // 1クラスタ=8セクタ FAT表未実装により、固定で8セクタを読み込む
-    // 前提:データ領域LBA126〜、1クラスタ=8セクタ
-    //kprintf_d("start_cluster=%d\n",start_cluster);
-    uint32_t start_sector = 126 + (start_cluster - 2) * 8;//開始クラスタ→開始セクタ変換式
-    //uint32_t start_sector = 67 + (start_cluster - 2) * 8;//開始クラスタ→開始セクタ変換式
-    ata_read_lba28(start_sector, 8, (void*)USER_PROG_MEM); // ユーザプログラムをメモリ0x10000上へ展開 (drivers/ata.h)
+    uint32_t size;
+    fs_get_file_size(fd, &size); // ユーザプログラムの大きさ取得
+    fs_read(fd, (void*)USER_PROG_MEM, size); // ユーザプログラムをメモリ0x10000上へ展開 (drivers/ata.h)
+    fs_close(fd);
+    
     pic_mask_irq(1); // IRQ1キーボード無効化 (x86/pic.h)
     int ret = user_exec((void*)USER_PROG_MEM, argc, argv);// ユーザプログラムへ遷移 (kernel/user_exec.h)
     //kprintf("ret = %d\n",ret);

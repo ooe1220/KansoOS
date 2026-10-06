@@ -27,7 +27,7 @@ struct __attribute__((packed)) dir_entry {
     uint16_t clus_hi;           // 20
     uint16_t wrt_time;          // 22
     uint16_t wrt_date;          // 24
-    uint16_t cluster;           // 26 ← ここが正解
+    uint16_t cluster;           // 26
     uint32_t size;              // 28
 };
 
@@ -96,7 +96,7 @@ int main(void) {
     printf("[mkfs] 1MB disk image buffer allocated (zero-filled)\n");
     
     write_file(disk, "build/mbr.bin", 0);
-    write_file(disk, "build/vbr.bin", 63);
+    write_file(disk, "build/vbr.bin", 63);     // PBPはこのmkfsから設定する予定
     write_file(disk, "build/kernel.bin", 126);
     
     write_fat(disk); // FAT表生成(現在未使用)

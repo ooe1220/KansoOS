@@ -33,10 +33,8 @@ int fs_open(const char* filename)
 
     int fd = alloc_fd(); // FD割り当て
     if(fd<0) return -1; // 割り当て失敗(既に８ファイル開いている)
-
     kfiles[fd].start_cluster = start_cluster; // ファイルの開始クラスタ
     kfiles[fd].size = file_size;              // ファイルの大きさ
-    
     return fd;
 }
 
@@ -63,6 +61,14 @@ int fs_close(int fd)
 {
     if(fd<0||fd>=MAX_KFILES) return -1;
     kfiles[fd].used = 0;
+    return 0;
+}
+
+
+int fs_get_file_size(int fd, uint32_t *out_size) {
+    if (fd < 0 || fd >= MAX_KFILES) return -1;
+    if (!kfiles[fd].used) return -1;
+    *out_size = kfiles[fd].size;
     return 0;
 }
 

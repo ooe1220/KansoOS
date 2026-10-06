@@ -14,8 +14,9 @@ typedef struct {
 
 extern kfile_t kfiles[MAX_KFILES];
 
-// syscall 経由で呼ばれる
+// syscall経由、カーネル内使用
 int fs_open(const char* filename);
 int fs_read(int fd, void* buf, int size);
 int fs_close(int fd);
 
+int fs_get_file_size(int fd, uint32_t *out_size);
