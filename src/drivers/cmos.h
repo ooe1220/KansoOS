@@ -15,6 +15,7 @@ struct RTC {
 };
 
 void cmos_read_rtc(struct RTC* rtc);
+void format_date_time(char* buf);
 
 #endif
 
