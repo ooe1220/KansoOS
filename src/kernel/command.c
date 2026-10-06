@@ -140,6 +140,7 @@ void run_file(const char *line){
     // 前提:データ領域LBA126〜、1クラスタ=8セクタ
     //kprintf_d("start_cluster=%d\n",start_cluster);
     uint32_t start_sector = 126 + (start_cluster - 2) * 8;//開始クラスタ→開始セクタ変換式
+    //uint32_t start_sector = 67 + (start_cluster - 2) * 8;//開始クラスタ→開始セクタ変換式
     ata_read_lba28(start_sector, 8, (void*)USER_PROG_MEM); // ユーザプログラムをメモリ0x10000上へ展開 (drivers/ata.h)
     pic_mask_irq(1); // IRQ1キーボード無効化 (x86/pic.h)
     int ret = user_exec((void*)USER_PROG_MEM, argc, argv);// ユーザプログラムへ遷移 (kernel/user_exec.h)
