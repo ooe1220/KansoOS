@@ -72,7 +72,7 @@ int fat16_find_file(const char* filename, uint32_t* start_cluster, uint32_t* fil
                 continue;
 
             /* ファイル名比較 */
-            if (memcmp(ent[i].name, target_name, 11)) {
+            if (memcmp(ent[i].name, target_name, 11)==0) {
                 if (start_cluster) *start_cluster = ent[i].clus_lo | (ent[i].clus_hi << 16);
                 if (file_size) *file_size = ent[i].size;
                 return 1; // ファイルが見つかった

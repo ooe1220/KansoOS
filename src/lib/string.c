@@ -64,10 +64,10 @@ int memcmp(const char* s1, const char* s2, int length) {
     int i;
     for (i = 0; i < length; i++) {
         if (s1[i] != s2[i]) {
-            return 0;
+            return s1[i] - s2[i];
         }
     }
-    return 1;
+    return 0;
 }
 
 void* memset(void* dst, uint8_t val, uint32_t len) {
