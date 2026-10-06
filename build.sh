@@ -146,17 +146,3 @@ dd if=build/memtest.bin of=build/disk.img bs=512 seek=1846 conv=notrunc
   # -monitor stdio
    #-serial stdio
 
-
-
-# USBメモリへ書き込む　sdXはlsblkの結果を参照する
-# lsblk
-# sudo dd if=build/disk.img of=/dev/sdb bs=512 count=10000 conv=notrunc
-
-
-## レジスタ退避方法
-# ```
-# saved_ax dw 0
-# mov [saved_ax], ax
-# mov dx,[saved_dx]
-# ```
-
