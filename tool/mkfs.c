@@ -45,7 +45,8 @@ static int write_file(uint8_t *disk, const char *path, int lba) {
     
     fread(disk + lba * SECTOR_SIZE, 1, size, f);
     fclose(f);
-    printf("[mkfs] %s -> LBA %d (%d sectors, %ld bytes)\n", path, lba, sectors, size);
+    //printf("[mkfs] %s -> LBA %d (%d sectors, %ld bytes)\n", path, lba, sectors, size);
+    return (int)size;
 }
 
 

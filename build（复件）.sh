@@ -62,36 +62,78 @@ ld -m elf_i386 -T src/linker.ld -o build/kernel.elf \
 # 5. ELF → バイナリ
 objcopy -O binary build/kernel.elf build/kernel.bin
 
-# 6. ユーザー空間
+# 6. 仮想HDD作成
+dd if=/dev/zero of=build/disk.img bs=1M count=1
+
+# MBR を LBA 0 に書く (C=0, H=0, S=1)
+dd if=build/mbr.bin of=build/disk.img bs=512 count=1 seek=0 conv=notrunc
+
+# VBR を LBA 63 に書く (C=0, H=1, S=1)
+dd if=build/vbr.bin of=build/disk.img bs=512 count=1 seek=63 conv=notrunc
+
+# kernel.binを LBA 126 に書く (C=0, H=2, S=1)
+dd if=build/kernel.bin of=build/disk.img bs=512 seek=126 conv=notrunc
+
+## FAT16形式で初期化
+nasm -f bin src/fs/disk_ini.asm -o build/disk_ini.bin
+dd if=build/disk_ini.bin of=build/disk.img bs=512 seek=64 conv=notrunc
+
+
+#ユーザー空間
 gcc -ffreestanding -nostdlib -fno-pic -fno-pie -m32 -c user/start.S -o build/start.o
 
 ## test2.c
 gcc -ffreestanding -nostdlib -fno-pic -fno-pie -m32 -c user/test2.c -o build/test2.o
-ld -m elf_i386 -T user/linker.ld build/start.o build/test2.o -o build/test2.elf
+
+ld -m elf_i386 \
+   -T user/linker.ld \
+   build/start.o \
+   build/test2.o \
+   -o build/test2.elf
+
 objcopy -O binary build/test2.elf build/test2.bin
+## objdump -D -b binary -m i386 build/test2.bin
+dd if=build/test2.bin of=build/disk.img bs=512 seek=1814 conv=notrunc
 
 ## test3.c
 gcc -ffreestanding -nostdlib -fno-pic -fno-pie -m32 -c user/test3.c -o build/test3.o
-ld -m elf_i386 -T user/linker.ld build/start.o build/test3.o -o build/test3.elf
+
+ld -m elf_i386 \
+   -T user/linker.ld \
+   build/start.o \
+   build/test3.o \
+   -o build/test3.elf
+   
 objcopy -O binary build/test3.elf build/test3.bin
+dd if=build/test3.bin of=build/disk.img bs=512 seek=1822 conv=notrunc
 
 ## cat.c
 gcc -ffreestanding -nostdlib -fno-pic -fno-pie -m32 -c user/cat.c -o build/cat.o
-ld -m elf_i386 -T user/linker.ld build/start.o build/cat.o -o build/cat.elf
+
+ld -m elf_i386 \
+   -T user/linker.ld \
+   build/start.o \
+   build/cat.o \
+   -o build/cat.elf
+   
 objcopy -O binary build/cat.elf build/cat.bin
+dd if=build/cat.bin of=build/disk.img bs=512 seek=1830 conv=notrunc
+
+## HELLO.TXT
+echo -n "HELLO" | dd of=build/disk.img bs=512 seek=1838 conv=notrunc
+
 
 ## MEMTEST.BIN
 gcc -ffreestanding -nostdlib -fno-pic -fno-pie -m32 -c user/memtest.c -o build/memtest.o
-ld -m elf_i386 -T user/linker.ld build/start.o build/memtest.o -o build/memtest.elf
+
+ld -m elf_i386 \
+   -T user/linker.ld \
+   build/start.o \
+   build/memtest.o \
+   -o build/memtest.elf
+   
 objcopy -O binary build/memtest.elf build/memtest.bin
-
-## test.txt
-cp user/test.txt build/test.txt
-
-## 成果物をdisk.imgに纏める
-gcc tool/mkfs.c -o build/mkfs
-build/mkfs
-
+dd if=build/memtest.bin of=build/disk.img bs=512 seek=1846 conv=notrunc
 
 # 7. QEMU で実行
 # 標準BIOSで立ち上げる
