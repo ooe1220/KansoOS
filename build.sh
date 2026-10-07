@@ -19,7 +19,7 @@ nasm -f elf32 src/kernel/switch32.asm -o build/switch32.o
 # -c : コンパイルのみ、リンクはしない　これがないと gcc は最終的な実行ファイル（.exe や a.out）を作ろうとする
 gcc -m32 -ffreestanding -I./src -O2 -c src/kernel/kernel.c -o build/kernel.o
 gcc -m32 -ffreestanding -I./src -O2 -c src/kernel/command.c -o build/command.o
-gcc -m32 -ffreestanding -I./src -c src/kernel/user_exec.c -o build/user_exec.o
+gcc -m32 -ffreestanding -I./src -O2 -c src/kernel/user_exec.c -o build/user_exec.o
 gcc -m32 -ffreestanding -I./src -O2 -c src/drivers/cmos.c -o build/cmos.o
 gcc -m32 -ffreestanding -I./src -O2 -c src/x86/console.c -o build/console.o
 gcc -m32 -ffreestanding -I./src -O2 -c src/x86/pic.c -o build/pic.o
@@ -66,22 +66,22 @@ objcopy -O binary build/kernel.elf build/kernel.bin
 gcc -ffreestanding -nostdlib -fno-pic -fno-pie -m32 -c user/start.S -o build/start.o
 
 ## test2.c
-gcc -ffreestanding -nostdlib -fno-pic -fno-pie -m32 -c user/test2.c -o build/test2.o
+gcc -O2 -ffreestanding -nostdlib -fno-pic -fno-pie -m32 -c user/test2.c -o build/test2.o
 ld -m elf_i386 -T user/linker.ld build/start.o build/test2.o -o build/test2.elf
 objcopy -O binary build/test2.elf build/test2.bin
 
 ## test3.c
-gcc -ffreestanding -nostdlib -fno-pic -fno-pie -m32 -c user/test3.c -o build/test3.o
+gcc -O2 -ffreestanding -nostdlib -fno-pic -fno-pie -m32 -c user/test3.c -o build/test3.o
 ld -m elf_i386 -T user/linker.ld build/start.o build/test3.o -o build/test3.elf
 objcopy -O binary build/test3.elf build/test3.bin
 
 ## cat.c
-gcc -ffreestanding -nostdlib -fno-pic -fno-pie -m32 -c user/cat.c -o build/cat.o
+gcc -O2 -ffreestanding -nostdlib -fno-pic -fno-pie -m32 -c user/cat.c -o build/cat.o
 ld -m elf_i386 -T user/linker.ld build/start.o build/cat.o -o build/cat.elf
 objcopy -O binary build/cat.elf build/cat.bin
 
 ## MEMTEST.BIN
-gcc -ffreestanding -nostdlib -fno-pic -fno-pie -m32 -c user/memtest.c -o build/memtest.o
+gcc -O2 -ffreestanding -nostdlib -fno-pic -fno-pie -m32 -c user/memtest.c -o build/memtest.o
 ld -m elf_i386 -T user/linker.ld build/start.o build/memtest.o -o build/memtest.elf
 objcopy -O binary build/memtest.elf build/memtest.bin
 
