@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
+#include "../src/fs/fat16.h" // fat16の構造体はOS側に合わせる、DATA_START_LBA使用　※DATA_START_LBA再調整必須
 
 #define SECTOR_SIZE  512
 #define TOTAL_SECTORS 2048
@@ -13,22 +14,6 @@ struct root_entry {
     const char *fatname;    // FAT上の8+3名 "TEST2   BIN"
     int lba;                // 配置先LBR
     int size;
-};
-
-// src/fs/fat16.h中の構造体に合わせる
-struct __attribute__((packed)) dir_entry {
-    char     name[11];          // 0
-    uint8_t  attr;              // 11
-    uint8_t  ntres;             // 12
-    uint8_t  crt_time_tenth;    // 13
-    uint16_t crt_time;          // 14
-    uint16_t crt_date;          // 16
-    uint16_t acc_date;          // 18
-    uint16_t clus_hi;           // 20
-    uint16_t wrt_time;          // 22
-    uint16_t wrt_date;          // 24
-    uint16_t cluster;           // 26
-    uint32_t size;              // 28
 };
 
 struct fat16_bpb {
@@ -103,14 +88,14 @@ static void write_rootdir(uint8_t *disk, struct root_entry *files, int count) {
     memset(root, 0, 32 * SECTOR_SIZE);
 
     for (int i = 0; i < count; i++) {
-        struct dir_entry entry = {0};
+        fat_dirent_t entry = {0};
         memcpy(entry.name, files[i].fatname, 11);// ファイル名
         entry.attr = 0x20;// 属性
-        entry.cluster = (files[i].lba - 126) / 8 + 2;// 開始クラスタ (LBA → クラスタ番号)
+        entry.clus_lo = (files[i].lba - DATA_START_LBA) / 8 + 2;// 開始クラスタ (LBA → クラスタ番号)
         entry.size = files[i].size;// ファイルサイズ
         
         // ★ 確認用
-        printf("[rootdir] %s -> cluster=%u (lba=%d)\n",files[i].fatname, entry.cluster, files[i].lba);
+        printf("[rootdir] %s -> clus_lo=%u (lba=%d)\n",files[i].fatname, entry.clus_lo, files[i].lba);
         
         memcpy(root + i * 32, &entry, 32);// RootDirに書き込み
     }
@@ -163,7 +148,7 @@ int main(void) {
     write_file(disk, "build/mbr.bin", 0);
     write_file(disk, "build/vbr.bin", 63);
     patch_vbr(disk + 63 * SECTOR_SIZE); // dd if=build/disk.img bs=512 skip=63 count=1 | hexdump -C
-    write_file(disk, "build/kernel.bin", 126);
+    write_file(disk, "build/kernel.bin", DATA_START_LBA);
     
     write_fat(disk); // FAT表生成(現在未使用)
     

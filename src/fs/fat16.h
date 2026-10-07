@@ -27,6 +27,11 @@ typedef struct {
 } fat_dirent_t;
 #pragma pack(pop)
 
+// 本来はBPBから計算するべきだが、設計当初LBA開始位置を126にしたせいで計算が合わない
+// BPBから計算するには色々調整が必要な為、今後の課題とする 
+// VBRの中で126からkernel.binを呼ぶようにCHSを直書きしている為、調整の際は注意
+#define DATA_START_LBA 126
+
 /* dir / ls */
 void fs_dir_list(void);
 

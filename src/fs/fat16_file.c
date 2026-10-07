@@ -2,6 +2,10 @@
 #include "lib/string.h"
 #include "fat16.h"
 
+
+static uint32_t data_start_lba = 0;
+static uint8_t  sec_per_clus = 0;
+
 // 文字を大文字に変換（自作）
 static char to_upper_char(char c) {
     if (c >= 'a' && c <= 'z') {

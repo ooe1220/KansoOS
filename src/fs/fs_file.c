@@ -1,5 +1,6 @@
 #include "fs_file.h"
 #include "fat16_file.h"
+#include "fat16.h"
 #include "drivers/ata.h"
 #include "x86/console.h"
 
@@ -21,7 +22,7 @@ static int alloc_fd(void)
 
 static uint32_t cluster_to_lba(uint32_t start_cluster)
 {
-    return 126 + (start_cluster - 2) * 8;
+    return DATA_START_LBA + (start_cluster - 2) * 8;
 }
 
 // filenameが存在したらFDを返す

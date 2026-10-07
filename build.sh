@@ -103,4 +103,8 @@ build/mkfs
    #-drive file=build/disk.img,format=raw,if=ide,index=0 \
   # -monitor stdio
    #-serial stdio
+   
+   
+# git status
+# git diff
 
