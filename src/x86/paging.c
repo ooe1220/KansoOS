@@ -1,10 +1,10 @@
 #include "lib/stdint.h"
 
 __attribute__((aligned(4096)))
-static uint32_t kernel_page_dir[1024];
+uint32_t kernel_page_dir[1024];
 
 __attribute__((aligned(4096)))
-static uint32_t kernel_page_tables[1024 * 1024];
+uint32_t kernel_page_tables[1024 * 1024];
 
 inline uint32_t read_cr0(void) {
     uint32_t cr0;

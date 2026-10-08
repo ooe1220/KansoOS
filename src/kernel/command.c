@@ -32,13 +32,22 @@ if (strcmp(line, "help") == 0) {
         return 0;
     }
     
+    
     if (strcmp(line, "reboot") == 0) {
+        kputs("Rebooting...\n");
         outb(0x64, 0xFC);
+        kputs("This should not print\n");
         return 0;
     }
     
+    
     if (strcmp(line, "shutdown") == 0) {
         outw(0x604, 0x2000);//QEMU専用
+        return 0;
+    }
+    
+    if (strcmp(line, "test") == 0) {
+        kputs("test\n");
         return 0;
     }
     

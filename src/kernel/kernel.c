@@ -27,9 +27,19 @@ void kernel_main() {
     char cpuname[48];
     get_cpu_name(cpuname);
     
+    // ページング有効にすると、"reboot"命令のみ失敗する不可解な不具合が発生
+    // strcmp(line, "reboot") で固まる模様
+    // 解決するまでコメントアウト
     // ページング有効(複数プロセスをする時の為に仕組みのみ入れておく)
-    enable_paging();
-    console_clear(); // ページングの際にVRAMにゴミが残る為、消す(原因不明)
+    //enable_paging();
+    //console_clear(); // ページングの際にVRAMにゴミが残る為、消す(原因不明)
+    /* rodataのアドレスを確認
+    kprintf("kernel_page_tables addr: 0x%x\n", (uint32_t)kernel_page_tables);
+    kprintf("help addr: 0x%x\n", (uint32_t)"help");
+    kprintf("reboot addr: 0x%x\n", (uint32_t)"reboot");
+    kprintf("shutdown addr: 0x%x\n", (uint32_t)"shutdown");
+    kprintf("test addr: 0x%x\n", (uint32_t)"test");
+    */
     
     kputs("-----------------------------------------\n");
     kputs("         C Kernel Booted           \n");
@@ -37,7 +47,7 @@ void kernel_main() {
     kputs("         "); kputs(boot_time); kputs(" (UTC)\n");
     kputs("-----------------------------------------\n");
     
-    kputs("Paging enabled (identity 0~4GB)\n");
+    //kputs("Paging enabled (identity 0~4GB)\n");
     
      // メモリ管理初期化
     kheap_init(); // カーネル用
