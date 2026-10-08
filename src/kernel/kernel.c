@@ -71,14 +71,14 @@ void kernel_main() {
            
     kputs("\n>");
     while(1){
-        char c = keyboard_getchar(); // キーボード入力を待つ (内部的にはhlt→IRQ1割り込み) (drivers/keyboard.h)
-
+    
+        // キーボード入力を待つ (内部的にはhlt→IRQ1割り込み) (drivers/keyboard.h)
+        char c = keyboard_getchar(); 
+        
         if (c == '\n') { // ENTER : 命令実行及び改行
-            line[len] = 0;
-            if(run_builtin_command(line) != 0){ // 内部コマンド実行 (kernel/command.h)
-                run_file(line); // 内部コマンドと一致しない場合、実行ファイルとして実行を試みる (kernel/command.h)
-            }
-            len = 0;
+            line[len] = 0; 
+            if(run_builtin_command(line) != 0) run_file(line); // 内部コマンドで無ければ実行ファイルとして実行
+            len = 0; // 次の命令入力の為に入力バッファを空にする
             kputs("\n>");
         } else if (c == '\b') { // BACKSPACE : 一文字削除
             if (len > 0) {
