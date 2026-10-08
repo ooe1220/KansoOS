@@ -6,12 +6,12 @@
 #include "drivers/keyboard.h"
 #include "x86/panic.h"
 #include "x86/syscall.h"
+#include "x86/paging.h"
 #include "lib/stdint.h"
 #include "lib/string.h"
 #include "command.h"
 #include "mem.h"
 #include "x86/cpuid.h"
-#include "drivers/cmos.h"
 
 void format_date_time(char* buf);
 void irq0_handler(void);
@@ -27,12 +27,17 @@ void kernel_main() {
     char cpuname[48];
     get_cpu_name(cpuname);
     
+    // ページング有効(複数プロセスをする時の為に仕組みのみ入れておく)
+    enable_paging();
+    console_clear(); // ページングの際にVRAMにゴミが残る為、消す(原因不明)
     
     kputs("-----------------------------------------\n");
     kputs("         C Kernel Booted           \n");
     kputs("         "); kputs(cpuname); kputs("\n");
     kputs("         "); kputs(boot_time); kputs("\n");
     kputs("-----------------------------------------\n");
+    
+    kputs("Paging enabled (identity 0~4GB)\n");
     
      // メモリ管理初期化
     kheap_init(); // カーネル用

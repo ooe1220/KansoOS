@@ -12,10 +12,7 @@ __attribute__((aligned(4096)))
 static uint32_t page_dir[1024];
 
 __attribute__((aligned(4096)))
-static uint32_t page_table_0[1024];
-
-__attribute__((aligned(4096)))
-static uint32_t page_table_c0[1024];
+static uint32_t page_tables[1024 * 1024];  // 1024枚 × 1024項目/4KB
 
 static inline void enable_paging(void) {
 

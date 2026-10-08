@@ -24,6 +24,7 @@ gcc -m32 -ffreestanding -I./src -O2 -c src/drivers/cmos.c -o build/cmos.o
 gcc -m32 -ffreestanding -I./src -O2 -c src/x86/console.c -o build/console.o
 gcc -m32 -ffreestanding -I./src -O2 -c src/x86/pic.c -o build/pic.o
 gcc -m32 -ffreestanding -I./src -c src/x86/idt.c -o build/idt.o
+gcc -m32 -ffreestanding -I./src -c src/x86/paging.c -o build/paging.o
 gcc -m32 -ffreestanding -I./src -O2 -c src/drivers/ata.c -o build/ata.o
 gcc -m32 -ffreestanding -I./src -O2 -c src/drivers/keyboard.c -o build/keyboard.o
 gcc -m32 -ffreestanding -I./src -c src/x86/panic.c -o build/panic.o
@@ -45,6 +46,7 @@ ld -m elf_i386 -T src/linker.ld -o build/kernel.elf \
   build/cmos.o \
   build/console.o \
   build/pic.o \
+  build/paging.o \
   build/idt.o \
   build/ata.o \
   build/panic.o \
