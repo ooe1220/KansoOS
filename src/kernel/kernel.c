@@ -34,7 +34,7 @@ void kernel_main() {
     kputs("-----------------------------------------\n");
     kputs("         C Kernel Booted           \n");
     kputs("         "); kputs(cpuname); kputs("\n");
-    kputs("         "); kputs(boot_time); kputs("\n");
+    kputs("         "); kputs(boot_time); kputs(" (UTC)\n");
     kputs("-----------------------------------------\n");
     
     kputs("Paging enabled (identity 0~4GB)\n");
