@@ -2,6 +2,10 @@
 [ORG 0x7C00]
 
 start:
+    ; CS:IP=0x07C0:0x0000とするBIOS対策、0x0000:0x7C00統一
+    jmp 0x0000:real_start
+real_start:
+
     ; 1. MBRを安全な領域（0x0600）へ退避
     xor ax, ax
     mov ds, ax

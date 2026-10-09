@@ -6,8 +6,13 @@ times 62 db 0
 
 start:
 
+    ; CS:IP=0x07C0:0x0000とするBIOS対策、0x0000:0x7C00統一
+    ; MBRでもやっているが将来パーティションを無くしても残る様に
+    jmp 0x0000:real_start
+real_start:
+
     mov si, msg_loaded
-    ;call print_string
+    call print_string
     
     ; kernelは64セクタ分(32KB)，LBA=126
     ; KERNEL.BIN は LBA 126 セクタ目から始まる
@@ -19,8 +24,7 @@ start:
     mov dl, 0x80 ; HDD
     mov bx, 0x8000 ; メモリ0x8000番地へ読み込む
     int 0x13
-    jc load_error ; 
-
+    jc load_error
     jmp 0x0000:0x8000 ; kernelの開始アドレスへ跳ぶ
 
 print_string:
@@ -36,6 +40,10 @@ print_string:
 load_error:
     mov si, error_msg
     call print_string
+
+hang_hlt:
+    cli
+    jmp hang_hlt
 
 msg_loaded db "[VBR] Execution started at 0x0000:0x7C00", 0x0D, 0x0A, 0
 error_msg db "Failed to load KERNEL.BIN", 0x0D, 0x0A, 0

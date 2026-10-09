@@ -15,8 +15,6 @@
 #include "user_exec.h"
 
 void format_date_time(char* buf);
-void irq0_handler(void);
-void timer_tick(void);
 
 void kernel_main() {
 
@@ -30,6 +28,7 @@ void kernel_main() {
     
     // ページング有効にすると、"reboot"命令のみ失敗する不可解な不具合が発生
     // strcmp(line, "reboot") で固まる模様
+    // 他の部分のコードを色々整理してもこのエラーは健在、偶然ではない
     // 解決するまでコメントアウト
     // ページング有効(複数プロセスをする時の為に仕組みのみ入れておく)
     //enable_paging();
