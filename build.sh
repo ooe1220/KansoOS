@@ -35,6 +35,7 @@ gcc -m32 -ffreestanding -I./src -O2 -c src/fs/dir.c -o build/dir.o
 gcc -m32 -ffreestanding -I./src -O2 -c src/fs/fat16_file.c -o build/fat16_file.o
 gcc -m32 -ffreestanding -I./src -O2 -c src/fs/fs_file.c -o build/fs_file.o
 gcc -m32 -ffreestanding -I./src -c src/x86/cpuid.c -o build/cpuid.o
+gcc -m32 -ffreestanding -I./src -c src/x86/vbe.c -o build/vbe.o
 
 gcc -m32 -ffreestanding -fno-pic -fno-pie -c src/x86/syscall_entry.S -o build/syscall_entry.o
 
@@ -59,6 +60,7 @@ ld -m elf_i386 -T src/linker.ld -o build/kernel.elf \
   build/fat16_file.o \
   build/fs_file.o \
   build/cpuid.o \
+  build/vbe.o \
   build/dir.o
   
 # 5. ELF → バイナリ

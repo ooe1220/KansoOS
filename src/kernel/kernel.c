@@ -13,8 +13,7 @@
 #include "mem.h"
 #include "x86/cpuid.h"
 #include "user_exec.h"
-
-void format_date_time(char* buf);
+#include "x86/vbe.h"
 
 void kernel_main() {
 
@@ -48,6 +47,9 @@ void kernel_main() {
     kputs("-----------------------------------------\n");
     
     //kputs("Paging enabled (identity 0~4GB)\n");
+    
+    kputs("[VBE] info display (not yet configured)\n");
+    vbe_show_info();
     
      // メモリ管理初期化
     kheap_init(); // カーネル用
