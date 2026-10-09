@@ -14,19 +14,44 @@ real_start:
     mov si, msg_loaded
     call print_string
     
+    ; 20261009 CHS -> LBA方式へ変更
     ; kernelは64セクタ分(32KB)，LBA=126
     ; KERNEL.BIN は LBA 126 セクタ目から始まる
-    mov ah, 0x02
-    mov al, 63 ; 読み込みセクタ数 1トラック分（32KB）
-    mov ch, 0 ; シリンダ
-    mov cl, 1 ; セクタ
-    mov dh, 2 ; ヘッド
-    mov dl, 0x80 ; HDD
-    mov bx, 0x8000 ; メモリ0x8000番地へ読み込む
-    int 0x13
-    jc load_error
-    jmp 0x0000:0x8000 ; kernelの開始アドレスへ跳ぶ
+    ;mov ah, 0x02
+    ;mov al, 63 ; 読み込みセクタ数 1トラック分（32KB）
+    ;mov ch, 0 ; シリンダ
+    ;mov cl, 1 ; セクタ
+    ;mov dh, 2 ; ヘッド
+    ;mov dl, 0x80 ; HDD
+    ;mov bx, 0x8000 ; メモリ0x8000番地へ読み込む
+    ;int 0x13
+    ;jc load_error
+    ;jmp 0x0000:0x8000 ; kernelの開始アドレスへ跳ぶ
+    
+    
+load_kernel:
+    push 0x8000        ; バッファセグメント
+    pop  es
+    mov  bx, 0        ; ES:BX = 0x8000:0x0000
 
+    mov  ah, 0x42      ; LBA拡張リード
+    mov  dl, 0x80
+    mov  si, dap       ; DAP へのポインタ
+    int  0x13
+    jc   load_error
+
+    jmp  0x0000:0x8000
+
+; === DAP (Disk Address Packet) ===
+dap:
+    db 0x10            ; DAP サイズ (16バイト)
+    db 0x00            ; 予約
+    dw 64              ; 読み込みセクタ数
+    dw 0x8000          ; バッファオフセット (ES:BX)
+    dw 0x0000          ; バッファセグメント
+    dd 126             ; LBA 下位32bit
+    dd 0               ; LBA 上位32bit (通常0)
+    
 print_string:
     lodsb
     or al, al

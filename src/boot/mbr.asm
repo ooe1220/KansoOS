@@ -6,7 +6,7 @@ start:
     jmp 0x0000:real_start
 real_start:
 
-    ; 1. MBRを安全な領域（0x0600）へ退避
+    ; MBRを安全な領域（0x0600）へ退避
     xor ax, ax
     mov ds, ax
     mov es, ax
@@ -15,7 +15,7 @@ real_start:
     mov cx, 512
     rep movsb
 
-    ; 2. セグメントレジスタの初期化
+    ;セグメントレジスタの初期化
     xor ax, ax
     mov ds, ax
     mov es, ax
@@ -27,7 +27,7 @@ real_start:
     out dx, al
     
     mov si, msg_loading
-    ;call print_string
+    call print_string
     
     ; 0x0600にジャンプして処理を続行
     jmp 0x0000:(continue - start + 0x0600)
@@ -35,21 +35,38 @@ real_start:
 continue:
 
     mov si, msg_relocated
-    ;call print_string
+    call print_string
 
-    ; 4. VBRを0x7C00に読み込む（このコードを上書き）
-    mov ah, 0x02
-    mov al, 1       ; 読み込むセクタ数
-    mov ch, 0       ; シリンダ番号
-    mov cl, 1       ; セクタ番号（1〜63）
-    mov dh, 1       ; ヘッド番号
-    mov dl, 0x80    ; 一台目のHDDを読み込む
-    mov bx, 0x7C00
+    ; 20261009 CHS -> LBA方式へ変更
+    ;mov ah, 0x02
+    ;mov al, 1       ; 読み込むセクタ数
+    ;mov ch, 0       ; シリンダ番号
+    ;mov cl, 1       ; セクタ番号（1〜63）
+    ;mov dh, 1       ; ヘッド番号
+    ;mov dl, 0x80    ; 一台目のHDDを読み込む
+    ;mov bx, 0x7C00
+    ;int 0x13
+    ;jc disk_error
+    
+    ; VBRを0x7C00に読み込む（このコードを上書き）
+    mov ah, 0x42
+    mov dl, 0x80          ; 本来BIOSのDL使うべき
+    mov si, mbr_dap
     int 0x13
     jc disk_error
 
-    ; 5. 0x7C00に読み込んだVBRへ跳ぶ
+    ; VBRへ移行
     jmp 0x0000:0x7C00
+
+; === DAP ===
+mbr_dap:
+    db 0x10
+    db 0x00
+    dw 1                  ; 1セクタ（VBR = 512バイト）
+    dw 0x7C00             ; バッファオフセット
+    dw 0x0000             ; バッファセグメント
+    dd 63                 ; LBA = パーティションテーブルと同じ値
+    dd 0
 
 print_string:
     lodsb
