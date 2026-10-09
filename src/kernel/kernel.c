@@ -12,6 +12,7 @@
 #include "command.h"
 #include "mem.h"
 #include "x86/cpuid.h"
+#include "user_exec.h"
 
 void format_date_time(char* buf);
 void irq0_handler(void);
@@ -86,8 +87,15 @@ void kernel_main() {
         char c = keyboard_getchar(); 
         
         if (c == '\n') { // ENTER : 命令実行及び改行
-            line[len] = 0; 
-            if(run_builtin_command(line) != 0) run_file(line); // 内部コマンドで無ければ実行ファイルとして実行
+            line[len] = 0; // バッファを空に(実際には消さず末尾文字を先頭に付加)
+            
+            int buildin_res = run_builtin_command(line); // 内部コマンド
+            int runfile_res = run_file(line); // 実行ファイル実行
+            if(buildin_res==-1 && runfile_res==-1){ // 内部コマンドでも実行ファイルでもない
+                kputs("Unknown command or file not found: ");
+                kputs(line);
+            }
+            
             len = 0; // 次の命令入力の為に入力バッファを空にする
             kputs("\n>");
         } else if (c == '\b') { // BACKSPACE : 一文字削除
