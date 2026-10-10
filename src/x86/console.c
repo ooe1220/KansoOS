@@ -26,8 +26,6 @@ static int cursor_visible = 1;
 
 static char text_buf[ROWS][COLS];
 
-static int drawing_lock = 0; // 文字表示中にカーソルの更新が入ると競合して13番例外（#GP）が出たので対策
-
 void console_init(void) {
     cx = 0;
     cy = 0;
@@ -40,6 +38,7 @@ void console_init(void) {
 }
 
 static void scroll(void) {
+    
     uint8_t *fb = (uint8_t *)vbe->vram_addr;
     uint32_t pitch = vbe->lfb_pitch;   // 2400
 
@@ -78,10 +77,8 @@ void cursor_draw(void) {
     draw_rect(cx * CHAR_W, cy * CHAR_H, 2, 16, FG_COLOR);
 }
 
-// 
+// 点滅させると競合してCPU例外13が頻発　一旦コメントアウト
 void cursor_blink(void) {
-
-    if (drawing_lock) return;
     
     static uint32_t last_tick = 0;
     uint32_t tick = timer_get_ticks();
@@ -89,10 +86,10 @@ void cursor_blink(void) {
     if (tick - last_tick >= 500) {
         last_tick = tick;
         if (cursor_visible) {
-            cursor_clear();
+            //cursor_clear();
             cursor_visible = 0;
         } else {
-            cursor_draw();
+            //cursor_draw();
             cursor_visible = 1;
         }
     }
@@ -104,9 +101,6 @@ void cursor_init(void) {
 }
 
 void kputc(char c) {
-
-    drawing_lock = 1;          // 描画中フラグON（カーソル点滅を停止）
-    
     cursor_clear();
 
     if (c == '\n') {
@@ -135,7 +129,6 @@ void kputc(char c) {
 
     cursor_draw();
     
-    drawing_lock = 0;          // 描画完了、フラグOFF
 }
 
 void kputs(const char *s) {
