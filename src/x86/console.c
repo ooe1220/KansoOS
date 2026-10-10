@@ -26,6 +26,8 @@ static int cursor_visible = 1;
 
 static char text_buf[ROWS][COLS];
 
+static int drawing_lock = 0; // 文字表示中にカーソルの更新が入ると競合して13番例外（#GP）が出たので対策
+
 void console_init(void) {
     cx = 0;
     cy = 0;
@@ -78,6 +80,9 @@ void cursor_draw(void) {
 
 // 
 void cursor_blink(void) {
+
+    if (drawing_lock) return;
+    
     static uint32_t last_tick = 0;
     uint32_t tick = timer_get_ticks();
 
@@ -99,11 +104,26 @@ void cursor_init(void) {
 }
 
 void kputc(char c) {
+
+    drawing_lock = 1;          // 描画中フラグON（カーソル点滅を停止）
+    
     cursor_clear();
 
     if (c == '\n') {
         cx = 0;
         cy++;
+    } else if (c == '\b') {
+        // BACKSPACE: 左へ1文字分戻って背景色で上書き
+        if (cx > 0) {
+            cx--;
+            //draw_char(cx * CHAR_W, cy * CHAR_H, ' ', BG_COLOR);
+            //draw_rect(cx * CHAR_W, cy * CHAR_H, CHAR_W, CHAR_H, BG_COLOR);
+        // 念のため範囲内だけ塗る
+        if (cy < ROWS && cx < COLS) {
+            draw_rect(cx * CHAR_W, cy * CHAR_H, CHAR_W, CHAR_H, BG_COLOR);
+        }
+        }
+        // カーソル位置はそのまま（左に戻った位置に留まる）
     } else {
         draw_char(cx * CHAR_W, cy * CHAR_H, c, FG_COLOR);
         cx++;
@@ -114,6 +134,8 @@ void kputc(char c) {
     }
 
     cursor_draw();
+    
+    drawing_lock = 0;          // 描画完了、フラグOFF
 }
 
 void kputs(const char *s) {
