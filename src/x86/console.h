@@ -1,8 +1,12 @@
-#pragma once
-#include "lib/stdint.h"
+#ifndef CONSOLE_H
+#define CONSOLE_H
 
+#include <stdint.h>
+
+void console_init(void);
+void console_clear(void);
 void kputc(char c);
-void kputs(const char* s);
-void console_clear();
-void kprintf_d(const char *fmt, int val);
-void kprintf(const char* format, ...);
+void kputs(const char *s);
+void kprintf(const char *format, ...);
+
+#endif

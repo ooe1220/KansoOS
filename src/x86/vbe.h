@@ -51,6 +51,8 @@ typedef struct {
 
 extern vbe_mode_info_t *vbe;
 
-void vbe_show_info(void);
+void vbe_video_init(void);
+void vbe_clear(uint32_t bg_color);
+void draw_char_8x16(int x, int y, char c, uint32_t fg_color, uint32_t bg_color);
 
 #endif

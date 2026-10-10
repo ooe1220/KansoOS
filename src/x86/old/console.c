@@ -1,97 +1,123 @@
 #include "console.h"
-#include "vbe.h"
-#include "string.h"
+#include "io.h"
 
-#define CHAR_W  8
-#define CHAR_H  16
-#define COLS    (800 / CHAR_W)
-#define ROWS    (600 / CHAR_H)
+static void hw_move_cursor(int x, int y);
 
-#define FG_COLOR  0x00AAAA00
-#define BG_COLOR  0x00000000
+#define VRAM       ((volatile unsigned short*)0xB8000)
+#define COLS       80
+#define ROWS       25
+//#define ATTR       0x0F00  // 白文字・黒背景
+#define ATTR       0x0A00  // 黄緑文字・黒背景
 
 static int cursor_x = 0;
 static int cursor_y = 0;
-static char text_buf[ROWS][COLS];
 
-void console_init(void) {
+
+void init_cursor_from_hardware() {
+    unsigned short pos;
+
+    // ハードウェアカーソル取得
+    outb(0x3D4, 0x0F);           // 下位バイト
+    pos = inb(0x3D5);
+    outb(0x3D4, 0x0E);           // 上位バイト
+    pos |= ((unsigned short)inb(0x3D5)) << 8;
+
+    // 次の行の先頭から書きたい
     cursor_x = 0;
-    cursor_y = 0;
-    vbe_video_init();
-    vbe_clear(BG_COLOR);
+    cursor_y = (pos / COLS) + 1;
 
-    for (int y = 0; y < ROWS; y++)
-        for (int x = 0; x < COLS; x++)
-            text_buf[y][x] = ' ';
+    // 画面の範囲を超えないように
+    if (cursor_y >= ROWS) cursor_y = ROWS - 1;
+
+    hw_move_cursor(cursor_x, cursor_y);
 }
 
-static void scroll(void) {
+
+/* 内部関数：画面スクロール */
+static void scroll() {
+    // 最下行に到達していない場合はスクロール不要
     if (cursor_y < ROWS)
         return;
 
-    uint8_t *fb = (uint8_t *)vbe->vram_addr;
-    uint32_t pitch = vbe->lfb_pitch;
-    uint32_t width_bytes = 800 * 3;
-
-    for (uint32_t y = CHAR_H; y < 600; y++) {
-        memcpy(fb + (y - CHAR_H) * pitch, fb + y * pitch, width_bytes);
+    // 1行分上に詰める (2行目 → 1行目)
+    for (int y = 1; y < ROWS; y++) {
+        for (int x = 0; x < COLS; x++) {
+            VRAM[(y - 1) * COLS + x] = VRAM[y * COLS + x];
+        }
     }
 
-    for (uint32_t y = 600 - CHAR_H; y < 600; y++) {
-        memset(fb + y * pitch, 0x00, width_bytes);
+    // 最終行を空白で埋める
+    for (int x = 0; x < COLS; x++) {
+        VRAM[(ROWS - 1) * COLS + x] = ATTR | ' ';
     }
 
-    for (int y = 1; y < ROWS; y++)
-        memcpy(text_buf[y-1], text_buf[y], COLS);
-    for (int x = 0; x < COLS; x++)
-        text_buf[ROWS-1][x] = ' ';
-
-    cursor_y = ROWS - 1;
+    cursor_y = ROWS - 1;  // 最終行にセット
 }
 
+/* 1文字出力 */
 void kputc(char c) {
-    if (c == '\n') {
+
+    if (c == '\n') {        // 改行処理
         cursor_x = 0;
         cursor_y++;
         scroll();
         return;
     }
-
-    if (c == '\b') {
-        if (cursor_x > 0) cursor_x--;
+    
+    if (c == '\b') {        // BACKSPACE
+        if (cursor_x > 0) {
+            cursor_x--;
+        }
+        hw_move_cursor(cursor_x, cursor_y);
         return;
     }
 
-    if (c == '\r') {
-        cursor_x = 0;
-        return;
-    }
-
-    draw_char_8x16(cursor_x * CHAR_W, cursor_y * CHAR_H, c, FG_COLOR, BG_COLOR);
-    text_buf[cursor_y][cursor_x] = c;
+    // VRAM に書き込み
+    VRAM[cursor_y * COLS + cursor_x] = ATTR | c;
 
     cursor_x++;
+
+    // 行末を超えたら折り返し
     if (cursor_x >= COLS) {
         cursor_x = 0;
         cursor_y++;
         scroll();
     }
+    
+     hw_move_cursor(cursor_x, cursor_y);
 }
 
-void kputs(const char *s) {
+/* 文字列出力 */
+void kputs(const char* s) {
     while (*s) {
         kputc(*s++);
     }
 }
 
-void console_clear(void) {
-    vbe_clear(BG_COLOR);
+/* 画面クリア（任意） */
+void console_clear() {
+    for (int y = 0; y < ROWS; y++) {
+        for (int x = 0; x < COLS; x++) {
+            VRAM[y * COLS + x] = ATTR | ' ';
+        }
+    }
     cursor_x = 0;
     cursor_y = 0;
+    hw_move_cursor(cursor_x, cursor_y);
+}
 
-    for (int y = 0; y < ROWS; y++)
-        for (int x = 0; x < COLS; x++)
-            text_buf[y][x] = ' ';
+/* ハードウェアカーソル移動 */
+/*
+ x: 0〜79（列）
+ y: 0〜24（行）
+*/
+static void hw_move_cursor(int x, int y) {
+    unsigned short pos = y * COLS + x;
+
+    outb(0x3D4, 0x0F);           // 下位バイト
+    outb(0x3D5, pos & 0xFF);
+    outb(0x3D4, 0x0E);           // 上位バイト
+    outb(0x3D5, (pos >> 8) & 0xFF);
 }
 
 /**
@@ -137,6 +163,32 @@ static void utoa(unsigned int value, char *buffer, int base) {
         buffer[j] = temp[i - j - 1];
 
     buffer[i] = '\0';
+}
+
+// -----------------
+// printf_d (%d 1個だけ)
+// -----------------
+void kprintf_d(const char *fmt, int val) {
+    char buffer[128];
+    char numbuf[12];
+    int i = 0, j = 0;
+
+    while (fmt[i] != '\0' && j < sizeof(buffer) - 1) {
+        if (fmt[i] == '%' && fmt[i+1] == 'd') {
+            itoa(val, numbuf);
+
+            int k = 0;
+            while (numbuf[k] != '\0' && j < sizeof(buffer) - 1)
+                buffer[j++] = numbuf[k++];
+
+            i += 2;
+        } else {
+            buffer[j++] = fmt[i++];
+        }
+    }
+    buffer[j] = '\0';
+
+    kputs(buffer);
 }
 
 void kprintf(const char* format, ...) {

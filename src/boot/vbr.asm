@@ -35,8 +35,8 @@ real_start:
     mov [vbe_vram_info], eax
     
     ; 表示の為にVGA MODE3へ戻す
-    mov ax, 0x0003
-    int 0x10
+    ; mov ax, 0x0003
+    ; int 0x10
     
     ; 20261009 CHS -> LBA方式へ変更
     ; kernelは64セクタ分(32KB)，LBA=126

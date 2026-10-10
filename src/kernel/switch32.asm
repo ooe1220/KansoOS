@@ -16,8 +16,8 @@ start:
     out dx, al
     
     ; VGAテキストモード設定(mode3)
-    mov ax, 0x0003
-    int 0x10 
+    ;mov ax, 0x0003
+    ;int 0x10 
     
     ; A20有効
     call a20_enable_8042

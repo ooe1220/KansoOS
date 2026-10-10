@@ -40,6 +40,8 @@ void kernel_main() {
     kprintf("test addr: 0x%x\n", (uint32_t)"test");
     */
     
+    console_init();      // VBE 初期化 + クリア
+    
     kputs("-----------------------------------------\n");
     kputs("         C Kernel Booted           \n");
     kputs("         "); kputs(cpuname); kputs("\n");
@@ -48,12 +50,19 @@ void kernel_main() {
     
     //kputs("Paging enabled (identity 0~4GB)\n");
     
-    kputs("[VBE] info display (not yet configured)\n");
-    vbe_show_info();
+    
+    
+    //kputs("[VBE] info display (not yet configured)\n");
+    //vbe_show_info();
+    
+    kputs("test1\n");
     
      // メモリ管理初期化
-    kheap_init(); // カーネル用
-    uheap_init(); // ユーザ用
+    //kheap_init(); // カーネル用
+    //uheap_init(); // ユーザ用
+    
+    kputs("test2\n");
+    
     kputs("Heap initialized\n");
         
     idt_init(); // IDT初期化 (x86/idt.h)
@@ -74,7 +83,7 @@ void kernel_main() {
     init_syscall(); // IDT 0x80へシステムコールを登録　Linuxの様にint0x80経由でシステムコールを呼び出す (x86/syscall.h)
     kputs("System call handler (int 0x80) registered\n");
     
-    init_cursor_from_hardware();
+    //init_cursor_from_hardware();
     
     asm volatile("sti");  // 割り込みを有効にする(PIC初期化しないと割り込みが常時発生)
         
