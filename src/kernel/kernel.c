@@ -72,7 +72,8 @@ void kernel_main() {
     init_syscall(); // IDT 0x80へシステムコールを登録　Linuxの様にint0x80経由でシステムコールを呼び出す (x86/syscall.h)
     kputs("System call handler (int 0x80) registered\n");
     
-    timer_init();
+    //タイマーを入れるとスタックが壊れる。一旦保留
+    //timer_init();
     
     asm volatile("sti");  // 割り込みを有効にする(PIC初期化しないと割り込みが常時発生)
         
