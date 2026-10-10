@@ -1,6 +1,7 @@
 #include "console.h"
 #include "vbe.h"
 #include "string.h"
+#include "timer.h"
 
 // 本来はこれらもVBE構造体から取り出すべき、今後の課題
 #define CHAR_W  8
@@ -14,13 +15,20 @@
 #define FG_COLOR  0x00FFFFFF   // 白
 #define BG_COLOR  0x000000FF   // 青
 
-static int cursor_x = 0;
-static int cursor_y = 0;
+#define CONSOLE_ROWS (600 / 16)   // 37行（800x600, フォント16px高）
+
+void cursor_clear(void);
+
+//カーソル
+int cx = 0;
+int cy = 0;
+static int cursor_visible = 1;
+
 static char text_buf[ROWS][COLS];
 
 void console_init(void) {
-    cursor_x = 0;
-    cursor_y = 0;
+    cx = 0;
+    cy = 0;
     vbe_video_init();
     vbe_clear(BG_COLOR);
 
@@ -30,56 +38,82 @@ void console_init(void) {
 }
 
 static void scroll(void) {
-    if (cursor_y < ROWS)
-        return;
-
     uint8_t *fb = (uint8_t *)vbe->vram_addr;
-    uint32_t pitch = vbe->lfb_pitch;
-    uint32_t width_bytes = 800 * 3;
+    uint32_t pitch = vbe->lfb_pitch;   // 2400
 
-    for (uint32_t y = CHAR_H; y < 600; y++) {
-        memcpy(fb + (y - CHAR_H) * pitch, fb + y * pitch, width_bytes);
+    // 1. 上に 1 文字行（16px）シフト
+    //    16px 単位でブロックコピー（安全かつ高速）
+    for (int y = CHAR_H; y < 600; y += CHAR_H) {
+        uint8_t *dst = fb + (y - CHAR_H) * pitch;
+        uint8_t *src = fb + y * pitch;
+
+        // 1行分（16 × 2400 = 38400 バイト）
+        memcpy(dst, src, pitch * CHAR_H);
     }
 
-    for (uint32_t y = 600 - CHAR_H; y < 600; y++) {
-        memset(fb + y * pitch, 0x00, width_bytes);
+    // 2. 最下行（37行目）を背景色でクリア
+    //    座標: y = (ROWS - 1) * CHAR_H = 592
+    draw_rect(
+        0,
+        (ROWS - 1) * CHAR_H,
+        COLS * CHAR_W,
+        CHAR_H,
+        BG_COLOR
+    );
+
+    // 3. カーソル位置リセット
+    cy = ROWS - 1;
+    cx = 0;
+}
+
+// カーソル非表示
+void cursor_clear(void) {
+    draw_rect(cx * CHAR_W, cy * CHAR_H, 2, 16, BG_COLOR);
+}
+
+// カーソル表示
+void cursor_draw(void) {
+    draw_rect(cx * CHAR_W, cy * CHAR_H, 2, 16, FG_COLOR);
+}
+
+// 
+void cursor_blink(void) {
+    static uint32_t last_tick = 0;
+    uint32_t tick = timer_get_ticks();
+
+    if (tick - last_tick >= 500) {
+        last_tick = tick;
+        if (cursor_visible) {
+            cursor_clear();
+            cursor_visible = 0;
+        } else {
+            cursor_draw();
+            cursor_visible = 1;
+        }
     }
+}
 
-    for (int y = 1; y < ROWS; y++)
-        memcpy(text_buf[y-1], text_buf[y], COLS);
-    for (int x = 0; x < COLS; x++)
-        text_buf[ROWS-1][x] = ' ';
-
-    cursor_y = ROWS - 1;
+void cursor_init(void) {
+    cursor_visible = 1;
+    cursor_draw();
 }
 
 void kputc(char c) {
+    cursor_clear();
+
     if (c == '\n') {
-        cursor_x = 0;
-        cursor_y++;
-        scroll();
-        return;
+        cx = 0;
+        cy++;
+    } else {
+        draw_char(cx * CHAR_W, cy * CHAR_H, c, FG_COLOR);
+        cx++;
     }
 
-    if (c == '\b') {
-        if (cursor_x > 0) cursor_x--;
-        return;
-    }
-
-    if (c == '\r') {
-        cursor_x = 0;
-        return;
-    }
-
-    draw_char_8x16(cursor_x * CHAR_W, cursor_y * CHAR_H, c, FG_COLOR, BG_COLOR);
-    text_buf[cursor_y][cursor_x] = c;
-
-    cursor_x++;
-    if (cursor_x >= COLS) {
-        cursor_x = 0;
-        cursor_y++;
+    if (cy >= ROWS) {
         scroll();
     }
+
+    cursor_draw();
 }
 
 void kputs(const char *s) {
@@ -90,8 +124,8 @@ void kputs(const char *s) {
 
 void console_clear(void) {
     vbe_clear(BG_COLOR);
-    cursor_x = 0;
-    cursor_y = 0;
+    cx = 0;
+    cy = 0;
 
     for (int y = 0; y < ROWS; y++)
         for (int x = 0; x < COLS; x++)

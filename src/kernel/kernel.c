@@ -14,6 +14,7 @@
 #include "x86/cpuid.h"
 #include "user_exec.h"
 #include "x86/vbe.h"
+#include "x86/timer.h"
 
 void kernel_main() {
 
@@ -70,6 +71,8 @@ void kernel_main() {
     
     init_syscall(); // IDT 0x80へシステムコールを登録　Linuxの様にint0x80経由でシステムコールを呼び出す (x86/syscall.h)
     kputs("System call handler (int 0x80) registered\n");
+    
+    timer_init();
     
     asm volatile("sti");  // 割り込みを有効にする(PIC初期化しないと割り込みが常時発生)
         

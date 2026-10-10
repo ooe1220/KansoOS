@@ -36,7 +36,8 @@ gcc -m32 -ffreestanding -I./src -O2 -c src/fs/fat16_file.c -o build/fat16_file.o
 gcc -m32 -ffreestanding -I./src -O2 -c src/fs/fs_file.c -o build/fs_file.o
 gcc -m32 -ffreestanding -I./src -c src/x86/cpuid.c -o build/cpuid.o
 gcc -m32 -ffreestanding -I./src -c src/x86/vbe.c -o build/vbe.o
-gcc -m32 -ffreestanding -I./src -c src/x86/vbe.c -o build/vbe.o
+gcc -m32 -ffreestanding -I./src -c src/x86/pit.c -o build/pit.o
+gcc -m32 -ffreestanding -I./src -c src/x86/timer.c -o build/timer.o
 
 gcc -m32 -ffreestanding -I./src -c src/x86/font_8x16.c -o build/font_8x16.o
 
@@ -46,7 +47,6 @@ ld -m elf_i386 -T src/linker.ld -o build/kernel.elf \
   build/kernel.o \
   build/command.o \
   build/cmos.o \
-  build/console.o \
   build/pic.o \
   build/paging.o \
   build/idt.o \
@@ -54,6 +54,7 @@ ld -m elf_i386 -T src/linker.ld -o build/kernel.elf \
   build/panic.o \
   build/keyboard.o \
   build/string.o \
+  build/console.o \
   build/mem.o \
   build/syscall.o \
   build/syscall_entry.o \
@@ -63,6 +64,8 @@ ld -m elf_i386 -T src/linker.ld -o build/kernel.elf \
   build/cpuid.o \
   build/vbe.o \
   build/font_8x16.o \
+  build/pit.o \
+  build/timer.o \
   build/dir.o
   
 # 5. ELF → バイナリ

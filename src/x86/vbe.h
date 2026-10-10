@@ -53,7 +53,7 @@ extern vbe_mode_info_t *vbe;
 
 void vbe_video_init(void);
 void vbe_clear(uint32_t bg_color);
-void draw_char_8x16(int x, int y, char c, uint32_t fg_color, uint32_t bg_color);
+void draw_char(int x, int y, char c, uint32_t fg_color);
 
 void draw_rect(int x, int y, int w, int h, uint32_t color);
 void draw_circle(int cx, int cy, int r, uint32_t color);

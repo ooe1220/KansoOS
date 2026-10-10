@@ -18,5 +18,7 @@ int memcmp(const char* s1, const char* s2, int length);
 
 void* memset(void* dst, uint8_t val, uint32_t len);
 
+void* memcpy(void* dst, const void* src, uint32_t len);
+
 #endif
 

@@ -53,7 +53,7 @@ static void putpixel(int x, int y, uint32_t color) {
     p[2] = (color >> 16) & 0xFF; // 赤
 }
 
-void draw_char_8x16(int x, int y, char c, uint32_t fg_color, uint32_t bg_color) {
+void draw_char(int x, int y, char c, uint32_t fg_color) {
     if (!fb_base) return;
     const uint8_t *glyph = &fontdata_8x16[(unsigned char)c * 16]; // 表示する字体の取り出し、1文字16バイトでASCII順の配列だから添字はC×16
 
@@ -62,8 +62,6 @@ void draw_char_8x16(int x, int y, char c, uint32_t fg_color, uint32_t bg_color) 
         for (int col = 0; col < 8; col++) {
             if (bits & (0x80 >> col)) {
                 putpixel(x + col, y + row, fg_color);
-            } else if (bg_color != 0xFFFFFFFF) {
-                putpixel(x + col, y + row, bg_color); // 文字ピクセル不描画=背景を描画
             }
         }
     }
