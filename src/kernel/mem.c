@@ -4,9 +4,9 @@
 // ============================================
 // カーネルヒープ
 // ============================================
-#define KHEAP_START  0x00200000  // 2MBから開始
+#define KHEAP_START  0x00500000  // 5MBから開始
 #define KBLOCK_SIZE  4096        // 1塊 = 4KB
-#define KBLOCK_COUNT 3072        // 3072塊管理する（約12MB）
+#define KBLOCK_COUNT 256         // 256塊 = 1MB
 
 // 0 = 空き, 1 = 使用中
 static unsigned char kheap_state[KBLOCK_COUNT];
@@ -45,7 +45,7 @@ void kfree(void* ptr) {
 // ============================================
 // ユーザヒープ
 // ============================================
-#define UHEAP_START  0x00600000  // 2MBから開始
+#define UHEAP_START  0x00600000  // 6MBから開始
 #define UKBLOCK_SIZE  4096        // 1塊 = 4KB
 #define UBLOCK_COUNT 256        // 256塊管理する
 

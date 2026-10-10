@@ -48,20 +48,9 @@ void kernel_main() {
     kputs("         "); kputs(boot_time); kputs(" (UTC)\n");
     kputs("-----------------------------------------\n");
     
-    //kputs("Paging enabled (identity 0~4GB)\n");
-    
-    
-    
-    //kputs("[VBE] info display (not yet configured)\n");
-    //vbe_show_info();
-    
-    kputs("test1\n");
-    
      // メモリ管理初期化
-    //kheap_init(); // カーネル用
-    //uheap_init(); // ユーザ用
-    
-    kputs("test2\n");
+    kheap_init(); // カーネル用
+    uheap_init(); // ユーザ用
     
     kputs("Heap initialized\n");
         
