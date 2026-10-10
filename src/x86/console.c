@@ -2,13 +2,17 @@
 #include "vbe.h"
 #include "string.h"
 
+// 本来はこれらもVBE構造体から取り出すべき、今後の課題
 #define CHAR_W  8
 #define CHAR_H  16
 #define COLS    (800 / CHAR_W)
 #define ROWS    (600 / CHAR_H)
 
-#define FG_COLOR  0x00AAAA00
-#define BG_COLOR  0x00000000
+//#define FG_COLOR  0x00AAAA00
+//#define BG_COLOR  0x00000000
+
+#define FG_COLOR  0x00FFFFFF   // 白
+#define BG_COLOR  0x000000FF   // 青
 
 static int cursor_x = 0;
 static int cursor_y = 0;

@@ -40,7 +40,7 @@ void kernel_main() {
     kprintf("test addr: 0x%x\n", (uint32_t)"test");
     */
     
-    console_init();      // VBE 初期化 + クリア
+    console_init();      // VBE 初期化 + 画面クリア
     
     kputs("-----------------------------------------\n");
     kputs("         C Kernel Booted           \n");
@@ -51,7 +51,6 @@ void kernel_main() {
      // メモリ管理初期化
     kheap_init(); // カーネル用
     uheap_init(); // ユーザ用
-    
     kputs("Heap initialized\n");
         
     idt_init(); // IDT初期化 (x86/idt.h)
@@ -71,8 +70,6 @@ void kernel_main() {
     
     init_syscall(); // IDT 0x80へシステムコールを登録　Linuxの様にint0x80経由でシステムコールを呼び出す (x86/syscall.h)
     kputs("System call handler (int 0x80) registered\n");
-    
-    //init_cursor_from_hardware();
     
     asm volatile("sti");  // 割り込みを有効にする(PIC初期化しないと割り込みが常時発生)
         
