@@ -12,7 +12,7 @@ void timer_tick(void) {
     tick_count++;
     // ここに将来スケジューラ呼び出しを入れる
     
-    cursor_blink();
+    //cursor_blink();
 }
 
 uint32_t timer_get_ticks(void) {
