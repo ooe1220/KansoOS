@@ -5,6 +5,8 @@
 #include "fs/fat16.h"
 #include "fs/fs_file.h"
 #include "x86/pic.h"
+#include "debug/serial.h"
+#include "debug/serial_print.h"
 
 /*
 int user_exec(void* entry, int argc, char **argv)
@@ -92,7 +94,13 @@ int user_exec(void* entry, int argc, char **argv)
 {
     int ret;
     
+    //debug_dump_mem((uint32_t)entry, 512); // 実行ファイルが読み込まれているか
+    
     //kprintf("user_exec.c argc: %d\n", argc); // test:引数の数
+    
+    uint32_t esp;
+    asm volatile ("mov %%esp, %0" : "=r"(esp));
+    serial_print("ESP = 0x%x\n", esp);
 
     asm volatile (
         "push %[argv]\n"   // argv のアドレスを push
@@ -105,6 +113,10 @@ int user_exec(void* entry, int argc, char **argv)
           [argv]"r"(argv)
         : "memory"
     );
+    
+    asm volatile ("mov %%esp, %0" : "=r"(esp));
+    serial_print("ESP = 0x%x\n", esp);
+
     
     return ret;
 }

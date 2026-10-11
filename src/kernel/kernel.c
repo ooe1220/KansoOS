@@ -21,7 +21,6 @@
 
 void kernel_main() {
 
-
     gdt_init();
     tss_init(0x9FC00); // swich32.asmと2重定義になるのでいつか纏める
 
@@ -66,12 +65,17 @@ void kernel_main() {
     kputs("Serial initialized (COM1)\n");
     serial_puts("\nSerial initialized (COM1)\n");
     
+
+    
     // テスト
     //serial_print("test: argc=%d str=%s hex=0x%x\n", 3, "hello", 0xDEAD);
-    debug_dump_regs();
-    debug_dump_mem(0x0600, 512); // MBR
-    debug_dump_mem(0x7C00, 512); // VBR
+    //debug_dump_regs();
+    //debug_dump_mem(0x0600, 512); // MBR
+    //debug_dump_mem(0x7C00, 512); // VBR
     // dd if=build/disk.img bs=512 skip=63 count=1 2>/dev/null | xxd | tail -4でVBRには0xBB66があるのにメモリ上には無い
+    //uint32_t esp;
+    //asm volatile ("mov %%esp, %0" : "=r"(esp));
+    //debug_dump_stack(esp, 32, 32);
     
      // メモリ管理初期化
     kheap_init(); // カーネル用

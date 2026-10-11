@@ -59,6 +59,15 @@ void serial_print(const char* format, ...) {
     }
 }
 
+//ESPの確認　関数化不可、デバッグ箇所へ貼る
+/*
+    uint32_t esp;
+    asm volatile ("mov %%esp, %0" : "=r"(esp));
+    serial_print("ESP = 0x%x\n", esp);
+*/
+
+// esp自体はこの関数が変更するが、何か関数呼ぶ前後で相対的に一致するかは確認できる
+// -O2してはいけない。
 void debug_dump_regs(void) {
     uint32_t eax, ebx, ecx, edx, esi, edi, ebp, esp, eip, eflags;
     uint16_t cs, ds, es, fs, gs;
@@ -85,6 +94,7 @@ void debug_dump_regs(void) {
     serial_print("EIP=0x%x EFLAGS=0x%x\n", eip, eflags);
     serial_print("CS=0x%x DS=0x%x ES=0x%x FS=0x%x GS=0x%x\n", cs, ds, es, fs, gs);
 }
+//objdump -d -M intel build/serial_print.o
 
 void debug_enter(const char *func) {
     serial_print(">> %s\n", func);
@@ -106,6 +116,10 @@ void debug_dump_mem(uint32_t addr, int bytes) {
     }
 }
 
+// 呼び方
+// uint32_t esp;
+// asm volatile ("mov %%esp, %0" : "=r"(esp));
+// debug_dump_stack(esp, 32, 32);
 void debug_dump_stack(uint32_t esp, int below, int above) {
     serial_print("--- stack dump (esp=0x%x) ---\n", esp);
     
