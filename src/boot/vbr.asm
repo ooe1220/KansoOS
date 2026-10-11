@@ -30,9 +30,9 @@ real_start:
     mov bx, 0x4115    ; 0115h (24bpp) + ビット14
     int 0x10
     
-    ; vbe_vram_infoへVBE情報構造体のアドレスを置く
+    ; vbe_infoへVBE情報構造体のアドレスを置く
     mov eax, modeinfo
-    mov [vbe_vram_info], eax
+    mov [vbe_info], eax
     
     ; 表示の為にVGA MODE3へ戻す
     ; mov ax, 0x0003
@@ -106,13 +106,12 @@ msg_loaded db "[VBR] Execution started at 0x0000:0x7C00", 0x0D, 0x0A, 0
 error_msg db "Failed to load KERNEL.BIN", 0x0D, 0x0A, 0
 
 ; VBE返り値44バイト modeinfo + 0x28 = VRAM開始アドレス
-modeinfo: resb 0x2C
+modeinfo: times 0x2C db 0
 
 times 506-($-$$) db 0
-vbe_vram_info: resd 1 ; VBE VRAM開始アドレス
+vbe_info: dd 0 ; modeinfoの先頭アドレス
 
 ; 残りの領域を512バイトまで埋める
 ;times 510-($-$$) db 0
-
 dw 0xBB66 ; メモリ上でMBRとVBRを区別する為、便宜的に(本来はこんな書き方をすべきではない)
 

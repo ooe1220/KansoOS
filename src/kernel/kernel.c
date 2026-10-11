@@ -17,6 +17,7 @@
 #include "x86/vbe.h"
 #include "x86/timer.h"
 #include "debug/serial.h"
+#include "debug/serial_print.h"
 
 void kernel_main() {
 
@@ -64,6 +65,13 @@ void kernel_main() {
     serial_init();
     kputs("Serial initialized (COM1)\n");
     serial_puts("\nSerial initialized (COM1)\n");
+    
+    // テスト
+    //serial_print("test: argc=%d str=%s hex=0x%x\n", 3, "hello", 0xDEAD);
+    debug_dump_regs();
+    debug_dump_mem(0x0600, 512); // MBR
+    debug_dump_mem(0x7C00, 512); // VBR
+    // dd if=build/disk.img bs=512 skip=63 count=1 2>/dev/null | xxd | tail -4でVBRには0xBB66があるのにメモリ上には無い
     
      // メモリ管理初期化
     kheap_init(); // カーネル用
