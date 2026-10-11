@@ -21,6 +21,7 @@ void kernel_main() {
 
 
     gdt_init();
+    tss_init(0x9FC00); // swich32.asmと2重定義になるのでいつか纏める
 
     // 起動時間取得
     char boot_time[20];

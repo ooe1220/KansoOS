@@ -1,5 +1,6 @@
 #include "gdt.h"
 #include "console.h"
+#include <string.h>
 
 /*
  * GDT 1個分の構造体
@@ -37,6 +38,8 @@ struct gdt_ptr {
  * 5 : TSS（タスク切り替え用、今は予約だけでもOK）
  */
 static struct gdt_entry gdt[6];
+
+struct tss_entry tss;
 
 /*
  * GDT に 1 個分セグメントを設定する関数
@@ -105,4 +108,25 @@ void gdt_init(void) {
         "mov %%ax, %%ss\n"
         ::: "eax"
     );
+}
+
+
+void tss_init(uint32_t kernel_stack) {
+    // TSS 用のメモリをゼロクリア
+    memset(&tss, 0, sizeof(tss));
+    
+    // Ring 0 用スタック（カーネルスタック）
+    tss.esp0 = kernel_stack;
+    tss.ss0  = 0x10;  // GDT_KERNEL_DATA
+    
+    // TSS を GDT の 5番目にセット
+    // base = &tss, limit = sizeof(tss)-1
+    gdt_set_gate(5,
+                 (uint32_t)&tss,
+                 sizeof(tss) - 1,
+                 0x89,    // P=1, DPL=0, Type=1001 (32-bit TSS, not busy)
+                 0x00);   // granularity は 0
+    
+    // TR レジスタにロード
+    asm volatile("ltr %%ax" :: "a"(0x28));  // GDT_TSS | RPL=0
 }

@@ -6,10 +6,89 @@
 #include "fs/fs_file.h"
 #include "x86/pic.h"
 
+/*
+int user_exec(void* entry, int argc, char **argv)
+{
+    // ユーザースタックの準備
+    // 0x20000 をユーザースタックトップとする
+    uint32_t *ustack = (uint32_t *)0x20000;
+    uint32_t esp = (uint32_t)ustack;
+    
+    // スタックを8バイト境界へ
+    esp = esp & ~7;
+    
+    // ユーザースタックに argv の文字列をコピー
+    // （argv[i] が指す先がカーネル側のアドレスだと
+    //   Ring 3 から見えないので、スタック上に配置する）
+    char *arg_strings[argc];
+    for (int i = 0; i < argc; i++) {
+        int len = strlen(argv[i]) + 1;
+        esp -= len;
+        strcpy((char*)esp, argv[i]);
+        arg_strings[i] = (char*)esp;
+    }
+    
+    // 8バイトアライン再調整
+    esp = esp & ~7;
+    
+    // argv 配列をスタックに積む
+    esp -= (argc + 1) * 4;
+    uint32_t *argv_on_stack = (uint32_t*)esp;
+    for (int i = 0; i < argc; i++) {
+        argv_on_stack[i] = (uint32_t)arg_strings[i];
+    }
+    argv_on_stack[argc] = 0;  // NULL終端
+    
+    // argc をスタックに積む
+    esp -= 4;
+    *(uint32_t*)esp = argc;
+    
+    // 戻り先アドレス（ダミー、システムコールで終了する想定）
+    esp -= 4;
+    *(uint32_t*)esp = 0x00000000;  // ret addr = 0（落ちるように）
+    
+    uint32_t user_entry = (uint32_t)entry;
+    
+    // iret で Ring 3 へ
+    asm volatile (
+        // データセグメントをユーザー用に
+        "mov $0x23, %%ax\n"
+        "mov %%ax, %%ds\n"
+        "mov %%ax, %%es\n"
+        "mov %%ax, %%fs\n"
+        "mov %%ax, %%gs\n"
+        
+        // ユーザースタック設定
+        "mov %[esp], %%ebx\n"
+        "mov %%ebx, %%esp\n"
+        
+        // iret フレーム
+        "push $0x23\n"          // SS
+        "push %%ebx\n"          // ESP
+        "pushf\n"               // EFLAGS
+        "pop %%eax\n"
+        "or $0x200, %%eax\n"    // IF=1
+        "push %%eax\n"          // EFLAGS
+        "push $0x1B\n"          // CS
+        "push %[entry]\n"       // EIP
+        "iret\n"
+        :
+        : [esp]"r"(esp), [entry]"r"(user_entry)
+        : "eax", "ebx", "memory"
+    );
+    
+    // ここには戻ってこない
+    return -1;
+}
+
+*/
+
+
 /* 20261007いつか複数プロセスを導入する時はこの関数を廃止する */
 
 // argc: 引数個数, argv: 引数配列
 // 引数を指定しない場合、argc=1, argv[0]=ファイル名
+
 int user_exec(void* entry, int argc, char **argv)
 {
     int ret;
