@@ -16,6 +16,7 @@
 #include "user_exec.h"
 #include "x86/vbe.h"
 #include "x86/timer.h"
+#include "debug/serial.h"
 
 void kernel_main() {
 
@@ -56,7 +57,13 @@ void kernel_main() {
     
     
     kputs("GDT initialized\n");
+    kputs("TSS initialized\n");
     kputs("VBE initialized\n");
+    
+    // デバッグ用COM1有効
+    serial_init();
+    kputs("Serial initialized (COM1)\n");
+    serial_puts("\nSerial initialized (COM1)\n");
     
      // メモリ管理初期化
     kheap_init(); // カーネル用

@@ -110,7 +110,6 @@ void gdt_init(void) {
     );
 }
 
-
 void tss_init(uint32_t kernel_stack) {
     // TSS 用のメモリをゼロクリア
     memset(&tss, 0, sizeof(tss));
@@ -119,7 +118,7 @@ void tss_init(uint32_t kernel_stack) {
     tss.esp0 = kernel_stack;
     tss.ss0  = 0x10;  // GDT_KERNEL_DATA
     
-    // TSS を GDT の 5番目にセット
+    // TSS を GDT の 5番目に設定(ユーザー（Ring 3）からカーネル（Ring 0）に戻る時、どのスタックを使うかを CPU に教えておく)
     // base = &tss, limit = sizeof(tss)-1
     gdt_set_gate(5,
                  (uint32_t)&tss,
@@ -128,5 +127,6 @@ void tss_init(uint32_t kernel_stack) {
                  0x00);   // granularity は 0
     
     // TR レジスタにロード
-    asm volatile("ltr %%ax" :: "a"(0x28));  // GDT_TSS | RPL=0
+    asm volatile("ltr %%ax" :: "a"(GDT_TSS));
 }
+

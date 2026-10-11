@@ -39,6 +39,7 @@ gcc -m32 -ffreestanding -I./src -c src/x86/cpuid.c -o build/cpuid.o
 gcc -m32 -ffreestanding -I./src -c src/x86/vbe.c -o build/vbe.o
 gcc -m32 -ffreestanding -I./src -c src/x86/pit.c -o build/pit.o
 gcc -m32 -ffreestanding -I./src -c src/x86/timer.c -o build/timer.o
+gcc -m32 -ffreestanding -I./src -c src/debug/serial.c -o build/serial.o
 
 gcc -m32 -ffreestanding -I./src -c src/x86/font_8x16.c -o build/font_8x16.o
 
@@ -68,6 +69,7 @@ ld -m elf_i386 -T src/linker.ld -o build/kernel.elf \
   build/font_8x16.o \
   build/pit.o \
   build/timer.o \
+  build/serial.o \
   build/dir.o
   
 # 5. ELF → バイナリ
@@ -106,7 +108,8 @@ build/mkfs
 
 # 7. QEMU で実行
 # 標準BIOSで立ち上げる
-  qemu-system-i386 -hda build/disk.img -monitor stdio
+# qemu-system-i386 -hda build/disk.img -monitor stdio
+qemu-system-i386 -hda build/disk.img -serial stdio
 
 # 自作BIOSで立ち上げる
    #qemu-system-i386 \

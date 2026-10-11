@@ -80,15 +80,14 @@ int user_exec(void* entry, int argc, char **argv)
     // ここには戻ってこない
     return -1;
 }
-
 */
+
 
 
 /* 20261007いつか複数プロセスを導入する時はこの関数を廃止する */
 
 // argc: 引数個数, argv: 引数配列
 // 引数を指定しない場合、argc=1, argv[0]=ファイル名
-
 int user_exec(void* entry, int argc, char **argv)
 {
     int ret;
@@ -109,21 +108,6 @@ int user_exec(void* entry, int argc, char **argv)
     
     return ret;
 }
-
-
-/*20261007
-objdump -d -M intel build/user_exec.o
-
-00000000 <user_exec>:
-   0:	8b 44 24 04          	mov    eax,DWORD PTR [esp+0x4]
-   4:	8b 54 24 08          	mov    edx,DWORD PTR [esp+0x8]
-   8:	8b 4c 24 0c          	mov    ecx,DWORD PTR [esp+0xc]
-   c:	51                   	push   ecx
-   d:	52                   	push   edx
-   e:	ff d0                	call   eax
-  10:	83 c4 08             	add    esp,0x8
-  13:	c3                   	ret    
-*/
 
 int run_file(const char *line){
     if (line[0] == 0) return 1; // 空行なら何もしない
@@ -205,7 +189,18 @@ int run_file(const char *line){
                 }
             }
         }
-    }    
+    }
+    
+    /* 例
+    argv[0] → filename[64] の先頭（カーネルスタック上）
+    argv[1] → USER_ARG_MEM + 0   （"param1" の先頭）
+    argv[2] → USER_ARG_MEM + 7   （"param2" の先頭）
+    argv[3] → NULL
+    
+    char **argv;二重ポインタになっている意味
+    argv[i] で i 番目の文字列の先頭アドレス参照
+    argv[i][j] で i 番目の文字列の j 文字目参照
+    */
                  
     // ファイルを毎回固定でメモリ0x10000上へ展開して実行
     uint32_t size;

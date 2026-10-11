@@ -12,9 +12,18 @@
 */    
 
 //ユーザプログラム動作確認用 syscall不使用版
-int main(int argc, char **argv){
-    volatile unsigned char* vram = (unsigned char*)0xB8000;
-    vram[0] = 'A';      // 文字
-    vram[1] = 0x0F;     // 白文字・黒背景
+int main(int argc, char **argv) {
+    volatile uint32_t* fb = (uint32_t*)0xFD000000;
+    
+    int width = 800;
+    
+    // 左上から 100x100 の赤い四角
+    for (int y = 0; y < 100; y++) {
+        for (int x = 0; x < 100; x++) {
+            fb[y * width + x] = 0x000000FF;
+        }
+    }
+    
+     //return 0;
+    while(1);
 }
-
