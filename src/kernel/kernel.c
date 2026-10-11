@@ -33,19 +33,21 @@ void kernel_main() {
     get_cpu_name(cpuname);
     
     // ページング有効にすると、"reboot"命令のみ失敗する不可解な不具合が発生
-    // strcmp(line, "reboot") で固まる模様
+    // strcmp(line, "reboot") は問題ない
+    // outをコメントアウトすると>へ戻れるがstrcmp直後のkputsを2つ置くと2つめしか表示されない
+    // kputsが無くてもoutで固まる。
+    // reboot自体は仮想=物理となっている　outを別の場所へ置くと再起動可能
     // 他の部分のコードを色々整理してもこのエラーは健在、偶然ではない
     // 解決するまでコメントアウト
     // ページング有効(複数プロセスをする時の為に仕組みのみ入れておく)
     //enable_paging();
     //console_clear(); // ページングの際にVRAMにゴミが残る為、消す(原因不明)
-    /* rodataのアドレスを確認
-    kprintf("kernel_page_tables addr: 0x%x\n", (uint32_t)kernel_page_tables);
-    kprintf("help addr: 0x%x\n", (uint32_t)"help");
-    kprintf("reboot addr: 0x%x\n", (uint32_t)"reboot");
-    kprintf("shutdown addr: 0x%x\n", (uint32_t)"shutdown");
-    kprintf("test addr: 0x%x\n", (uint32_t)"test");
-    */
+    //serial_print("pd at 0x%x\n", (uint32_t)kernel_page_dir);
+    //serial_print("pt at 0x%x\n", (uint32_t)kernel_page_tables);
+    //serial_print("pde[0] = 0x%x\n", kernel_page_dir[0]);
+    //serial_print("pde[1] = 0x%x\n", kernel_page_dir[1]);
+    //enable_paging();
+    
     
     console_init();      // VBE 初期化 + 画面クリア
     
@@ -55,7 +57,6 @@ void kernel_main() {
     kputs("         "); kputs(boot_time); kputs(" (UTC)\n");
     kputs("-----------------------------------------\n");
     
-    
     kputs("GDT initialized\n");
     kputs("TSS initialized\n");
     kputs("VBE initialized\n");
@@ -64,8 +65,6 @@ void kernel_main() {
     serial_init();
     kputs("Serial initialized (COM1)\n");
     serial_puts("\nSerial initialized (COM1)\n");
-    
-
     
     // テスト
     //serial_print("test: argc=%d str=%s hex=0x%x\n", 3, "hello", 0xDEAD);
