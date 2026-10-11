@@ -3,6 +3,7 @@
 #include "drivers/cmos.h"
 #include "x86/pic.h"
 #include "x86/idt.h"
+#include "x86/gdt.h"
 #include "drivers/keyboard.h"
 #include "x86/panic.h"
 #include "x86/syscall.h"
@@ -17,6 +18,9 @@
 #include "x86/timer.h"
 
 void kernel_main() {
+
+
+    gdt_init();
 
     // 起動時間取得
     char boot_time[20];
@@ -48,6 +52,10 @@ void kernel_main() {
     kputs("         "); kputs(cpuname); kputs("\n");
     kputs("         "); kputs(boot_time); kputs(" (UTC)\n");
     kputs("-----------------------------------------\n");
+    
+    
+    kputs("GDT initialized\n");
+    kputs("VBE initialized\n");
     
      // メモリ管理初期化
     kheap_init(); // カーネル用
