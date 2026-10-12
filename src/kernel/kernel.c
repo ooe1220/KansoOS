@@ -1,26 +1,25 @@
-#include "x86/io.h"
-#include "x86/console.h"
-#include "drivers/cmos.h"
 #include "x86/pic.h"
 #include "x86/idt.h"
 #include "x86/gdt.h"
-#include "drivers/keyboard.h"
+#include "x86/vbe.h"
+#include "x86/io.h"
+#include "x86/console.h"
+#include "x86/vbe.h"
+#include "x86/timer.h"
 #include "x86/panic.h"
 #include "x86/syscall.h"
 #include "x86/paging.h"
+#include "drivers/keyboard.h"
+#include "drivers/cmos.h"
 #include "lib/stdint.h"
 #include "lib/string.h"
+#include "lib/bmp.h"
 #include "command.h"
 #include "mem.h"
 #include "x86/cpuid.h"
 #include "user_exec.h"
-#include "x86/vbe.h"
-#include "x86/timer.h"
 #include "debug/serial.h"
 #include "debug/serial_print.h"
-#include "x86/vbe.h"
-
-void draw_bmp(int dest_x, int dest_y, const uint8_t *bmp_data);
 
 void kernel_main() {
 
@@ -101,7 +100,6 @@ void kernel_main() {
     
     //タイマーを入れるとスタックが壊れる。一旦保留
     //timer_init();
-    
     
     show_penguin();
     
