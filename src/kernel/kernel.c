@@ -52,6 +52,13 @@ void kernel_main() {
     
     console_init();      // VBE 初期化 + 画面クリア
     
+    // 起動画面ペンギン
+    show_boot_logo();
+    for (uint32_t i = 0; i < 5000 * 100000; i++) {
+        asm volatile ("nop");
+    }
+    console_clear();
+    
     kputs("       C Kernel Booted           \n");
     kputs("       "); kputs(cpuname); kputs("\n");
     kputs("       "); kputs(boot_time); kputs(" (UTC)\n");
@@ -100,8 +107,8 @@ void kernel_main() {
     
     //タイマーを入れるとスタックが壊れる。一旦保留
     //timer_init();
-    
-    show_penguin();
+        
+    show_penguin();//   画面左上にペンギン画像を表示
     
     asm volatile("sti");  // 割り込みを有効にする(PIC初期化しないと割り込みが常時発生)
         
