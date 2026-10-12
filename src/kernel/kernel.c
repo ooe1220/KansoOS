@@ -18,6 +18,9 @@
 #include "x86/timer.h"
 #include "debug/serial.h"
 #include "debug/serial_print.h"
+#include "x86/vbe.h"
+
+void draw_bmp(int dest_x, int dest_y, const uint8_t *bmp_data);
 
 void kernel_main() {
 
@@ -48,15 +51,12 @@ void kernel_main() {
     //serial_print("pde[1] = 0x%x\n", kernel_page_dir[1]);
     //enable_paging();
     
-    
     console_init();      // VBE 初期化 + 画面クリア
     
-    kputs("-----------------------------------------\n");
-    kputs("         C Kernel Booted           \n");
-    kputs("         "); kputs(cpuname); kputs("\n");
-    kputs("         "); kputs(boot_time); kputs(" (UTC)\n");
-    kputs("-----------------------------------------\n");
-    
+    kputs("       C Kernel Booted           \n");
+    kputs("       "); kputs(cpuname); kputs("\n");
+    kputs("       "); kputs(boot_time); kputs(" (UTC)\n");
+
     kputs("GDT initialized\n");
     kputs("TSS initialized\n");
     kputs("VBE initialized\n");
@@ -102,6 +102,9 @@ void kernel_main() {
     //タイマーを入れるとスタックが壊れる。一旦保留
     //timer_init();
     
+    
+    show_penguin();
+    
     asm volatile("sti");  // 割り込みを有効にする(PIC初期化しないと割り込みが常時発生)
         
     char line[128]; // コマンド入力バッファ
@@ -142,6 +145,7 @@ void kernel_main() {
             }
         }
     }
-
 }
+
+
 

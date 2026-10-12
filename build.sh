@@ -2,6 +2,9 @@
 mkdir build # githubにbuildフォルダをあげていない為ここで追加。
 clear
 
+# 起動ペンギン画像をHファイルへ変換
+xxd -i src/kernel/penguin.bmp > src/kernel/penguin_bmp.h
+
 # 自作BIOSのビルド
 nasm -f bin bios/mybios.asm -o build/mybios.bin
 
