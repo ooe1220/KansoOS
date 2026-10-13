@@ -1,15 +1,16 @@
 [BITS 16]
 [ORG 0x7C00]
+; dlはMBRからスタック経由で貰う、MBR同様DLをメモリ経由で退避させると失敗する
 
 ; jmp start及びBPBはmkfs.cで後から埋める
 times 62 db 0
 
 start:
-
     ; CS:IP=0x07C0:0x0000とするBIOS対策、0x0000:0x7C00統一
     ; MBRでもやっているが将来パーティションを無くしても残る様に
     jmp 0x0000:real_start
 real_start:
+    pop dx ; スタック初期化前に取り出す
 
     xor ax, ax
     mov ds, ax
@@ -33,33 +34,13 @@ real_start:
     ; vbe_infoへVBE情報構造体のアドレスを置く
     mov eax, modeinfo
     mov [vbe_info], eax
-    
-    ; 表示の為にVGA MODE3へ戻す
-    ; mov ax, 0x0003
-    ; int 0x10
-    
-    ; 20261009 CHS -> LBA方式へ変更
-    ; kernelは64セクタ分(32KB)，LBA=126
-    ; KERNEL.BIN は LBA 126 セクタ目から始まる
-    ;mov ah, 0x02
-    ;mov al, 63 ; 読み込みセクタ数 1トラック分（32KB）
-    ;mov ch, 0 ; シリンダ
-    ;mov cl, 1 ; セクタ
-    ;mov dh, 2 ; ヘッド
-    ;mov dl, 0x80 ; HDD
-    ;mov bx, 0x8000 ; メモリ0x8000番地へ読み込む
-    ;int 0x13
-    ;jc load_error
-    ;jmp 0x0000:0x8000 ; kernelの開始アドレスへ跳ぶ
-    
-    
+        
 load_kernel:
     push 0x8000        ; バッファセグメント
     pop  es
     mov  bx, 0        ; ES:BX = 0x8000:0x0000
-
     mov  ah, 0x42      ; LBA拡張リード
-    mov  dl, 0x80
+    ;mov  dl, 0x80
     mov  si, dap       ; DAP へのポインタ
     int  0x13
     jc   load_error
@@ -114,4 +95,5 @@ vbe_info: dd 0 ; modeinfoの先頭アドレス
 ; 残りの領域を512バイトまで埋める
 ;times 510-($-$$) db 0
 dw 0xBB66 ; メモリ上でMBRとVBRを区別する為、便宜的に(本来はこんな書き方をすべきではない)
-
+;hexdump -C build/vbr.bin
+;objdump -b binary -m i8086 -D build/vbr.bin

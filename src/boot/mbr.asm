@@ -1,11 +1,19 @@
+;QEMUの不可解な動作
+; dlをメモリ経由で退避させて復元してからint13すると失敗する→一旦int13実行までdlには触らない
+;(xor ax,ax xor ax,ax)及び(sub ax,ax xor ax,ax)は失敗するが、(mov ax,0 xor ax,ax)には成功する　理由不明
 [BITS 16]
 [ORG 0x7C00]
+
+jmp start
+
+boot_drive:
+dw 0
 
 start:
     ; CS:IP=0x07C0:0x0000とするBIOS対策、0x0000:0x7C00統一
     jmp 0x0000:real_start
 real_start:
-
+    
     ; MBRを安全な領域（0x0600）へ退避
     xor ax, ax
     mov ds, ax
@@ -22,41 +30,27 @@ real_start:
     mov ss, ax
     mov sp, 0x7C00
     
-    mov dx, 0x3F8
-    mov al, 'm'
-    out dx, al
-    
-    mov si, msg_loading
+    mov si, msg_loading - start + 0x0600
     call print_string
-    
-    ; 0x0600にジャンプして処理を続行
+        
+    ; 途中で0x600へ以降してはいるが、callやjmp nearは相対アドレスなので他のラベルはそのまま使える
+    ; 0x0600へ移行。call/jmpは相対なので分岐はそのまま動くが、jmp farは再計算が必要
     jmp 0x0000:(continue - start + 0x0600)
 
 continue:
 
-    mov si, msg_relocated
+    mov si, msg_relocated - start + 0x0600
     call print_string
-
-    ; 20261009 CHS -> LBA方式へ変更
-    ;mov ah, 0x02
-    ;mov al, 1       ; 読み込むセクタ数
-    ;mov ch, 0       ; シリンダ番号
-    ;mov cl, 1       ; セクタ番号（1〜63）
-    ;mov dh, 1       ; ヘッド番号
-    ;mov dl, 0x80    ; 一台目のHDDを読み込む
-    ;mov bx, 0x7C00
-    ;int 0x13
-    ;jc disk_error
     
     ; VBRを0x7C00に読み込む（このコードを上書き）
     mov ah, 0x42
-    mov dl, 0x80          ; 本来BIOSのDL使うべき
     mov si, mbr_dap
+    ;mov dl, 0x80
     int 0x13
     jc disk_error
 
-    ; VBRへ移行
-    jmp 0x0000:0x7C00
+    push dx           ; MBRへドライブ番号を渡す
+    jmp 0x0000:0x7C00 ; VBRへ移行
 
 ; === DAP ===
 mbr_dap:
@@ -79,7 +73,7 @@ print_string:
     ret
 
 disk_error:
-    mov si, msg_disk_error
+    mov si, msg_disk_error - start + 0x0600
     call print_string
     jmp $
 
@@ -102,4 +96,6 @@ dd 1985              ; パーティションの大きさ 2048 - 63 = 1985(セク
 times 16*3 db 0       ; 3個分 ×16バイトを0で埋める
 
 dw 0xAA55
-
+; nasm -f bin src/boot/mbr.asm -o build/mbr.bin -l build/mbr.lst
+; cat build/mbr.lst
+; hexdump -C build/mbr.bin
