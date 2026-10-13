@@ -2,6 +2,8 @@ bits 16
 global start
 extern kernel_main
 
+    jmp start
+    vbe_info: dd 0 ; modeinfoの先頭アドレス
 
 start:
     cli
@@ -10,14 +12,21 @@ start:
     mov es, ax
     mov ss, ax
     mov sp, 0x7C00
+        
+    ; VBEのVRAMをBIOSに聞く
+    mov ax, 0x4F01
+    mov cx, 0x115          ; 聞きたいモード
+    mov di, modeinfo
+    int 0x10
     
-    mov dx, 0x3F8
-    mov al, 's'
-    out dx, al
+    ; 800x600 24bpp (モード 0115h) 
+    mov ax, 0x4F02    ; VBE Set Mode
+    mov bx, 0x4115    ; 0115h (24bpp) + ビット14
+    int 0x10
     
-    ; VGAテキストモード設定(mode3)
-    ;mov ax, 0x0003
-    ;int 0x10 
+    ; vbe_infoへVBE情報構造体のアドレスを置く
+    mov eax, modeinfo
+    mov [vbe_info], eax
     
     ; A20有効
     call a20_enable_8042
@@ -32,6 +41,9 @@ start:
 
     ; 32ビットコードへ跳ぶ
     jmp 0x08:pm_start
+    
+; BIOSが返すVBEの構造体255バイト開始アドレス
+modeinfo: times 0x100 db 0
 
 ; -----------------------------
 gdt_start:
@@ -77,4 +89,5 @@ pm_start:
 .hlt_loop:
     hlt
     jmp .hlt_loop
+; objdump -b binary -m i8086 -D build/kernel.bin | head -60
 

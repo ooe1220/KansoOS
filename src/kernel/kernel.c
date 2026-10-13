@@ -50,6 +50,10 @@ void kernel_main() {
     //serial_print("pde[1] = 0x%x\n", kernel_page_dir[1]);
     //enable_paging();
     
+    uint32_t test = *(volatile uint32_t *)0x8003;
+    serial_print("0x%x\n", (uint32_t)test);
+// test を画面に出す
+    
     console_init();      // VBE 初期化 + 画面クリア
     
     // 起動画面ペンギン

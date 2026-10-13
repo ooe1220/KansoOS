@@ -19,21 +19,6 @@ real_start:
 
     mov si, msg_loaded
     call print_string
-    
-    ; VBEのVRAMをBIOSに聞く
-    mov ax, 0x4F01
-    mov cx, 0x115          ; 聞きたいモード
-    mov di, modeinfo
-    int 0x10
-    
-    ; 800x600 24bpp (モード 0115h) 
-    mov ax, 0x4F02    ; VBE Set Mode
-    mov bx, 0x4115    ; 0115h (24bpp) + ビット14
-    int 0x10
-    
-    ; vbe_infoへVBE情報構造体のアドレスを置く
-    mov eax, modeinfo
-    mov [vbe_info], eax
         
 load_kernel:
     push 0x8000        ; バッファセグメント
@@ -86,14 +71,8 @@ msg_vbe_fail   db "[VBR] VBE info acquisition failed", 0x0D, 0x0A, 0
 msg_loaded db "[VBR] Execution started at 0x0000:0x7C00", 0x0D, 0x0A, 0
 error_msg db "Failed to load KERNEL.BIN", 0x0D, 0x0A, 0
 
-; VBE返り値44バイト modeinfo + 0x28 = VRAM開始アドレス
-modeinfo: times 0x2C db 0
-
-times 506-($-$$) db 0
-vbe_info: dd 0 ; modeinfoの先頭アドレス
-
 ; 残りの領域を512バイトまで埋める
-;times 510-($-$$) db 0
+times 510-($-$$) db 0
 dw 0xBB66 ; メモリ上でMBRとVBRを区別する為、便宜的に(本来はこんな書き方をすべきではない)
 ;hexdump -C build/vbr.bin
 ;objdump -b binary -m i8086 -D build/vbr.bin

@@ -4,7 +4,7 @@
 
 #include "stdint.h"
 
-#define MODEINFO_PTR (*(volatile uint32_t *)0x7DFA) // VBR内で取得した情報構造体のアドレス置き場
+#define MODEINFO_PTR (*(volatile uint32_t *)0x8002) // kernel_main直前アセンブリで取得した情報構造体のアドレス置き場
 
 typedef struct {
     /* === 0x00 - 0x27: 基本情報 === */
@@ -46,8 +46,6 @@ typedef struct {
     uint8_t  bpp2;             // +0x34 LFB用 bpp（VBE 2.0+）
     uint8_t  reserved2[189];   // +0x35 - 0xFF 予約（ゼロ）
 } __attribute__((packed)) vbe_mode_info_t;
-
-#define MODEINFO_PTR (*(volatile uint32_t *)0x7DFA)
 
 extern vbe_mode_info_t *vbe;
 

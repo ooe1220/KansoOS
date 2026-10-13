@@ -117,8 +117,8 @@ build/mkfs
 
 # 7. QEMU で実行
 # 標準BIOSで立ち上げる
-qemu-system-i386 -hda build/disk.img -monitor stdio
-# qemu-system-i386 -hda build/disk.img -serial stdio
+# qemu-system-i386 -hda build/disk.img -monitor stdio
+qemu-system-i386 -hda build/disk.img -serial stdio
 
 # 自作BIOSで立ち上げる
    #qemu-system-i386 \
