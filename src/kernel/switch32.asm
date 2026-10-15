@@ -12,25 +12,44 @@ start:
     mov es, ax
     mov ss, ax
     mov sp, 0x7C00
-        
+    
+    mov si, kernei_msg
+    call print_string
+
+;debug_hang:   
+;    cli
+;    hlt
+;    jmp debug_hang
+           
+    ; A20有効
+    call a20_enable_8042
+
+    ; VBE対応しているか
+    mov ax, 0x4F00
+    mov di, modeinfo
+    int 0x10
+    cmp ax, 0x004F
+    jne no_vbe
+    
     ; VBEのVRAMをBIOSに聞く
     mov ax, 0x4F01
     mov cx, 0x115          ; 聞きたいモード
     mov di, modeinfo
     int 0x10
+    cmp ax, 0x004F
+    jne no_vbe
     
     ; 800x600 24bpp (モード 0115h) 
     mov ax, 0x4F02    ; VBE Set Mode
     mov bx, 0x4115    ; 0115h (24bpp) + ビット14
     int 0x10
+    cmp ax, 0x004F
+    jne no_vbe
     
     ; vbe_infoへVBE情報構造体のアドレスを置く
     mov eax, modeinfo
     mov [vbe_info], eax
     
-    ; A20有効
-    call a20_enable_8042
-
     ; GDT読み込み
     lgdt [gdt_descriptor]
 
@@ -41,6 +60,24 @@ start:
 
     ; 32ビットコードへ跳ぶ
     jmp 0x08:pm_start
+    
+no_vbe:
+    mov si, error_msg
+    call print_string
+    ret
+    
+print_string:
+    lodsb
+    or al, al
+    jz .done
+    mov ah, 0x0E
+    int 0x10
+    jmp print_string
+.done:
+    ret
+    
+kernei_msg   db "Kernel loaded.", 13, 10, 0
+error_msg db "FVBE Error", 0x0D, 0x0A, 0
     
 ; BIOSが返すVBEの構造体255バイト開始アドレス
 modeinfo: times 0x100 db 0
