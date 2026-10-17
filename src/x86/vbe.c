@@ -27,7 +27,7 @@ void vbe_video_init(void) {
     fb_pitch  = vbe->lfb_pitch; // 1行のバイト数
     fb_width  = vbe->x_res; // 画面幅
     fb_height = vbe->y_res; // 画面高さ
-    bytes_per_pixel = vbe->bpp / 8;
+    bytes_per_pixel = vbe->bpp / 8; // bpp=24なら3、bpp=32なら4
 
     vbe_clear(0x00000000); //黒で画面クリア 
 }
@@ -109,7 +109,6 @@ void vbe_fill_test(void) {
     if (!fb_base) return;
     
     // 画面全体を赤（0x000000FF）で塗りつぶす
-    // ただし VRAM の全範囲を pitch を使って塗る
     for (uint32_t y = 0; y < fb_height; y++) {
         for (uint32_t x = 0; x < fb_width; x++) {
             uint8_t *p = fb_base + y * fb_pitch + x * bytes_per_pixel;

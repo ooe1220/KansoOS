@@ -11,10 +11,10 @@
 #define ROWS    (600 / CHAR_H)
 
 //#define FG_COLOR  0x00AAAA00
-#define BG_COLOR  0x00000000
+//#define BG_COLOR  0x00000000
 
 #define FG_COLOR  0x00FFFFFF   // 白
-//#define BG_COLOR  0x000000FF   // 青
+#define BG_COLOR  0x000000FF   // 青
 
 #define CONSOLE_ROWS (600 / 16)   // 37行（800x600, フォント16px高）
 

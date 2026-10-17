@@ -114,23 +114,27 @@ void kernel_main() {
     //タイマーを入れるとスタックが壊れる。一旦保留
     //timer_init();
     
-    
-    // QEMU pitch=2400 東芝実機 pitch=3200　
-    //QEMU bpp=24 bpp2=0 実機はBPP32、BPP2=7
-    /*
+
+    // 画面が下まで使えないのは物理解像度4:3​で800×600を設定しているからかもしれない
     uint8_t *fb_base = (uint8_t *)(uintptr_t)vbe->vram_addr;
     uint32_t fb_pitch = vbe->lfb_pitch;
     uint32_t fb_width = vbe->x_res;
     uint32_t fb_height = vbe->y_res;
-    debug_printf("BMP: vram=0x%x pitch=%u width=%u height=%u\n",
-        (uint32_t)fb_base, fb_pitch, fb_width, fb_height);
-    debug_printf("BMP: width*3=%u pitch==width*3:%s\n",
-        fb_width * 3, (fb_pitch == fb_width * 3) ? "YES" : "NO");
-        
-    debug_printf("bpp=%u\n", vbe->bpp);
-    debug_printf("bpp2=%u\n", vbe->bpp2);
-    */
-        
+    uint8_t bytes_per_pixel = vbe->bpp / 8;
+    debug_printf("fb_width=%u fb_height=%u fb_pitch=%u bytes_per_pixel=%u\n",
+    fb_width, fb_height, fb_pitch, bytes_per_pixel);  
+    
+    //QEMU x_res=800 y_res=600 pitch=2400 lfb_pitch=2400 bpp=24 vram_addr=0xfd000000 offscreen_size=0
+    //実機  x_res=800 y_res=600 pitch=3200 lfb_pitch=3200 bpp=32 vram_addr=0xd8000000 offscreen_size=0
+debug_printf("x_res=%u y_res=%u pitch=%u lfb_pitch=%u bpp=%u vram_addr=0x%x offscreen_size=%u\n",
+    vbe->x_res,
+    vbe->y_res,
+    vbe->pitch,
+    vbe->lfb_pitch,
+    vbe->bpp,
+    vbe->vram_addr,
+    vbe->offscreen_size);
+
     //vbe_fill_test(); // VRAM範囲と画面の範囲を知る為に赤塗り
 
     asm volatile("sti");  // 割り込みを有効にする(PIC初期化しないと割り込みが常時発生)
