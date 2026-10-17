@@ -1,7 +1,7 @@
 #ifndef CONSOLE_H
 #define CONSOLE_H
 
-#include <stdint.h>
+#include "../lib/stdint.h"
 
 void console_init(void);
 void console_clear(void);

@@ -78,6 +78,9 @@ void kernel_main() {
     kputs("Serial initialized (COM1)\n");
     serial_puts("\nSerial initialized (COM1)\n");
     
+    //vram_wrap_check();       // 実機でもVRAM折り返しは無し
+    //vram_collision_check();  // QEMUは問題ないが、実機は別々のアドレスが同じピクセルを指している。
+    
     // テスト
     //debug_printf("test: argc=%d str=%s hex=0x%x\n", 3, "hello", 0xDEAD);
     //debug_dump_regs();
@@ -120,12 +123,11 @@ void kernel_main() {
     uint32_t fb_pitch = vbe->lfb_pitch;
     uint32_t fb_width = vbe->x_res;
     uint32_t fb_height = vbe->y_res;
-    uint8_t bytes_per_pixel = vbe->bpp / 8;
-    debug_printf("fb_width=%u fb_height=%u fb_pitch=%u bytes_per_pixel=%u\n",
-    fb_width, fb_height, fb_pitch, bytes_per_pixel);  
+    uint8_t bytes_per_pixel = vbe->bpp / 8;  
     
     //QEMU x_res=800 y_res=600 pitch=2400 lfb_pitch=2400 bpp=24 vram_addr=0xfd000000 offscreen_size=0
     //実機  x_res=800 y_res=600 pitch=3200 lfb_pitch=3200 bpp=32 vram_addr=0xd8000000 offscreen_size=0
+    /*
 debug_printf("x_res=%u y_res=%u pitch=%u lfb_pitch=%u bpp=%u vram_addr=0x%x offscreen_size=%u\n",
     vbe->x_res,
     vbe->y_res,
@@ -134,6 +136,7 @@ debug_printf("x_res=%u y_res=%u pitch=%u lfb_pitch=%u bpp=%u vram_addr=0x%x offs
     vbe->bpp,
     vbe->vram_addr,
     vbe->offscreen_size);
+    */
 
     //vbe_fill_test(); // VRAM範囲と画面の範囲を知る為に赤塗り
 

@@ -9,6 +9,7 @@ void draw_bmp(int dest_x, int dest_y, const uint8_t *bmp_data) {
     uint32_t fb_pitch = vbe->lfb_pitch;
     uint32_t fb_width = vbe->x_res;
     uint32_t fb_height = vbe->y_res;
+    uint8_t bytes_per_pixel = vbe->bpp / 8;
 
     // BMPヘッダー読み取り（リトルエンディアン）
     uint16_t bf_type = *(uint16_t *)(bmp_data + 0x00);
@@ -42,7 +43,7 @@ void draw_bmp(int dest_x, int dest_y, const uint8_t *bmp_data) {
             if (fb_x < 0 || fb_x >= (int)fb_width || fb_y < 0 || fb_y >= (int)fb_height)
                 continue;
 
-            uint8_t *fb = fb_base + fb_y * fb_pitch + fb_x * 3;
+            uint8_t *fb = fb_base + fb_y * fb_pitch + fb_x * bytes_per_pixel;
             const uint8_t *px = src_row + x * 3;
 
             // BMP: BGR → VBE: BGR（そのままコピー）
@@ -60,6 +61,7 @@ void draw_bmp_scaled(int dest_x, int dest_y, const uint8_t *bmp_data, int scale)
     uint32_t fb_pitch = vbe->lfb_pitch;
     uint32_t fb_width = vbe->x_res;
     uint32_t fb_height = vbe->y_res;
+    uint8_t bytes_per_pixel = vbe->bpp / 8;
 
     uint16_t bf_type = *(uint16_t *)(bmp_data + 0x00);
     if (bf_type != 0x4D42) return;
@@ -93,7 +95,7 @@ void draw_bmp_scaled(int dest_x, int dest_y, const uint8_t *bmp_data, int scale)
                     if (fb_x < 0 || fb_x >= (int)fb_width || fb_y < 0 || fb_y >= (int)fb_height)
                         continue;
 
-                    uint8_t *fb = fb_base + fb_y * fb_pitch + fb_x * 3;
+                    uint8_t *fb = fb_base + fb_y * fb_pitch + fb_x * bytes_per_pixel;
                     fb[0] = px[0];
                     fb[1] = px[1];
                     fb[2] = px[2];

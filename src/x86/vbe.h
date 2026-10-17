@@ -56,6 +56,12 @@ void draw_char(int x, int y, char c, uint32_t fg_color);
 void draw_rect(int x, int y, int w, int h, uint32_t color);
 void draw_circle(int cx, int cy, int r, uint32_t color);
 
+
+/********************************
+* 以下VBEデバッグ用　実装とは無関係
+*********************************/
 void vbe_fill_test(void);
+void vram_wrap_check(void);
+void vram_collision_check(void);
 
 #endif
