@@ -115,7 +115,9 @@ void kernel_main() {
     //timer_init();
     
     
-    // QEMU pitch=2400 東芝実機 pitch=3200
+    // QEMU pitch=2400 東芝実機 pitch=3200　
+    //QEMU bpp=24 bpp2=0 実機はBPP32、BPP2=7
+    /*
     uint8_t *fb_base = (uint8_t *)(uintptr_t)vbe->vram_addr;
     uint32_t fb_pitch = vbe->lfb_pitch;
     uint32_t fb_width = vbe->x_res;
@@ -125,8 +127,11 @@ void kernel_main() {
     debug_printf("BMP: width*3=%u pitch==width*3:%s\n",
         fb_width * 3, (fb_pitch == fb_width * 3) ? "YES" : "NO");
         
+    debug_printf("bpp=%u\n", vbe->bpp);
+    debug_printf("bpp2=%u\n", vbe->bpp2);
+    */
+        
     //vbe_fill_test(); // VRAM範囲と画面の範囲を知る為に赤塗り
-    
 
     asm volatile("sti");  // 割り込みを有効にする(PIC初期化しないと割り込みが常時発生)
         

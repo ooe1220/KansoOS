@@ -6,9 +6,12 @@
 vbe_mode_info_t *vbe = NULL;
 
 static uint8_t  *fb_base = NULL;
-static uint32_t fb_pitch = 0;
+static uint32_t fb_pitch = 0; // QEMU2400 実機3200となっていた
 static uint32_t fb_width = 0;
 static uint32_t fb_height = 0;
+
+ // 1ピクセルのバイト数。VBEを24bppで設定した筈が、QEMU24bpp, 実機32bppとなり1ピクセル毎に1バイトずれていた
+static uint8_t bytes_per_pixel = 0;
 
 // VRAMの構造
 // vbe->vram_addr = 0xFD000000(QEMU実測値)の場合
@@ -24,6 +27,7 @@ void vbe_video_init(void) {
     fb_pitch  = vbe->lfb_pitch; // 1行のバイト数
     fb_width  = vbe->x_res; // 画面幅
     fb_height = vbe->y_res; // 画面高さ
+    bytes_per_pixel = vbe->bpp / 8;
 
     vbe_clear(0x00000000); //黒で画面クリア 
 }
@@ -35,7 +39,7 @@ void vbe_clear(uint32_t bg_color) {
 
     for (uint32_t y = 0; y < fb_height; y++) {
         for (uint32_t x = 0; x < fb_width; x++) {
-            uint8_t *p = fb_base + y * fb_pitch + x * 3; // putpixel()呼ぶとcallやスタック生成で遅くなるのでべた書き
+            uint8_t *p = fb_base + y * fb_pitch + x * bytes_per_pixel; // putpixel()呼ぶとcallやスタック生成で遅くなるのでべた書き
             p[0] = bg_color & 0xFF;
             p[1] = (bg_color >> 8) & 0xFF;
             p[2] = (bg_color >> 16) & 0xFF;
@@ -47,7 +51,7 @@ static void putpixel(int x, int y, uint32_t color) {
     if (!fb_base) return;
     if (x < 0 || x >= (int)fb_width || y < 0 || y >= (int)fb_height) return;
 
-    uint8_t *p = fb_base + y * fb_pitch + x * 3;
+    uint8_t *p = fb_base + y * fb_pitch + x * bytes_per_pixel;
     p[0] = color & 0xFF;         // 青
     p[1] = (color >> 8) & 0xFF;  // 緑
     p[2] = (color >> 16) & 0xFF; // 赤
@@ -108,7 +112,7 @@ void vbe_fill_test(void) {
     // ただし VRAM の全範囲を pitch を使って塗る
     for (uint32_t y = 0; y < fb_height; y++) {
         for (uint32_t x = 0; x < fb_width; x++) {
-            uint8_t *p = fb_base + y * fb_pitch + x * 3;
+            uint8_t *p = fb_base + y * fb_pitch + x * bytes_per_pixel;
             p[0] = 0xFF;  // B
             p[1] = 0x00;  // G
             p[2] = 0x00;  // R → 赤
