@@ -6,7 +6,7 @@
 #include "fs/fs_file.h"
 #include "x86/pic.h"
 #include "debug/serial.h"
-#include "debug/serial_print.h"
+#include "debug/debug_print.h"
 
 /*
 int user_exec(void* entry, int argc, char **argv)
@@ -100,7 +100,7 @@ int user_exec(void* entry, int argc, char **argv)
     
     uint32_t esp;
     asm volatile ("mov %%esp, %0" : "=r"(esp));
-    serial_print("ESP = 0x%x\n", esp);
+    debug_printf("ESP = 0x%x\n", esp);
 
     asm volatile (
         "push %[argv]\n"   // argv のアドレスを push
@@ -115,7 +115,7 @@ int user_exec(void* entry, int argc, char **argv)
     );
     
     asm volatile ("mov %%esp, %0" : "=r"(esp));
-    serial_print("ESP = 0x%x\n", esp);
+    debug_printf("ESP = 0x%x\n", esp);
 
     
     return ret;

@@ -19,7 +19,7 @@
 #include "x86/cpuid.h"
 #include "user_exec.h"
 #include "debug/serial.h"
-#include "debug/serial_print.h"
+#include "debug/debug_print.h"
 
 void kernel_main() {
 
@@ -44,18 +44,18 @@ void kernel_main() {
     // ページング有効(複数プロセスをする時の為に仕組みのみ入れておく)
     //enable_paging();
     //console_clear(); // ページングの際にVRAMにゴミが残る為、消す(原因不明)
-    //serial_print("pd at 0x%x\n", (uint32_t)kernel_page_dir);
-    //serial_print("pt at 0x%x\n", (uint32_t)kernel_page_tables);
-    //serial_print("pde[0] = 0x%x\n", kernel_page_dir[0]);
-    //serial_print("pde[1] = 0x%x\n", kernel_page_dir[1]);
+    //debug_printf("pd at 0x%x\n", (uint32_t)kernel_page_dir);
+    //debug_printf("pt at 0x%x\n", (uint32_t)kernel_page_tables);
+    //debug_printf("pde[0] = 0x%x\n", kernel_page_dir[0]);
+    //debug_printf("pde[1] = 0x%x\n", kernel_page_dir[1]);
     //enable_paging();
     
-    uint32_t test = *(volatile uint32_t *)0x8003;
-    serial_print("0x%x\n", (uint32_t)test);
+    //uint32_t test = *(volatile uint32_t *)0x8003;
+    //debug_printf("0x%x\n", (uint32_t)test);
 // test を画面に出す
     
     console_init();      // VBE 初期化 + 画面クリア
-    
+        
     // 起動画面ペンギン
     show_boot_logo();
     for (uint32_t i = 0; i < 5000 * 100000; i++) {
@@ -71,13 +71,15 @@ void kernel_main() {
     kputs("TSS initialized\n");
     kputs("VBE initialized\n");
     
+    show_penguin();// shell画面左上にペンギン画像を表示
+    
     // デバッグ用COM1有効
     serial_init();
     kputs("Serial initialized (COM1)\n");
     serial_puts("\nSerial initialized (COM1)\n");
     
     // テスト
-    //serial_print("test: argc=%d str=%s hex=0x%x\n", 3, "hello", 0xDEAD);
+    //debug_printf("test: argc=%d str=%s hex=0x%x\n", 3, "hello", 0xDEAD);
     //debug_dump_regs();
     //debug_dump_mem(0x0600, 512); // MBR
     //debug_dump_mem(0x7C00, 512); // VBR
@@ -86,10 +88,10 @@ void kernel_main() {
     //asm volatile ("mov %%esp, %0" : "=r"(esp));
     //debug_dump_stack(esp, 32, 32);
     
-     // メモリ管理初期化
-    kheap_init(); // カーネル用
-    uheap_init(); // ユーザ用
-    kputs("Heap initialized\n");
+     // メモリ管理初期化　QEMUは通るが実機では固まる
+    //kheap_init(); // カーネル用
+    //uheap_init(); // ユーザ用
+    //kputs("Heap initialized\n");
         
     idt_init(); // IDT初期化 (x86/idt.h)
     kputs("IDT initialized\n");
@@ -111,9 +113,21 @@ void kernel_main() {
     
     //タイマーを入れるとスタックが壊れる。一旦保留
     //timer_init();
-        
-    show_penguin();//   画面左上にペンギン画像を表示
     
+    
+    // QEMU pitch=2400 東芝実機 pitch=3200
+    uint8_t *fb_base = (uint8_t *)(uintptr_t)vbe->vram_addr;
+    uint32_t fb_pitch = vbe->lfb_pitch;
+    uint32_t fb_width = vbe->x_res;
+    uint32_t fb_height = vbe->y_res;
+    debug_printf("BMP: vram=0x%x pitch=%u width=%u height=%u\n",
+        (uint32_t)fb_base, fb_pitch, fb_width, fb_height);
+    debug_printf("BMP: width*3=%u pitch==width*3:%s\n",
+        fb_width * 3, (fb_pitch == fb_width * 3) ? "YES" : "NO");
+        
+    //vbe_fill_test(); // VRAM範囲と画面の範囲を知る為に赤塗り
+    
+
     asm volatile("sti");  // 割り込みを有効にする(PIC初期化しないと割り込みが常時発生)
         
     char line[128]; // コマンド入力バッファ

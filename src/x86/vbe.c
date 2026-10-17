@@ -100,3 +100,18 @@ void draw_circle(int cx, int cy, int r, uint32_t color) {
         }
     }
 }
+
+void vbe_fill_test(void) {
+    if (!fb_base) return;
+    
+    // 画面全体を赤（0x000000FF）で塗りつぶす
+    // ただし VRAM の全範囲を pitch を使って塗る
+    for (uint32_t y = 0; y < fb_height; y++) {
+        for (uint32_t x = 0; x < fb_width; x++) {
+            uint8_t *p = fb_base + y * fb_pitch + x * 3;
+            p[0] = 0xFF;  // B
+            p[1] = 0x00;  // G
+            p[2] = 0x00;  // R → 赤
+        }
+    }
+}

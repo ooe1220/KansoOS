@@ -10,7 +10,7 @@
 #include "x86/pic.h"
 #include "fs/fs_file.h"
 #include "debug/serial.h"
-#include "debug/serial_print.h"
+#include "debug/debug_print.h"
 #include "x86/paging.h"
 
 // 内部コマンド実行
@@ -37,9 +37,9 @@ int run_builtin_command(const char *line){
         //kputs("Rebooting...\n");
         outb(0x64, 0xFC);
         //kputs("This should not print\n");
-    //serial_print("calling kputs 1\n");
+    //debug_print("calling kputs 1\n");
     //kputs("A\n");
-    //serial_print("calling kputs 2\n");
+    //debug_print("calling kputs 2\n");
     //kputs("B\n");
         //kputs("X");
     //kputs("Y");

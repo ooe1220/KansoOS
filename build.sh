@@ -45,7 +45,8 @@ gcc -m32 -ffreestanding -I./src -c src/x86/timer.c -o build/timer.o
 gcc -m32 -ffreestanding -I./src -c src/lib/itoa.c -o build/itoa.o
 gcc -m32 -ffreestanding -I./src -c src/lib/bmp.c -o build/bmp.o
 gcc -m32 -ffreestanding -I./src -c src/debug/serial.c -o build/serial.o
-gcc -m32 -ffreestanding -I./src -c src/debug/serial_print.c -o build/serial_print.o # -O2厳禁
+gcc -m32 -ffreestanding -I./src -c src/debug/debug_print.c -o build/debug_print.o # -O2厳禁
+gcc -m32 -ffreestanding -I./src -c src/debug/detect.c -o build/detect.o
 
 gcc -m32 -ffreestanding -I./src -c src/x86/font_8x16.c -o build/font_8x16.o
 
@@ -78,7 +79,8 @@ ld -m elf_i386 -T src/linker.ld -o build/kernel.elf \
   build/serial.o \
   build/itoa.o \
   build/bmp.o \
-  build/serial_print.o \
+  build/debug_print.o \
+  build/detect.o \
   build/dir.o
   
 # 5. ELF → バイナリ
