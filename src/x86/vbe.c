@@ -161,8 +161,7 @@ void vram_wrap_check(void) {
 #define HIT_COUNT_BASE 0x200000
 #define HIT_COUNT_SIZE (800 * 600 * 4)
 
-// fb_width=800 fb_height=600 fb_pitch=2400 bytes_per_pixel=3
-
+//　実機で衝突した。fb_width=800 fb_height=600 fb_pitch=2400 bytes_per_pixel=3
 void vram_collision_check(void) {
     uintptr_t base = (uintptr_t)fb_base;
     uintptr_t vram_size = (uintptr_t)(fb_height * fb_pitch);
@@ -196,5 +195,56 @@ void vram_collision_check(void) {
 
     // 全クリア
     debug_printf("VRAM_OK\n");
+    __asm__ volatile ("hlt");
+}
+
+void vram_alias_check(void) {
+    uintptr_t base = (uintptr_t)fb_base;
+
+    // VRAM 全体を 0 クリア
+    for (uintptr_t i = 0; i < (uintptr_t)(fb_height * fb_pitch); i += 4) {
+        *(volatile uint32_t *)(base + i) = 0;
+    }
+
+    debug_printf("VRAM cleared\n");
+
+    // 全座標を順に 0xFFFFFFFF でマークしていく
+    for (int y = 0; y < (int)fb_height; y++) {
+        for (int x = 0; x < (int)fb_width; x++) {
+            uintptr_t addr = base + y * fb_pitch + x * bytes_per_pixel;
+            volatile uint32_t *p = (uint32_t *)addr;
+
+            if (*p != 0) {
+                // 既に書き込み済み → 衝突検出
+                // 衝突した座標のアドレスに特徴的なパターンを書く
+                *p = 0xAAAAAAAA;  // 10101010...
+
+                // 少し待つ（メモリの反映を確実にするため）
+                for (volatile int i = 0; i < 1000000; i++);
+
+                // 衝突相手の座標を探す
+                // 全座標をもう一度スキャンして 0xAAAAAAAA が見える場所を探す
+                for (int yy = 0; yy < (int)fb_height; yy++) {
+                    for (int xx = 0; xx < (int)fb_width; xx++) {
+                        uintptr_t addr2 = base + yy * fb_pitch + xx * bytes_per_pixel;
+                        volatile uint32_t *p2 = (uint32_t *)addr2;
+
+                        if (*p2 == 0xAAAAAAAA && !(yy == y && xx == x)) {
+                            debug_printf("ALIAS: (%d,%d) and (%d,%d) share addr 0x%x\n",
+                                         y, x, yy, xx, addr);
+                            __asm__ volatile ("hlt");
+                        }
+                    }
+                }
+
+                debug_printf("ALIAS partner not found??\n");
+                __asm__ volatile ("hlt");
+            }
+
+            *p = 0xFFFFFFFF;
+        }
+    }
+
+    debug_printf("NO_ALIAS\n");
     __asm__ volatile ("hlt");
 }

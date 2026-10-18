@@ -63,6 +63,16 @@ void kernel_main() {
     }
     console_clear();
     
+    // キャッシュを切っておく
+    __asm__ volatile (
+        "mov %%cr0, %%eax\n"
+        "and $0xDFFFFFFF, %%eax\n"   // bit 29 (NW) を 0 にクリア
+        "or  $0x40000000, %%eax\n"   // bit 30 (CD) を 1 にセット
+        "mov %%eax, %%cr0\n"
+        "wbinvd\n"
+        : : : "eax"
+    );
+    
     kputs("       C Kernel Booted           \n");
     kputs("       "); kputs(cpuname); kputs("\n");
     kputs("       "); kputs(boot_time); kputs(" (UTC)\n");
@@ -80,6 +90,7 @@ void kernel_main() {
     
     //vram_wrap_check();       // 実機でもVRAM折り返しは無し
     //vram_collision_check();  // QEMUは問題ないが、実機は別々のアドレスが同じピクセルを指している。
+    //vram_alias_check();
     
     // テスト
     //debug_printf("test: argc=%d str=%s hex=0x%x\n", 3, "hello", 0xDEAD);

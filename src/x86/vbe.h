@@ -63,5 +63,6 @@ void draw_circle(int cx, int cy, int r, uint32_t color);
 void vbe_fill_test(void);
 void vram_wrap_check(void);
 void vram_collision_check(void);
+void vram_alias_check(void);
 
 #endif
