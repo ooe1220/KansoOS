@@ -38,9 +38,9 @@ gcc -m32 -ffreestanding -I./src -c src/kernel/mem.c -o build/mem.o
 gcc -m32 -ffreestanding -I./src -O2 -c src/fs/dir.c -o build/dir.o
 gcc -m32 -ffreestanding -I./src -O2 -c src/fs/fat16_file.c -o build/fat16_file.o
 gcc -m32 -ffreestanding -I./src -O2 -c src/fs/fs_file.c -o build/fs_file.o
-gcc -m32 -ffreestanding -I./src -c src/x86/cpuid.c -o build/cpuid.o
 gcc -m32 -ffreestanding -I./src -c src/x86/vbe.c -o build/vbe.o
 gcc -m32 -ffreestanding -I./src -c src/x86/pit.c -o build/pit.o
+gcc -m32 -ffreestanding -I./src -c src/x86/cpu.c -o build/cpu.o
 gcc -m32 -ffreestanding -I./src -c src/x86/timer.c -o build/timer.o
 gcc -m32 -ffreestanding -I./src -c src/lib/itoa.c -o build/itoa.o
 gcc -m32 -ffreestanding -I./src -c src/lib/bmp.c -o build/bmp.o
@@ -71,7 +71,7 @@ ld -m elf_i386 -T src/linker.ld -o build/kernel.elf \
   build/user_exec.o \
   build/fat16_file.o \
   build/fs_file.o \
-  build/cpuid.o \
+  build/cpu.o \
   build/vbe.o \
   build/font_8x16.o \
   build/pit.o \

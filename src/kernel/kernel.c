@@ -16,7 +16,7 @@
 #include "lib/bmp.h"
 #include "command.h"
 #include "mem.h"
-#include "x86/cpuid.h"
+#include "x86/cpu.h"
 #include "user_exec.h"
 #include "debug/serial.h"
 #include "debug/debug_print.h"
@@ -63,16 +63,6 @@ void kernel_main() {
     }
     console_clear();
     
-    // キャッシュを切っておく
-    __asm__ volatile (
-        "mov %%cr0, %%eax\n"
-        "and $0xDFFFFFFF, %%eax\n"   // bit 29 (NW) を 0 にクリア
-        "or  $0x40000000, %%eax\n"   // bit 30 (CD) を 1 にセット
-        "mov %%eax, %%cr0\n"
-        "wbinvd\n"
-        : : : "eax"
-    );
-    
     kputs("       C Kernel Booted           \n");
     kputs("       "); kputs(cpuname); kputs("\n");
     kputs("       "); kputs(boot_time); kputs(" (UTC)\n");
@@ -88,8 +78,15 @@ void kernel_main() {
     kputs("Serial initialized (COM1)\n");
     serial_puts("\nSerial initialized (COM1)\n");
     
+    cpu_cache_disable();// キャッシュを切っておく
+    kputs("CPU cache disabled\n");
+    
     //vram_wrap_check();       // 実機でもVRAM折り返しは無し
     //vram_collision_check();  // QEMUは問題ないが、実機は別々のアドレスが同じピクセルを指している。
+    
+    // 800×600の時
+     //実機 "ALIAS: (128,0) and (455,544) share addr 0xd8064000\n" VRAM衝突している
+     //      TEST A=d8064000 B=d8164000 readA=abcdef01 readB=abcdef01\n"
     //vram_alias_check();
     
     // テスト

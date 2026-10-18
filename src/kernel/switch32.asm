@@ -26,10 +26,11 @@ start:
 
     ; VBE対応しているか
     mov ax, 0x4F00
-    mov di, modeinfo
+    mov di, controllerinfo
     int 0x10
     cmp ax, 0x004F
     jne no_vbe
+    
     
     ; VBEのVRAMをBIOSに聞く
     mov ax, 0x4F01
@@ -45,6 +46,21 @@ start:
     int 0x10
     cmp ax, 0x004F
     jne no_vbe
+    
+    ; 640×480を調べる
+    ;mov ax, 0x4F01
+    ;mov cx, 0x112
+    ;mov di, modeinfo
+    ;int 0x10
+    ;cmp ax, 0x004F
+    ;jne no_vbe
+
+    ; 640×480をLFBで設定
+    ;mov ax, 0x4F02
+    ;mov bx, 0x4112
+    ;int 0x10
+    ;cmp ax, 0x004F
+    ;jne no_vbe
     
     ; vbe_infoへVBE情報構造体のアドレスを置く
     mov eax, modeinfo
@@ -80,6 +96,7 @@ kernei_msg   db "Kernel loaded.", 13, 10, 0
 error_msg db "FVBE Error", 0x0D, 0x0A, 0
     
 ; BIOSが返すVBEの構造体255バイト開始アドレス
+controllerinfo: times 0x100 db 0 ; こちらは使わないが受け皿
 modeinfo: times 0x100 db 0
 
 ; -----------------------------

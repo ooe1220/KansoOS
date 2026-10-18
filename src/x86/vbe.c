@@ -198,6 +198,8 @@ void vram_collision_check(void) {
     __asm__ volatile ("hlt");
 }
 
+//実機 "ALIAS: (128,0) and (455,544) share addr 0xd8064000\n" VRAM衝突している
+//      TEST A=d8064000 B=d8164000 readA=abcdef01 readB=abcdef01\n"
 void vram_alias_check(void) {
     uintptr_t base = (uintptr_t)fb_base;
 
@@ -232,6 +234,29 @@ void vram_alias_check(void) {
                         if (*p2 == 0xAAAAAAAA && !(yy == y && xx == x)) {
                             debug_printf("ALIAS: (%d,%d) and (%d,%d) share addr 0x%x\n",
                                          y, x, yy, xx, addr);
+                                                    
+                            // ★ ここから追加：2つのアドレスが同じ領域か確認
+                            uintptr_t addr_a = addr;
+                            uintptr_t addr_b = addr2;
+
+                            volatile uint32_t *a = (volatile uint32_t *)addr_a;
+                            volatile uint32_t *b = (volatile uint32_t *)addr_b;
+
+                            *a = 0x12345678;
+                            *b = 0xABCDEF01;
+
+                            uint32_t va = *a;
+                            uint32_t vb = *b;
+
+                            debug_printf(
+                                "TEST A=%x B=%x readA=%x readB=%x\n",
+                                (uint32_t)addr_a,
+                                (uint32_t)addr_b,
+                                va,
+                                vb
+                            );
+                            // ★ 追加ここまで      
+                    
                             __asm__ volatile ("hlt");
                         }
                     }

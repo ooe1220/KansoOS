@@ -36,3 +36,14 @@ void get_cpu_name(char* buf)
 
     buf[47] = '\0';
 }
+
+void cpu_cache_disable(){
+    asm volatile (
+        "mov %%cr0, %%eax\n"
+        "and $0xDFFFFFFF, %%eax\n"   // bit 29 (NW) を 0 にクリア
+        "or  $0x40000000, %%eax\n"   // bit 30 (CD) を 1 にセット
+        "mov %%eax, %%cr0\n"
+        "wbinvd\n"
+        : : : "eax"
+    );
+}
