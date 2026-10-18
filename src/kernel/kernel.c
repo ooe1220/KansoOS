@@ -81,23 +81,6 @@ void kernel_main() {
     cpu_cache_disable();// キャッシュを切っておく
     kputs("CPU cache disabled\n");
     
-    //vram_wrap_check();       // 実機でもVRAM折り返しは無し
-    //vram_collision_check();  // QEMUは問題ないが、実機は別々のアドレスが同じピクセルを指している。
-    
-    // 800×600の時
-     //実機 "ALIAS: (128,0) and (455,544) share addr 0xd8064000\n" VRAM衝突している
-     //      TEST A=d8064000 B=d8164000 readA=abcdef01 readB=abcdef01\n"
-    //vram_alias_check();
-    
-    // テスト
-    //debug_printf("test: argc=%d str=%s hex=0x%x\n", 3, "hello", 0xDEAD);
-    //debug_dump_regs();
-    //debug_dump_mem(0x0600, 512); // MBR
-    //debug_dump_mem(0x7C00, 512); // VBR
-    // dd if=build/disk.img bs=512 skip=63 count=1 2>/dev/null | xxd | tail -4でVBRには0xBB66があるのにメモリ上には無い
-    //uint32_t esp;
-    //asm volatile ("mov %%esp, %0" : "=r"(esp));
-    //debug_dump_stack(esp, 32, 32);
     
      // メモリ管理初期化　QEMUは通るが実機では固まる
     //kheap_init(); // カーネル用
@@ -132,21 +115,6 @@ void kernel_main() {
     uint32_t fb_width = vbe->x_res;
     uint32_t fb_height = vbe->y_res;
     uint8_t bytes_per_pixel = vbe->bpp / 8;  
-    
-    //QEMU x_res=800 y_res=600 pitch=2400 lfb_pitch=2400 bpp=24 vram_addr=0xfd000000 offscreen_size=0
-    //実機  x_res=800 y_res=600 pitch=3200 lfb_pitch=3200 bpp=32 vram_addr=0xd8000000 offscreen_size=0
-    /*
-debug_printf("x_res=%u y_res=%u pitch=%u lfb_pitch=%u bpp=%u vram_addr=0x%x offscreen_size=%u\n",
-    vbe->x_res,
-    vbe->y_res,
-    vbe->pitch,
-    vbe->lfb_pitch,
-    vbe->bpp,
-    vbe->vram_addr,
-    vbe->offscreen_size);
-    */
-
-    //vbe_fill_test(); // VRAM範囲と画面の範囲を知る為に赤塗り
 
     asm volatile("sti");  // 割り込みを有効にする(PIC初期化しないと割り込みが常時発生)
         

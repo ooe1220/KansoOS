@@ -50,19 +50,8 @@ typedef struct {
 extern vbe_mode_info_t *vbe;
 
 void vbe_video_init(void);
-void vbe_clear(uint32_t bg_color);
-void draw_char(int x, int y, char c, uint32_t fg_color);
-
-void draw_rect(int x, int y, int w, int h, uint32_t color);
-void draw_circle(int cx, int cy, int r, uint32_t color);
-
-
-/********************************
-* 以下VBEデバッグ用　実装とは無関係
-*********************************/
-void vbe_fill_test(void);
-void vram_wrap_check(void);
-void vram_collision_check(void);
-void vram_alias_check(void);
+void vbe_clear(uint16_t bg_color);
+void draw_char(int x, int y, char c, uint16_t fg_color);
+void draw_rect(int x, int y, int w, int h, uint16_t color);
 
 #endif

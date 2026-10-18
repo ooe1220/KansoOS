@@ -4,29 +4,37 @@
 #include "timer.h"
 #include "./lib/itoa.h"
 
-// 本来はこれらもVBE構造体から取り出すべき、今後の課題
+// 文字サイズ・画面構成（800x600 / フォント8x16）
 #define CHAR_W  8
 #define CHAR_H  16
 #define COLS    (800 / CHAR_W)
 #define ROWS    (600 / CHAR_H)
 
-//#define FG_COLOR  0x00AAAA00
-//#define BG_COLOR  0x00000000
+/* =========================================================
+ * 色定義（RGB565 の uint16_t のみ）
+ * ========================================================= */
+#define COLOR_BLACK   0x0000
+#define COLOR_WHITE   0xFFFF
+#define COLOR_RED     0xF800
+#define COLOR_GREEN   0x07E0
+#define COLOR_BLUE    0x001F
+#define COLOR_YELLOW  0xFFE0
 
-#define FG_COLOR  0x00FFFFFF   // 白
-#define BG_COLOR  0x000000FF   // 青
-
-#define CONSOLE_ROWS (600 / 16)   // 37行（800x600, フォント16px高）
+#define FG_COLOR  COLOR_WHITE   // 文字色：白
+#define BG_COLOR  COLOR_BLUE    // 背景色：青
 
 void cursor_clear(void);
 
-//カーソル
+// カーソル位置
 int cx = 0;
 int cy = 0;
-static int cursor_visible = 1;
 
+// 文字バッファ（色に関係ないのでそのまま）
 static char text_buf[ROWS][COLS];
 
+/* ---------------------------------------------------------
+ * コンソール初期化
+ * --------------------------------------------------------- */
 void console_init(void) {
     cx = 0;
     cy = 0;
@@ -38,69 +46,41 @@ void console_init(void) {
             text_buf[y][x] = ' ';
 }
 
+/* ---------------------------------------------------------
+ * スクロール（1行分上にシフト）
+ * --------------------------------------------------------- */
 static void scroll(void) {
-    
     uint8_t *fb = (uint8_t *)vbe->vram_addr;
-    uint32_t pitch = vbe->lfb_pitch;   // 2400
+    uint32_t pitch = vbe->lfb_pitch;
 
-    // 1. 上に 1 文字行（16px）シフト
-    //    16px 単位でブロックコピー（安全かつ高速）
+    // 上に 16px シフト（memmove で自己上書き対策）
     for (int y = CHAR_H; y < 600; y += CHAR_H) {
         uint8_t *dst = fb + (y - CHAR_H) * pitch;
         uint8_t *src = fb + y * pitch;
-
-        // 1行分（16 × 2400 = 38400 バイト）
-        memcpy(dst, src, pitch * CHAR_H);
+        memcpy(dst, src, pitch * CHAR_H);(dst, src, pitch * CHAR_H);
     }
 
-    // 2. 最下行（37行目）を背景色でクリア
-    //    座標: y = (ROWS - 1) * CHAR_H = 592
-    draw_rect(
-        0,
-        (ROWS - 1) * CHAR_H,
-        COLS * CHAR_W,
-        CHAR_H,
-        BG_COLOR
-    );
+    // 最下行を背景色でクリア
+    draw_rect(0, (ROWS - 1) * CHAR_H, COLS * CHAR_W, CHAR_H, BG_COLOR);
 
-    // 3. カーソル位置リセット
     cy = ROWS - 1;
     cx = 0;
 }
 
-// カーソル非表示
+/* ---------------------------------------------------------
+ * カーソル描画 / 消去
+ * --------------------------------------------------------- */
 void cursor_clear(void) {
-    draw_rect(cx * CHAR_W, cy * CHAR_H, 2, 16, BG_COLOR);
+    draw_rect(cx * CHAR_W, cy * CHAR_H, 2, CHAR_H, BG_COLOR);
 }
 
-// カーソル表示
 void cursor_draw(void) {
-    draw_rect(cx * CHAR_W, cy * CHAR_H, 2, 16, FG_COLOR);
+    draw_rect(cx * CHAR_W, cy * CHAR_H, 2, CHAR_H, FG_COLOR);
 }
 
-// 点滅させると競合してCPU例外13が頻発　一旦コメントアウト
-void cursor_blink(void) {
-    
-    static uint32_t last_tick = 0;
-    uint32_t tick = timer_get_ticks();
-
-    if (tick - last_tick >= 500) {
-        last_tick = tick;
-        if (cursor_visible) {
-            //cursor_clear();
-            cursor_visible = 0;
-        } else {
-            //cursor_draw();
-            cursor_visible = 1;
-        }
-    }
-}
-
-void cursor_init(void) {
-    cursor_visible = 1;
-    cursor_draw();
-}
-
+/* ---------------------------------------------------------
+ * 1文字出力
+ * --------------------------------------------------------- */
 void kputc(char c) {
     cursor_clear();
 
@@ -108,17 +88,12 @@ void kputc(char c) {
         cx = 0;
         cy++;
     } else if (c == '\b') {
-        // BACKSPACE: 左へ1文字分戻って背景色で上書き
         if (cx > 0) {
             cx--;
-            //draw_char(cx * CHAR_W, cy * CHAR_H, ' ', BG_COLOR);
-            //draw_rect(cx * CHAR_W, cy * CHAR_H, CHAR_W, CHAR_H, BG_COLOR);
-        // 念のため範囲内だけ塗る
-        if (cy < ROWS && cx < COLS) {
-            draw_rect(cx * CHAR_W, cy * CHAR_H, CHAR_W, CHAR_H, BG_COLOR);
+            if (cy < ROWS && cx < COLS) {
+                draw_rect(cx * CHAR_W, cy * CHAR_H, CHAR_W, CHAR_H, BG_COLOR);
+            }
         }
-        }
-        // カーソル位置はそのまま（左に戻った位置に留まる）
     } else {
         draw_char(cx * CHAR_W, cy * CHAR_H, c, FG_COLOR);
         cx++;
@@ -129,15 +104,20 @@ void kputc(char c) {
     }
 
     cursor_draw();
-    
 }
 
+/* ---------------------------------------------------------
+ * 文字列出力
+ * --------------------------------------------------------- */
 void kputs(const char *s) {
     while (*s) {
         kputc(*s++);
     }
 }
 
+/* ---------------------------------------------------------
+ * 画面クリア
+ * --------------------------------------------------------- */
 void console_clear(void) {
     vbe_clear(BG_COLOR);
     cx = 0;
@@ -147,6 +127,8 @@ void console_clear(void) {
         for (int x = 0; x < COLS; x++)
             text_buf[y][x] = ' ';
 }
+
+
 
 void kprintf(const char* format, ...) {
     // 可変数引数

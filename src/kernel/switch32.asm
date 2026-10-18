@@ -34,33 +34,18 @@ start:
     
     ; VBEのVRAMをBIOSに聞く
     mov ax, 0x4F01
-    mov cx, 0x115          ; 聞きたいモード
+    mov cx, 0x114 ; mov cx, 0x115          ; 聞きたいモード
     mov di, modeinfo
     int 0x10
     cmp ax, 0x004F
     jne no_vbe
     
-    ; 800x600 24bpp (モード 0115h) 
+    ; 800x600
     mov ax, 0x4F02    ; VBE Set Mode
-    mov bx, 0x4115    ; 0115h (24bpp) + ビット14
+    mov bx, 0x4114 ; mov bx, 0x4115
     int 0x10
     cmp ax, 0x004F
     jne no_vbe
-    
-    ; 640×480を調べる
-    ;mov ax, 0x4F01
-    ;mov cx, 0x112
-    ;mov di, modeinfo
-    ;int 0x10
-    ;cmp ax, 0x004F
-    ;jne no_vbe
-
-    ; 640×480をLFBで設定
-    ;mov ax, 0x4F02
-    ;mov bx, 0x4112
-    ;int 0x10
-    ;cmp ax, 0x004F
-    ;jne no_vbe
     
     ; vbe_infoへVBE情報構造体のアドレスを置く
     mov eax, modeinfo

@@ -1,123 +1,119 @@
 #include "./kernel/penguin_bmp.h"
 #include "./x86/vbe.h"
 
-// BMPを (dest_x, dest_y) に描画する
+/* ---------------------------------------------------------
+ * RGB888 (BGR順バイト列) → RGB565
+ * r/g/b : 0x00 - 0xFF
+ * --------------------------------------------------------- */
+static inline uint16_t rgb888_to_rgb565(uint8_t b, uint8_t g, uint8_t r) {
+    return
+        ((r & 0xF8) << 8) |   // R: 8bit → 上位5bit
+        ((g & 0xFC) << 3) |   // G: 8bit → 中間6bit
+        ((b & 0xF8) >> 3);    // B: 8bit → 下位5bit
+}
+
+/* 共通: BMP ヘッダ解析 */
+static int parse_bmp_header(const uint8_t *bmp_data,
+                            const uint8_t **out_pixels,
+                            int *out_w, int *out_h, int *out_row_bytes)
+{
+    if (*(uint16_t *)(bmp_data + 0x00) != 0x4D42) return -1; // 'BM'
+    uint32_t off = *(uint32_t *)(bmp_data + 0x0A);
+    int32_t  w   = *(int32_t  *)(bmp_data + 0x12);
+    int32_t  h   = *(int32_t  *)(bmp_data + 0x16);
+    uint16_t bpp = *(uint16_t *)(bmp_data + 0x1C);
+    if (bpp != 24) return -1; // 24bpp のみ
+
+    int topdown = (h < 0);
+    *out_w = w;
+    *out_h = topdown ? -h : h;
+    *out_row_bytes = ((w * 3 + 3) / 4) * 4;
+    *out_pixels = bmp_data + off;
+    return topdown ? 1 : 0; // 0=bottomup, 1=topdown
+}
+
+/* ---------------------------------------------------------
+ * BMP を (dest_x, dest_y) に 1:1 描画（16bpp）
+ * --------------------------------------------------------- */
 void draw_bmp(int dest_x, int dest_y, const uint8_t *bmp_data) {
     if (!bmp_data || !vbe) return;
 
-    uint8_t *fb_base = (uint8_t *)(uintptr_t)vbe->vram_addr;
-    uint32_t fb_pitch = vbe->lfb_pitch;
-    uint32_t fb_width = vbe->x_res;
-    uint32_t fb_height = vbe->y_res;
-    uint8_t bytes_per_pixel = vbe->bpp / 8;
+    uint16_t *fb_base = (uint16_t *)(uintptr_t)vbe->vram_addr;
+    uint32_t pitch = vbe->lfb_pitch;
+    uint32_t sw = vbe->x_res, sh = vbe->y_res;
 
-    // BMPヘッダー読み取り（リトルエンディアン）
-    uint16_t bf_type = *(uint16_t *)(bmp_data + 0x00);
-    if (bf_type != 0x4D42) return; // 'BM' でなければ終了
+    int w, h, row_bytes;
+    const uint8_t *pixels;
+    int topdown = parse_bmp_header(bmp_data, &pixels, &w, &h, &row_bytes) < 0 ? 0 :
+                  parse_bmp_header(bmp_data, &pixels, &w, &h, &row_bytes);
 
-    uint32_t bf_offbits = *(uint32_t *)(bmp_data + 0x0A);
-    int32_t  bi_width   = *(int32_t  *)(bmp_data + 0x12);
-    int32_t  bi_height  = *(int32_t  *)(bmp_data + 0x16);
-    uint16_t bi_bitcount = *(uint16_t *)(bmp_data + 0x1C);
+    for (int y = 0; y < h; y++) {
+        int bmp_row = topdown ? y : (h - 1 - y);
+        const uint8_t *src = pixels + bmp_row * row_bytes;
 
-    if (bi_bitcount != 24) return; // 24BPP以外は未対応
+        uint8_t *row_bytes_addr = (uint8_t *)fb_base + (dest_y + y) * pitch;
+        uint16_t *row = (uint16_t *)row_bytes_addr;
 
-    int is_topdown = (bi_height < 0);
-    int height = is_topdown ? -bi_height : bi_height;
-    int width = bi_width;
+        for (int x = 0; x < w; x++) {
+            int fx = dest_x + x;
+            int fy = dest_y + y;
+            if (fx < 0 || fx >= (int)sw || fy < 0 || fy >= (int)sh) continue;
 
-    // 各行のバイト数（パディング込み）
-    int row_bytes = ((width * 3 + 3) / 4) * 4;
-
-    const uint8_t *pixel_data = bmp_data + bf_offbits;
-
-    for (int y = 0; y < height; y++) {
-        // BMPはボトムアップの場合、下の行から格納されている
-        int bmp_row = is_topdown ? y : (height - 1 - y);
-        const uint8_t *src_row = pixel_data + bmp_row * row_bytes;
-
-        for (int x = 0; x < width; x++) {
-            int fb_x = dest_x + x;
-            int fb_y = dest_y + y;
-
-            if (fb_x < 0 || fb_x >= (int)fb_width || fb_y < 0 || fb_y >= (int)fb_height)
-                continue;
-
-            uint8_t *fb = fb_base + fb_y * fb_pitch + fb_x * bytes_per_pixel;
-            const uint8_t *px = src_row + x * 3;
-
-            // BMP: BGR → VBE: BGR（そのままコピー）
-            fb[0] = px[0];  // B
-            fb[1] = px[1];  // G
-            fb[2] = px[2];  // R
+            const uint8_t *px = src + x * 3;
+            row[fx] = rgb888_to_rgb565(px[0], px[1], px[2]);
         }
     }
 }
 
+/* ---------------------------------------------------------
+ * BMP を (dest_x, dest_y) に scale 倍して描画（16bpp）
+ * --------------------------------------------------------- */
 void draw_bmp_scaled(int dest_x, int dest_y, const uint8_t *bmp_data, int scale) {
     if (!bmp_data || !vbe) return;
-    
-    uint8_t *fb_base = (uint8_t *)(uintptr_t)vbe->vram_addr;
-    uint32_t fb_pitch = vbe->lfb_pitch;
-    uint32_t fb_width = vbe->x_res;
-    uint32_t fb_height = vbe->y_res;
-    uint8_t bytes_per_pixel = vbe->bpp / 8;
 
-    uint16_t bf_type = *(uint16_t *)(bmp_data + 0x00);
-    if (bf_type != 0x4D42) return;
+    uint16_t *fb_base = (uint16_t *)(uintptr_t)vbe->vram_addr;
+    uint32_t pitch = vbe->lfb_pitch;
+    uint32_t sw = vbe->x_res, sh = vbe->y_res;
 
-    uint32_t bf_offbits = *(uint32_t *)(bmp_data + 0x0A);
-    int32_t  bi_width   = *(int32_t  *)(bmp_data + 0x12);
-    int32_t  bi_height  = *(int32_t  *)(bmp_data + 0x16);
-    uint16_t bi_bitcount = *(uint16_t *)(bmp_data + 0x1C);
-    if (bi_bitcount != 24) return;
+    int w, h, row_bytes;
+    const uint8_t *pixels;
+    if (parse_bmp_header(bmp_data, &pixels, &w, &h, &row_bytes) < 0) return;
+    int topdown = ( *(int32_t*)(bmp_data+0x16) < 0 );
 
-    int is_topdown = (bi_height < 0);
-    int height = is_topdown ? -bi_height : bi_height;
-    int width = bi_width;
+    for (int y = 0; y < h; y++) {
+        int bmp_row = topdown ? y : (h - 1 - y);
+        const uint8_t *src_row = pixels + bmp_row * row_bytes;
 
-    int row_bytes = ((width * 3 + 3) / 4) * 4;
-    const uint8_t *pixel_data = bmp_data + bf_offbits;
-
-    for (int y = 0; y < height; y++) {
-        int bmp_row = is_topdown ? y : (height - 1 - y);
-        const uint8_t *src_row = pixel_data + bmp_row * row_bytes;
-
-        // 拡大：1ピクセルを scale×scale のブロックに描画
         for (int sy = 0; sy < scale; sy++) {
-            for (int x = 0; x < width; x++) {
+            int fy = dest_y + y * scale + sy;
+            if (fy < 0 || fy >= (int)sh) continue;
+            uint8_t *row_bytes_addr = (uint8_t *)fb_base + fy * pitch;
+            uint16_t *row = (uint16_t *)row_bytes_addr;
+
+            for (int x = 0; x < w; x++) {
                 const uint8_t *px = src_row + x * 3;
+                uint16_t c = rgb888_to_rgb565(px[0], px[1], px[2]);
 
                 for (int sx = 0; sx < scale; sx++) {
-                    int fb_x = dest_x + x * scale + sx;
-                    int fb_y = dest_y + y * scale + sy;
-
-                    if (fb_x < 0 || fb_x >= (int)fb_width || fb_y < 0 || fb_y >= (int)fb_height)
-                        continue;
-
-                    uint8_t *fb = fb_base + fb_y * fb_pitch + fb_x * bytes_per_pixel;
-                    fb[0] = px[0];
-                    fb[1] = px[1];
-                    fb[2] = px[2];
+                    int fx = dest_x + x * scale + sx;
+                    if (fx < 0 || fx >= (int)sw) continue;
+                    row[fx] = c;
                 }
             }
         }
     }
 }
 
+/* ---------------------------------------------------------
+ * 起動画像表示
+ * --------------------------------------------------------- */
 void show_boot_logo(void) {
     if (!vbe) return;
-    uint32_t fb_width = vbe->x_res;
-    uint32_t fb_height = vbe->y_res;
-    draw_bmp_scaled((fb_width - 80) / 2 - 150, (fb_height - 80 ) / 2 - 150, src_kernel_penguin_bmp, 8);
+    int w = vbe->x_res, h = vbe->y_res;
+    draw_bmp_scaled((w - 80)/2 - 150, (h - 80)/2 - 150,
+                    src_kernel_penguin_bmp, 8);
 }
 
-
 void show_penguin(void) {
-    // 画面中央に表示
-    //int x = (fb_width - 80) / 2;
-    //int y = (fb_height - 80) / 2;
-    int x = 0;
-    int y = 0;
-    draw_bmp(x, y, src_kernel_penguin_bmp);
+    draw_bmp(0, 0, src_kernel_penguin_bmp);
 }
