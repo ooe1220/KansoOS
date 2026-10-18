@@ -81,7 +81,6 @@ void kernel_main() {
     cpu_cache_disable();// キャッシュを切っておく
     kputs("CPU cache disabled\n");
     
-    
      // メモリ管理初期化　QEMUは通るが実機では固まる
     //kheap_init(); // カーネル用
     //uheap_init(); // ユーザ用
@@ -107,23 +106,14 @@ void kernel_main() {
     
     //タイマーを入れるとスタックが壊れる。一旦保留
     //timer_init();
-    
-
-    // 画面が下まで使えないのは物理解像度4:3​で800×600を設定しているからかもしれない
-    uint8_t *fb_base = (uint8_t *)(uintptr_t)vbe->vram_addr;
-    uint32_t fb_pitch = vbe->lfb_pitch;
-    uint32_t fb_width = vbe->x_res;
-    uint32_t fb_height = vbe->y_res;
-    uint8_t bytes_per_pixel = vbe->bpp / 8;  
-
-    asm volatile("sti");  // 割り込みを有効にする(PIC初期化しないと割り込みが常時発生)
-        
+      
     char line[128]; // コマンド入力バッファ
     int len = 0; // 現在の入力位置（文字数）
+    
+    asm volatile("sti");  // 割り込みを有効にする(PIC初期化しないと割り込みが常時発生)
            
     kputs("\n>");
     while(1){
-    
         // キーボード入力を待つ (内部的にはhlt→IRQ1割り込み) (drivers/keyboard.h)
         char c = keyboard_getchar(); 
         
@@ -131,7 +121,10 @@ void kernel_main() {
             line[len] = 0; // バッファを空に(実際には消さず末尾文字を先頭に付加)
             
             int buildin_res = run_builtin_command(line); // 内部コマンド
-            int runfile_res = run_file(line); // 実行ファイル実行
+            int runfile_res = 0;
+            if(buildin_res!=0){
+                runfile_res = run_file(line); // 実行ファイル実行
+            }
             if(buildin_res==-1 && runfile_res==-1){ // 内部コマンドでも実行ファイルでもない
                 kputs("Unknown command or file not found: ");
                 kputs(line);

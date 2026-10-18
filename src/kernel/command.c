@@ -34,15 +34,6 @@ int run_builtin_command(const char *line){
    
     
     if (strcmp(line, "reboot") == 0) {
-        //kputs("Rebooting...\n");
-        outb(0x64, 0xFC);
-        //kputs("This should not print\n");
-    //debug_print("calling kputs 1\n");
-    //kputs("A\n");
-    //debug_print("calling kputs 2\n");
-    //kputs("B\n");
-        //kputs("X");
-    //kputs("Y");
         return 0;
     }
     
