@@ -21,6 +21,8 @@
 #include "debug/serial.h"
 #include "debug/debug_print.h"
 
+#include "drivers/atapi.h"
+
 void kernel_main() {
 
     gdt_init();
@@ -80,6 +82,13 @@ void kernel_main() {
     
     cpu_cache_disable();// キャッシュを切っておく
     kputs("CPU cache disabled\n");
+    
+    struct atapi_dev dev = atapi_detect_primary_master();
+
+    if (dev.present) {
+        kputs(dev.model);
+    }
+    kputs("\n");
     
      // メモリ管理初期化　QEMUは通るが実機では固まる
     //kheap_init(); // カーネル用

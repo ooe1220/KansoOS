@@ -23,8 +23,18 @@ cp build/kernel.bin  build/iso_root/
   
     # isoinfo -l -i build/os.iso
 
-  qemu-system-i386 -cdrom build/os.iso -boot d -monitor stdio
+ #  qemu-system-i386 -cdrom build/os.iso -boot d -monitor stdio
   # (qemu)xp /100xb 0x8000
+  
+  
+  qemu-system-i386 \
+  -m 64M \
+  -enable-kvm \
+  -cpu qemu32,+pse \
+  -device ide-cd,bus=ide.0,unit=0 \
+  -cdrom build/os.iso \
+  -boot d \
+   -serial stdio
   
 qemu-system-i386 -cdrom build/os.iso -boot d -serial stdio
   

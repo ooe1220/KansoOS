@@ -30,6 +30,7 @@ gcc -m32 -ffreestanding -I./src -c src/x86/idt.c -o build/idt.o
 gcc -m32 -ffreestanding -I./src -c src/x86/gdt.c -o build/gdt.o
 gcc -m32 -ffreestanding -I./src -c src/x86/paging.c -o build/paging.o
 gcc -m32 -ffreestanding -I./src -O2 -c src/drivers/ata.c -o build/ata.o
+gcc -m32 -ffreestanding -I./src -O2 -c src/drivers/atapi.c -o build/atapi.o
 gcc -m32 -ffreestanding -I./src -O2 -c src/drivers/keyboard.c -o build/keyboard.o
 gcc -m32 -ffreestanding -I./src -c src/x86/panic.c -o build/panic.o
 gcc -m32 -ffreestanding -I./src -c src/x86/syscall.c -o build/syscall.o
@@ -61,6 +62,7 @@ ld -m elf_i386 -T src/linker.ld -o build/kernel.elf \
   build/idt.o \
   build/gdt.o \
   build/ata.o \
+  build/atapi.o \
   build/panic.o \
   build/keyboard.o \
   build/string.o \
