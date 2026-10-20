@@ -95,6 +95,12 @@ void irq1(void) {
  * 初期化
  * ------------------------------ */
 void keyboard_init(void) {
+
+    /* 8042 入力バッファ空くまで捨てる 捨てないと実機で立ち上げた瞬間大量の文字が入力されてしまう*/
+    while (inb(0x64) & 1) {
+        inb(0x60);
+    }
+
     idt_set_gate(0x21, (uint32_t)irq1); // IRQ1
 }
 
