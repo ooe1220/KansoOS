@@ -120,6 +120,8 @@ void kernel_main() {
     int len = 0; // 現在の入力位置（文字数）
     
     asm volatile("sti");  // 割り込みを有効にする(PIC初期化しないと割り込みが常時発生)
+    
+    while (keyboard_available())keyboard_getchar(); // 実機起動時ゴミが表示される為、完全に捨てる
            
     kputs("\n>");
     while(1){
