@@ -1,7 +1,0 @@
-megs: 32
-romimage: file=/usr/share/bochs/BIOS-bochs-latest
-vgaromimage: file=/usr/share/bochs/VGABIOS-lgpl-latest
-ata0: enabled=1, ioaddr1=0x1f0, ioaddr2=0x3f4, irq=14
-ata0-master: type=disk, path="build/disk.img", mode=flat, cylinders=0, heads=0, spt=0
-boot: disk
-log: bochs.log

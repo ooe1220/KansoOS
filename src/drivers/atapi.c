@@ -25,7 +25,12 @@ struct atapi_dev atapi_detect_primary_master(void) {
     }
 
     dev.present = 1;
-    debug_printf("ATAPI PRESENT on SECONDARY, st=0x%x", st);
+    //debug_printf("ATAPI PRESENT on SECONDARY, st=0x%x", st);
+    
+   while (inb(0x177) & 0x80); // BSY
+   
+   while (!(inb(0x177) & 0x08)); // DRQ
+
 
     /* IDENTIFY データ読み込み */
     uint16_t id[256];

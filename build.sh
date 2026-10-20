@@ -85,8 +85,12 @@ ld -m elf_i386 -T src/linker.ld -o build/kernel.elf \
   build/detect.o \
   build/dir.o
   
-# 5. ELF → バイナリ
+# 5. kernel.elf(ELF) → kernel.bin(バイナリ)
 objcopy -O binary build/kernel.elf build/kernel.bin
+
+# kernel.binを64KBまでへ0埋め
+current=$(stat -c%s build/kernel.bin)
+dd if=/dev/zero bs=1 count=$((65536 - current)) >> build/kernel.bin
 
 # 6. ユーザー空間
 gcc -ffreestanding -nostdlib -fno-pic -fno-pie -m32 -c user/start.S -o build/start.o
@@ -119,18 +123,45 @@ gcc tool/mkfs.c -o build/mkfs
 build/mkfs
 
 
+# ---CD起動用のISO生成----------------------------------------------------------------
+
+nasm -f bin src/boot/cdboot.asm -o build/cdboot.bin
+
+mkdir -p build/iso_root/boot
+cp build/cdboot.bin build/iso_root/boot/
+cp build/kernel.bin  build/iso_root/
+
+ xorriso -as mkisofs \
+  -o build/os.iso \
+  -b boot/cdboot.bin \
+  -no-emul-boot \
+  -boot-load-size 4 \
+  build/iso_root
+
+
+  qemu-system-i386 \
+  -m 64M \
+  -enable-kvm \
+  -cpu qemu32,+pse \
+  -device ide-cd,bus=ide.0,unit=0 \
+  -cdrom build/os.iso \
+  -boot d \
+   -serial stdio
+
+
+# ------------------------------------------------------------------------------------------
+
 # 7. QEMU で実行
 # 標準BIOSで立ち上げる
 # qemu-system-i386 -hda build/disk.img -monitor stdio
 qemu-system-i386 -hda build/disk.img -serial stdio
 
-# 自作BIOSで立ち上げる
+# 自作BIOSで立ち上げる VBEにしたことで、使えなくなった。
    #qemu-system-i386 \
    #-bios build/mybios.bin\
    #-drive file=build/disk.img,format=raw,if=ide,index=0 \
   # -monitor stdio
    #-serial stdio
-   
    
 # git status
 # git diff
