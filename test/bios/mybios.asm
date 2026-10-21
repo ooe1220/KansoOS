@@ -1,9 +1,5 @@
 [bits 16]
-
-; ===============================
-; BIOS本体
-; ===============================
-org 0x0000 ; BIOSは0xF0000-0xFFFFFの64KB(メモリ1MBの一番高い領域)
+org 0x0000 ; BIOSは0xF0000-0xFFFFFの64KB
 
 bios_start:
 
@@ -21,10 +17,6 @@ bios_start:
     or   al, 0x02
     and  al, 0xFE
     out  0x92, al
-    
-    mov dx, 0x00E9
-    mov al, '1'
-    out dx, al
 
     mov dx, 0x3C0
     mov al, 0x20
@@ -71,18 +63,10 @@ bios_start:
     ; GDT読み込み
     lgdt [gdt_descriptor]
     
-    mov dx, 0x00E9
-    mov al, '2'
-    out dx, al
-
     ; 32bitモード有効化
     mov eax, cr0
     or eax, 1
     mov cr0, eax
-    
-    mov dx, 0x00E9
-    mov al, '3'
-    out dx, al
     
     ; 32ビットコードへ跳ぶ
     ;jmp 0x08:pm_start
@@ -110,7 +94,6 @@ gdt_end:
 
 gdt_descriptor:
     dw gdt_end - gdt_start - 1
-    ;dd gdt_start
     dd 0xF0000 + (gdt_start - $$) 
 
 [bits 32]
@@ -123,10 +106,6 @@ pm_start:
     mov ss, ax
     mov esp, 0x9FC00
     
-    mov dx, 0x00E9
-    mov al, '4'
-    out dx, al
-        
     mov edi, 0xE0000000    ; VRAMアドレス
     mov ecx, 5000          ; 横幅
     mov ax, 0x001F         ; RGB565: 青
