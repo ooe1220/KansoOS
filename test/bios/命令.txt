@@ -1,0 +1,39 @@
+qemu-system-i386 \
+  -machine pc \
+  -m 16M \
+  -bios mybios.bin \
+  -vga std
+  
+  nasm -f bin mybios.asm -o mybios.bin
+
+qemu-system-i386 \
+  -machine pc \
+  -m 16M \
+  -bios mybios.bin \
+  -vga std \
+  -debugcon stdio \
+  -global isa-debugcon.iobase=0xe9
+  
+  
+  
+  
+  tail -n 100 qemu.log
+  qemu-system-i386 \
+  -bios mybios.bin \
+  -no-reboot \
+  -d int,cpu_reset,guest_errors \
+  -D qemu.log
+  
+  
+  
+  nasm -f bin -l mybios.lst mybios.asm -o mybios.bin
+  
+  
+  
+  qemu-system-i386 -bios mybios.bin -monitor stdio
+  info pci
+info qtree
+
+
+
+qemu-system-i386 -bios mybios.bin -vga std -monitor stdio
