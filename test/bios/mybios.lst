@@ -142,63 +142,25 @@
    142 000000C3 B034                        mov al, '4'
    143 000000C5 EE                          out dx, al
    144                                      
-   145                                      ;;;;;;;;;;;;;;;
-   146                                      
-   147                                          ; Enableレジスタを読み戻す
-   148 000000C6 66BACE01                    mov dx, 0x01CE
-   149 000000CA 66B80400                    mov ax, 0x0004
-   150 000000CE 66EF                        out dx, ax
-   151                                  
-   152 000000D0 66BACF01                    mov dx, 0x01CF
-   153 000000D4 66ED                        in  ax, dx
-   154                                  
-   155                                      ; bit 0: VBE enabled
-   156 000000D6 66A90100                    test ax, 0x0001
-   157 000000DA 740F                        jz .vbe_not_enabled
-   158                                  
-   159                                      ; bit 6: LFB enabled
-   160 000000DC 66A94000                    test ax, 0x0040
-   161 000000E0 7412                        jz .lfb_not_enabled
-   162                                  
-   163 000000E2 66BAE900                    mov dx, 0x00E9
-   164 000000E6 B04C                        mov al, 'L'       ; LFB有効
-   165 000000E8 EE                          out dx, al
-   166 000000E9 EB10                        jmp .check_done
-   167                                  
-   168                                  .vbe_not_enabled:
-   169 000000EB 66BAE900                    mov dx, 0x00E9
-   170 000000EF B056                        mov al, 'V'       ; VBE自体が無効
-   171 000000F1 EE                          out dx, al
-   172 000000F2 EB07                        jmp .check_done
-   173                                  
-   174                                  .lfb_not_enabled:
-   175 000000F4 66BAE900                    mov dx, 0x00E9
-   176 000000F8 B04E                        mov al, 'N'       ; VBE有効、LFB無効
-   177                                  
-   178 000000FA EE                          out dx, al
-   179                                  
-   180                                  .check_done:
-   181                                      ;;;;;;;;;;;;;;;;
-   182                                      
-   183                                      ;mov edi, 0xFD000000    ; QEMU/BochsのLFBアドレス
-   184 000000FB BF000000E0                  mov edi, 0xE0000000    ; QEMU/BochsのLFBアドレス
-   185 00000100 B988130000                  mov ecx, 5000           ; 横幅
-   186 00000105 66B81F00                    mov ax, 0x001F         ; RGB565: 青
-   187                                  
-   188                                  .draw_blue_line:
-   189 00000109 668907                      mov word [edi], ax     ; 1ピクセル描画
-   190 0000010C 83C702                      add edi, 2             ; 次のピクセルへ
-   191 0000010F E2F8                        loop .draw_blue_line
-   192                                      
-   193 00000111 EBFE                    jmp $
-   194                                  
-   195                                  ; Reset Vector を FFF0 に置く
-   196 00000113 FF<rep FEDDh>           times 0xFFF0-($-$$) db 0xFF
-   197                                  
-   198                                  ; 存在確認 hexdump -C .mybios.bin | tail
-   199                                  reset_vector:
-   200 0000FFF0 EA[00000000]00F0            jmp 0xF000:bios_start
-   201                                  
-   202                                  ; ROMサイズを64KBに揃える
-   203 0000FFF7 FF<rep 9h>              times 65536-($-$$) db 0xFF
-   204                                  
+   145                                      ;mov edi, 0xFD000000    ; QEMU/BochsのLFBアドレス
+   146 000000C6 BF000000E0                  mov edi, 0xE0000000    ; QEMU/BochsのLFBアドレス
+   147 000000CB B988130000                  mov ecx, 5000           ; 横幅
+   148 000000D0 66B81F00                    mov ax, 0x001F         ; RGB565: 青
+   149                                  
+   150                                  .draw_blue_line:
+   151 000000D4 668907                      mov word [edi], ax     ; 1ピクセル描画
+   152 000000D7 83C702                      add edi, 2             ; 次のピクセルへ
+   153 000000DA E2F8                        loop .draw_blue_line
+   154                                      
+   155 000000DC EBFE                    jmp $
+   156                                  
+   157                                  ; Reset Vector を FFF0 に置く
+   158 000000DE FF<rep FF12h>           times 0xFFF0-($-$$) db 0xFF
+   159                                  
+   160                                  ; 存在確認 hexdump -C .mybios.bin | tail
+   161                                  reset_vector:
+   162 0000FFF0 EA[00000000]00F0            jmp 0xF000:bios_start
+   163                                  
+   164                                  ; ROMサイズを64KBに揃える
+   165 0000FFF7 FF<rep 9h>              times 65536-($-$$) db 0xFF
+   166                                  
