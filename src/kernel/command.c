@@ -20,7 +20,7 @@ int run_builtin_command(const char *line){
         kputs("\nAvailable commands:\n");
         kputs("  help     - Show this message\n");
         kputs("  clear    - Clear screen\n");
-        kputs("  reboot   - Reboot CPU\n");
+        //kputs("  reboot   - Reboot CPU\n");
         kputs("  shutdown - Shutdown system (QEMU only)\n");
         kputs("  ls       - List files in current directory\n");
         kputs("  dir      - Same as 'ls'");
@@ -32,10 +32,11 @@ int run_builtin_command(const char *line){
         return 0;
     }
    
-    
+    /*
     if (strcmp(line, "reboot") == 0) {
+        outb(0x64, 0xFC);
         return 0;
-    }
+    }*/
     
     
     if (strcmp(line, "shutdown") == 0) {

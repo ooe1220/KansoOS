@@ -15,22 +15,22 @@ start:
     
     mov si, kernei_msg
     call print_string
+    
+    ;;;;;;;;;;;;;
+    cli
+    hlt
+    ;;;;;;;;;;;;;
 
-;debug_hang:   
-;    cli
-;    hlt
-;    jmp debug_hang
-           
     ; A20有効
     call a20_enable_8042
-
+    call a20_enable_fast
+    
     ; VBE対応しているか
     mov ax, 0x4F00
     mov di, controllerinfo
     int 0x10
     cmp ax, 0x004F
     jne no_vbe
-    
     
     ; VBEのVRAMをBIOSに聞く
     mov ax, 0x4F01
@@ -60,7 +60,7 @@ start:
     mov cr0, eax
 
     ; 32ビットコードへ跳ぶ
-    jmp 0x08:pm_start
+    jmp dword 0x08:pm_start
     
 no_vbe:
     mov si, error_msg

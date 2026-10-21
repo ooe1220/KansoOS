@@ -1,5 +1,5 @@
 
-vga_init:
+vga_mode3_init:
 ; --- パレット設定処理の開始 ---
     mov dx, 0x03C8      ; DAC Address Write Mode Register
     mov al, 0           ; インデックス0から開始

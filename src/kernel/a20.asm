@@ -35,4 +35,12 @@ a20_enable_8042:
     out  0x60, al
 
     ret
+ 
+ 
+a20_enable_fast:
+    in   al, 0x92
+    or   al, 0x02
+    and  al, 0xFE
+    out  0x92, al
+    ret
 

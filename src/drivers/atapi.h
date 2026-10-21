@@ -13,6 +13,8 @@ struct atapi_dev {
 };
 
 
-struct atapi_dev atapi_detect_primary_master(void);
+struct atapi_dev atapi_detect_slave(void);
+
+int atapi_read_sector(uint32_t lba, uint8_t *buf);
 
 #endif /* ATAPI_H */

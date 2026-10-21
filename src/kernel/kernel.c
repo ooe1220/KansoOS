@@ -36,25 +36,10 @@ void kernel_main() {
     char cpuname[48];
     get_cpu_name(cpuname);
     
-    // ページング有効にすると、"reboot"命令のみ失敗する不可解な不具合が発生
-    // strcmp(line, "reboot") は問題ない
-    // outをコメントアウトすると>へ戻れるがstrcmp直後のkputsを2つ置くと2つめしか表示されない
-    // kputsが無くてもoutで固まる。
-    // reboot自体は仮想=物理となっている　outを別の場所へ置くと再起動可能
-    // 他の部分のコードを色々整理してもこのエラーは健在、偶然ではない
-    // 解決するまでコメントアウト
-    // ページング有効(複数プロセスをする時の為に仕組みのみ入れておく)
-    //enable_paging();
+    // ページングを入れるとoutb(0x64, 0xFC)に失敗する
+    // 実機ではまともに動かない
+    //enable_paging(); // 物理=仮想
     //console_clear(); // ページングの際にVRAMにゴミが残る為、消す(原因不明)
-    //debug_printf("pd at 0x%x\n", (uint32_t)kernel_page_dir);
-    //debug_printf("pt at 0x%x\n", (uint32_t)kernel_page_tables);
-    //debug_printf("pde[0] = 0x%x\n", kernel_page_dir[0]);
-    //debug_printf("pde[1] = 0x%x\n", kernel_page_dir[1]);
-    //enable_paging();
-    
-    //uint32_t test = *(volatile uint32_t *)0x8003;
-    //debug_printf("0x%x\n", (uint32_t)test);
-// test を画面に出す
     
     console_init();      // VBE 初期化 + 画面クリア
         
@@ -83,12 +68,17 @@ void kernel_main() {
     cpu_cache_disable();// キャッシュを切っておく
     kputs("CPU cache disabled\n");
     
-    struct atapi_dev dev = atapi_detect_primary_master();
+    // ATAPIドライバ開発中
+    struct atapi_dev dev = atapi_detect_slave();
 
     if (dev.present) {
         kputs(dev.model);
     }
     kputs("\n");
+    
+    //uint8_t sector[2048];
+    //atapi_read_sector(35, sector);
+    //debug_dump_mem((uint32_t)sector, 2048);
     
      // メモリ管理初期化　QEMUは通るが実機では固まる
     //kheap_init(); // カーネル用
