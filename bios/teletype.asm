@@ -65,12 +65,6 @@ tty:
 .cr:
     ; 行頭に戻る（列を0に）
     call read_cursor_1d      ; AX = pos
-    
-    mov dx, 0x3F8
-    out dx, al
-    mov al, ah
-    out dx, al
-    
     mov bl, 80
     xor dx, dx
     div bx                   ; AX = 行番号, DX = 列

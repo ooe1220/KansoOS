@@ -17,13 +17,9 @@ start:
     mov si, kernei_msg
     call print_string
     
-    ;mov dx, 0x3F8
-    ;mov al, 'B'
-    ;out dx, al
-    
     ;;;;;;;;;;;;;
-    cli
-    hlt
+    ;cli
+    ;hlt
     ;;;;;;;;;;;;;
 
     ; A20有効
@@ -52,6 +48,10 @@ start:
     cmp ax, 0x004F
     jne no_vbe
     
+    ;mov dx, 0x3F8
+    ;mov al, 'D'
+    ;out dx, al
+        
     ; vbe_infoへVBE情報構造体のアドレスを置く
     mov eax, modeinfo
     mov [vbe_info], eax
@@ -127,6 +127,19 @@ pm_start:
     mov gs, ax
     mov ss, ax
     mov esp, 0x9FC00
+    
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;    mov edi, 0xE0000000    ; VRAMアドレス
+;    mov ecx, 800*600          ; 横幅
+;    mov ax, 0x001F         ; RGB565: 青
+
+;.draw_blue_line:
+;    mov word [edi], ax     ; 1ピクセル描画
+;    add edi, 2             ; 次のピクセルへ
+;    loop .draw_blue_line
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    
+;    jmp $
     
     call kernel_main ; kernel.cへ移行
 

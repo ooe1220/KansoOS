@@ -32,17 +32,33 @@ int10h_handler:
     call tty
     jmp .done    
 
-.vbe_00: ; 本来は構造体を返すがOS側で使用していないため省略
+.vbe_00: ; 本来は構造体を返すがOS側で使用していないため省略    
+    pop es
+    popa
     mov ax, 0x004F
-    jmp .done
+    iret
 
-.vbe_01:
-    nop
-    jmp .done   
+.vbe_01: ; 構造体の内OSで使う値のみ設定
+    ; +0x12 x_res
+    mov word [es:di + 0x12], 800
+    ; +0x14 y_res
+    mov word [es:di + 0x14], 600
+    ; +0x28 vram_addr
+    mov dword [es:di + 0x28], 0xE0000000
+    ; +0x32 lfb_pitch
+    mov word [es:di + 0x32], 1600
+        
+    pop es
+    popa
+    mov ax, 0x004F
+    iret  
     
 .vbe_02: ; BXに関わらず、OSで使用する800*600*16を固定で設定する
     call vbe_800_600_16_init
-    jmp .done   
+    pop es
+    popa
+    mov ax, 0x004F
+    iret 
 
 .done:
     pop es
