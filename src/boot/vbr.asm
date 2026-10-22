@@ -21,11 +21,7 @@ real_start:
     call print_string
         
 load_kernel:
-    push 0x8000        ; バッファセグメント
-    pop  es
-    mov  bx, 0        ; ES:BX = 0x8000:0x0000
     mov  ah, 0x42      ; LBA拡張リード
-    ;mov  dl, 0x80
     mov  si, dap       ; DAP へのポインタ
     int  0x13
     jc   load_error

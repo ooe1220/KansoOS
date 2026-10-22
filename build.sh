@@ -139,14 +139,14 @@ cp build/kernel.bin  build/iso_root/
   build/iso_root
 
 
-  qemu-system-i386 \
-  -m 64M \
-  -enable-kvm \
-  -cpu qemu32,+pse \
-  -device ide-cd,bus=ide.0,unit=0 \
-  -cdrom build/os.iso \
-  -boot d \
-   -serial stdio
+#  qemu-system-i386 \
+#  -m 64M \
+#  -enable-kvm \
+#  -cpu qemu32,+pse \
+#  -device ide-cd,bus=ide.0,unit=0 \
+#  -cdrom build/os.iso \
+#  -boot d \
+#   -serial stdio
 
 
 # ------------------------------------------------------------------------------------------
@@ -154,14 +154,11 @@ cp build/kernel.bin  build/iso_root/
 # 7. QEMU で実行
 # 標準BIOSで立ち上げる
 # qemu-system-i386 -hda build/disk.img -monitor stdio
-qemu-system-i386 -hda build/disk.img -serial stdio
+#qemu-system-i386 -hda build/disk.img -serial stdio
 
 # 自作BIOSで立ち上げる VBEにしたことで、使えなくなった。
-   #qemu-system-i386 \
-   #-bios build/mybios.bin\
-   #-drive file=build/disk.img,format=raw,if=ide,index=0 \
-  # -monitor stdio
-   #-serial stdio
+#qemu-system-i386 -bios build/mybios.bin -drive file=build/disk.img,format=raw,if=ide,index=0 -monitor stdio
+qemu-system-i386 -bios build/mybios.bin -drive file=build/disk.img,format=raw,if=ide,index=0 -serial stdio
    
 # git status
 # git diff

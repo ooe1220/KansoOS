@@ -12,9 +12,14 @@ start:
     mov es, ax
     mov ss, ax
     mov sp, 0x7C00
+    sti
     
     mov si, kernei_msg
     call print_string
+    
+    mov dx, 0x3F8
+    mov al, 'B'
+    out dx, al
     
     ;;;;;;;;;;;;;
     cli

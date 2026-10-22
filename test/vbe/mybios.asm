@@ -107,7 +107,7 @@ pm_start:
     mov esp, 0x9FC00
     
     mov edi, 0xE0000000    ; VRAMアドレス
-    mov ecx, 5000          ; 横幅
+    mov ecx, 800*600          ; 横幅
     mov ax, 0x001F         ; RGB565: 青
 
 .draw_blue_line:

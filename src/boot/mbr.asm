@@ -45,7 +45,6 @@ continue:
     ; VBRを0x7C00に読み込む（このコードを上書き）
     mov ah, 0x42
     mov si, mbr_dap
-    ;mov dl, 0x80
     int 0x13
     jc disk_error
 
