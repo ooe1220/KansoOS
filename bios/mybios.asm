@@ -8,7 +8,6 @@ org 0x0000 ; BIOSは0xF0000-0xFFFFFの64KB(メモリ1MBの一番高い領域)
 bios_start:
 
     cli
-    
     ; IVTに登録
     xor ax, ax
     mov es, ax 
@@ -28,29 +27,19 @@ bios_start:
     
     cld
     
-    call vga_mode3_init
+    ; テキストmode3
+    mov ah, 0x00
+    mov al, 0x03
+    int 0x10
     
     ; A20
     in   al, 0x92
     or   al, 0x02
     and  al, 0xFE
     out  0x92, al
-    
-    mov al, 'B'
-    mov ah, 0x1F     ; 青背景・白文字
-    int 0x10
-    
-    mov al, 'I'
-    mov ah, 0x1F     ; 青背景・白文字
-    int 0x10
-    
-    mov al, 'O'
-    mov ah, 0x1F     ; 青背景・白文字
-    int 0x10
-    
-    mov al, 'S'
-    mov ah, 0x1F     ; 青背景・白文字
-    int 0x10
+   
+    mov si, msg_bios
+    call print_string
         
     sti
     int 0x19
@@ -63,9 +52,22 @@ hlt_loop:
 %include "bios/vga.asm"
 %include "bios/vbe.asm"
 %include "bios/int10h.asm"
+%include "bios/teletype.asm"
 %include "bios/int13h.asm"
 %include "bios/int19h.asm"
 font_8x16: incbin "bios/font_8x16.bin" 
+
+print_string:
+    lodsb
+    or al, al
+    jz .done
+    mov ah, 0x0E
+    int 0x10
+    jmp print_string
+.done:
+    ret
+    
+msg_bios   db "Custom BIOS booting", 0x0D, 0x0A, 0
 
 ; Reset Vector を FFF0 に置く
 times 0xFFF0-($-$$) db 0xFF

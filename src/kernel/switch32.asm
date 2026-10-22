@@ -17,9 +17,9 @@ start:
     mov si, kernei_msg
     call print_string
     
-    mov dx, 0x3F8
-    mov al, 'B'
-    out dx, al
+    ;mov dx, 0x3F8
+    ;mov al, 'B'
+    ;out dx, al
     
     ;;;;;;;;;;;;;
     cli
