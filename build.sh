@@ -32,7 +32,7 @@ gcc -m32 -ffreestanding -I./src -c src/x86/gdt.c -o build/gdt.o
 gcc -m32 -ffreestanding -I./src -c src/x86/paging.c -o build/paging.o
 gcc -m32 -ffreestanding -I./src -O2 -c src/drivers/ata.c -o build/ata.o
 gcc -m32 -ffreestanding -I./src -O2 -c src/drivers/atapi.c -o build/atapi.o
-gcc -m32 -ffreestanding -I./src -O2 -c src/drivers/keyboard.c -o build/keyboard.o
+gcc -m32 -ffreestanding -I./src -march=i486 -O2 -c src/drivers/keyboard.c -o build/keyboard.o
 gcc -m32 -ffreestanding -I./src -c src/x86/panic.c -o build/panic.o
 gcc -m32 -ffreestanding -I./src -c src/x86/syscall.c -o build/syscall.o
 gcc -m32 -ffreestanding -I./src -c src/lib/string.c -o build/string.o
@@ -52,6 +52,8 @@ gcc -m32 -ffreestanding -I./src -c src/debug/debug_print.c -o build/debug_print.
 gcc -m32 -ffreestanding -I./src -c src/debug/detect.c -o build/detect.o
 
 gcc -m32 -ffreestanding -I./src -c src/x86/font_8x16.c -o build/font_8x16.o
+
+gcc -m32 -ffreestanding -fno-pic -fno-pie -c src/x86/syscall_entry.S -o build/syscall_entry.o
 
 # 4. リンカで ELF 作成
 ld -m elf_i386 -T src/linker.ld -o build/kernel.elf \
