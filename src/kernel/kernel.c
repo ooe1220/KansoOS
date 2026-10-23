@@ -35,19 +35,25 @@ void kernel_main() {
     // CPU名取得
     char cpuname[48];
     get_cpu_name(cpuname);
-    
+        
     // ページングを入れるとoutb(0x64, 0xFC)に失敗する
     // 実機ではまともに動かない
     //enable_paging(); // 物理=仮想
     //console_clear(); // ページングの際にVRAMにゴミが残る為、消す(原因不明)
     
     console_init();      // VBE 初期化 + 画面クリア
+    
+    debug_printf("ABCD ");
         
     // 起動画面ペンギン
     show_boot_logo();
+    
+    debug_printf("EFGH ");
+        
     for (uint32_t i = 0; i < 5000 * 100000; i++) {
         asm volatile ("nop");
     }
+    
     console_clear();
     
     kputs("       C Kernel Booted           \n");

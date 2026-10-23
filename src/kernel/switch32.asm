@@ -139,16 +139,16 @@ pm_start:
 ;    loop .draw_blue_line
     
     ; 四隅に赤い点
-    mov edi, 0xE0000000    ; VRAMアドレス
-    mov ax, 0xF800       ; 赤色 (RGB565: 0xF800)  
-    mov word [edi], ax; 1. 左上 (0, 0)
-    mov word [edi + 799 * 2], ax; 2. 右上 (799, 0)
-    mov word [edi + 599 * 800 * 2], ax; 3. 左下 (0, 599)
-    mov word [edi + 599 * 800 * 2 + 799 * 2], ax; 4. 右下 (799, 599)
+;    mov edi, 0xE0000000    ; VRAMアドレス
+;    mov ax, 0xF800       ; 赤色 (RGB565: 0xF800)  
+;    mov word [edi], ax; 1. 左上 (0, 0)
+;    mov word [edi + 799 * 2], ax; 2. 右上 (799, 0)
+;    mov word [edi + 599 * 800 * 2], ax; 3. 左下 (0, 599)
+;    mov word [edi + 599 * 800 * 2 + 799 * 2], ax; 4. 右下 (799, 599)
 
-    jmp $
+;    jmp $
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-        
+    
     call kernel_main ; kernel.cへ移行
 
 .hlt_loop:
