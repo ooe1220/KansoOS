@@ -25,6 +25,9 @@
 
 void kernel_main() {
 
+    int rb = 138;
+    rb = rb / 4;   
+
     gdt_init();
     tss_init(0x9FC00); // swich32.asmと2重定義になるのでいつか纏める
 
@@ -42,14 +45,9 @@ void kernel_main() {
     //console_clear(); // ページングの際にVRAMにゴミが残る為、消す(原因不明)
     
     console_init();      // VBE 初期化 + 画面クリア
-    
-    debug_printf("ABCD ");
-        
+            
     // 起動画面ペンギン
-    //show_boot_logo();
-    
-    debug_printf("EFGH ");
-        
+    show_boot_logo();
     for (uint32_t i = 0; i < 5000 * 100000; i++) {
         asm volatile ("nop");
     }
@@ -64,12 +62,7 @@ void kernel_main() {
     kputs("TSS initialized\n");
     kputs("VBE initialized\n");
     
-    //show_penguin();// shell画面左上にペンギン画像を表示
-    
-    // デバッグ用COM1有効
-    serial_init();
-    kputs("Serial initialized (COM1)\n");
-    serial_puts("\nSerial initialized (COM1)\n");
+    show_penguin();// shell画面左上にペンギン画像を表示
     
     cpu_cache_disable();// キャッシュを切っておく
     kputs("CPU cache disabled\n");

@@ -20,6 +20,7 @@ nasm -f elf32 src/kernel/switch32.asm -o build/switch32.o
 # -ffreestanding : OS標準ライブラリを使わない。開始点がmain()でなくても良くなる
 # -O2 : 最適化する
 # -c : コンパイルのみ、リンクはしない　これがないと gcc は最終的な実行ファイル（.exe や a.out）を作ろうとする
+# -machine isapcを使う場合、新しい機械語が生成される場合は-march=i486を指定する
 gcc -m32 -ffreestanding -I./src -O2 -c src/kernel/kernel.c -o build/kernel.o
 gcc -m32 -ffreestanding -I./src -O2 -c src/kernel/command.c -o build/command.o
 gcc -m32 -ffreestanding -I./src -O2 -c src/kernel/user_exec.c -o build/user_exec.o
@@ -44,7 +45,8 @@ gcc -m32 -ffreestanding -I./src -c src/x86/pit.c -o build/pit.o
 gcc -m32 -ffreestanding -I./src -c src/x86/cpu.c -o build/cpu.o
 gcc -m32 -ffreestanding -I./src -c src/x86/timer.c -o build/timer.o
 gcc -m32 -ffreestanding -I./src -c src/lib/itoa.c -o build/itoa.o
-gcc -m32 -ffreestanding -I./src -c src/lib/bmp.c -o build/bmp.o
+#gcc -m32 -ffreestanding -I./src -c src/lib/bmp.c -o build/bmp.o
+gcc -m32 -ffreestanding -I./src -march=i486 -c src/lib/bmp.c -o build/bmp.o
 gcc -m32 -ffreestanding -I./src -c src/debug/serial.c -o build/serial.o
 gcc -m32 -ffreestanding -I./src -c src/debug/debug_print.c -o build/debug_print.o # -O2厳禁
 gcc -m32 -ffreestanding -I./src -c src/debug/detect.c -o build/detect.o
@@ -159,11 +161,18 @@ cp build/kernel.bin  build/iso_root/
 #qemu-system-i386 -hda build/disk.img -serial stdio -d in_asm,int,cpu_reset -D /tmp/qemu.log
 
 # 自作BIOSで立ち上げる  isapcを使いVBEのVRAM起点を固定する
-  qemu-system-i386   -bios build/mybios.bin   -drive file=build/disk.img,format=raw,if=ide,index=0   -serial stdio   -machine isapc   -vga std
+ qemu-system-i386   -bios build/mybios.bin   -drive file=build/disk.img,format=raw,if=ide,index=0   -serial stdio   -machine isapc   -vga std
 #  qemu-system-i386   -bios build/mybios.bin   -drive file=build/disk.img,format=raw,if=ide,index=0   -monitor stdio   -machine isapc   -vga std
-   
+
+#  qemu-system-i386   -bios build/mybios.bin   -drive file=build/disk.img,format=raw,if=ide,index=0   -serial stdio -vga std
+
+#qemu-system-i386 -bios build/mybios.bin -drive file=build/disk.img,format=raw,if=ide,index=0 -serial stdio -machine isapc -vga std -d int -no-reboot -no-shutdown
+#objdump -d build/kernel.elf | grep -B5 -A5 "b5d0"
+  
 # xp /32768hx 0x0
 # xp /16384hx 0x10000
+# info registers
+
 
 # git status
 # git diff

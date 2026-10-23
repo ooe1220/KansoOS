@@ -22,6 +22,7 @@ static int parse_bmp_header(const uint8_t *bmp_data,
     int32_t  w   = *(int32_t  *)(bmp_data + 0x12);
     int32_t  h   = *(int32_t  *)(bmp_data + 0x16);
     uint16_t bpp = *(uint16_t *)(bmp_data + 0x1C);
+    
     if (bpp != 24) return -1; // 24bpp のみ
 
     int topdown = (h < 0);

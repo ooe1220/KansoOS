@@ -1,3 +1,4 @@
+#include "../debug/debug_print.h"
 /*
  * CPU名を取得する関数
  * char* buf(32ビット) は取得したCPU名を格納するバッファの先頭アドレス

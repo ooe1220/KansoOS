@@ -148,7 +148,7 @@ pm_start:
 
 ;    jmp $
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    
+        
     call kernel_main ; kernel.cへ移行
 
 .hlt_loop:
