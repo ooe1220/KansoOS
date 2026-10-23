@@ -46,7 +46,7 @@ void kernel_main() {
     debug_printf("ABCD ");
         
     // 起動画面ペンギン
-    show_boot_logo();
+    //show_boot_logo();
     
     debug_printf("EFGH ");
         
@@ -64,7 +64,7 @@ void kernel_main() {
     kputs("TSS initialized\n");
     kputs("VBE initialized\n");
     
-    show_penguin();// shell画面左上にペンギン画像を表示
+    //show_penguin();// shell画面左上にペンギン画像を表示
     
     // デバッグ用COM1有効
     serial_init();

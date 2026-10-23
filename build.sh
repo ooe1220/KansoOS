@@ -6,7 +6,7 @@ clear
 xxd -i src/kernel/penguin.bmp > src/kernel/penguin_bmp.h
 
 # 自作BIOSのビルド
-nasm -f bin bios/mybios.asm -o build/mybios.bin
+nasm -f bin src/bios/mybios.asm -o build/mybios.bin
 
 # 1. ブートローダーを bin に
 nasm -f bin src/boot/mbr.asm -o build/mbr.bin

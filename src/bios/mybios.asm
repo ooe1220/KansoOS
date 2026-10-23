@@ -49,13 +49,13 @@ hlt_loop:
     hlt
     jmp hlt_loop
 
-%include "bios/vga.asm"
-%include "bios/vbe.asm"
-%include "bios/int10h.asm"
-%include "bios/teletype.asm"
-%include "bios/int13h.asm"
-%include "bios/int19h.asm"
-font_8x16: incbin "bios/font_8x16.bin" 
+%include "src/bios/vga.asm"
+%include "src/bios/vbe.asm"
+%include "src/bios/int10h.asm"
+%include "src/bios/teletype.asm"
+%include "src/bios/int13h.asm"
+%include "src/bios/int19h.asm"
+font_8x16: incbin "src/bios/font_8x16.bin" 
 
 print_string:
     lodsb
