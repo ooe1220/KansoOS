@@ -12,7 +12,7 @@ start:
     mov es, ax
     mov ss, ax
     mov sp, 0x7C00
-    ;sti ; ここでSTIしたら再起動を繰り返す
+    ;sti
     
     mov si, kernei_msg
     call print_string
@@ -128,7 +128,7 @@ pm_start:
     mov ss, ax
     mov esp, 0x9FC00
     
-    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;;;;;;;;;;;;;;;;-VBE動作確認-;;;;;;;;;;;;;;;;;;
 ;    mov edi, 0xE0000000    ; VRAMアドレス
 ;    mov ecx, 800*600          ; 横幅
 ;    mov ax, 0x001F         ; RGB565: 青
@@ -137,10 +137,18 @@ pm_start:
 ;    mov word [edi], ax     ; 1ピクセル描画
 ;    add edi, 2             ; 次のピクセルへ
 ;    loop .draw_blue_line
+    
+    ; 四隅に赤い点
+    mov edi, 0xE0000000    ; VRAMアドレス
+    mov ax, 0xF800       ; 赤色 (RGB565: 0xF800)  
+    mov word [edi], ax; 1. 左上 (0, 0)
+    mov word [edi + 799 * 2], ax; 2. 右上 (799, 0)
+    mov word [edi + 599 * 800 * 2], ax; 3. 左下 (0, 599)
+    mov word [edi + 599 * 800 * 2 + 799 * 2], ax; 4. 右下 (799, 599)
+
+    jmp $
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    
-;    jmp $
-    
+        
     call kernel_main ; kernel.cへ移行
 
 .hlt_loop:
