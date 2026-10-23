@@ -12,7 +12,7 @@ start:
     mov es, ax
     mov ss, ax
     mov sp, 0x7C00
-    sti
+    ;sti ; ここでSTIしたら再起動を繰り返す
     
     mov si, kernei_msg
     call print_string
