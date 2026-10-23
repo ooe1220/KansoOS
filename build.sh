@@ -20,7 +20,7 @@ nasm -f elf32 src/kernel/switch32.asm -o build/switch32.o
 # -ffreestanding : OS標準ライブラリを使わない。開始点がmain()でなくても良くなる
 # -O2 : 最適化する
 # -c : コンパイルのみ、リンクはしない　これがないと gcc は最終的な実行ファイル（.exe や a.out）を作ろうとする
-# -machine isapcを使う場合、新しい機械語が生成される場合は-march=i486を指定する
+# -machine isapcを使う場合、新しい機械語が生成される場合は-march=i486を指定する　Commit e4b87aa参照
 gcc -m32 -ffreestanding -I./src -O2 -c src/kernel/kernel.c -o build/kernel.o
 gcc -m32 -ffreestanding -I./src -O2 -c src/kernel/command.c -o build/command.o
 gcc -m32 -ffreestanding -I./src -O2 -c src/kernel/user_exec.c -o build/user_exec.o

@@ -7,6 +7,8 @@ org 0x0000 ; BIOSは0xF0000-0xFFFFFの64KB(メモリ1MBの一番高い領域)
 
 bios_start:
 
+    call cpupost
+
     cli
     ; IVTに登録
     xor ax, ax
@@ -49,6 +51,7 @@ hlt_loop:
     hlt
     jmp hlt_loop
 
+%include "src/bios/cpupost.asm"
 %include "src/bios/vga.asm"
 %include "src/bios/vbe.asm"
 %include "src/bios/int10h.asm"
