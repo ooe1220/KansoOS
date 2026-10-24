@@ -3,6 +3,7 @@
 #include "x86/io.h"
 #include "x86/console.h"
 #include "lib/stdint.h"
+#include "debug/debug_print.h"
 
 extern void irq1(void);
 
@@ -59,10 +60,8 @@ char keyboard_getchar(void) {
  * IRQ1 Cハンドラ
  * ------------------------------ */
 void keyboard_handler(void) {
-    uint8_t sc = inb(0x60);
-        
-    //kputs("yobareta"); // 割り込みが呼ばれたかの確認一回押すと2回表示される(押す、離す)
 
+    uint8_t sc = inb(0x60);
     /* 離した場合は無視 */
     if (sc & 0x80) {
         pic_send_eoi(1);
@@ -96,11 +95,12 @@ void irq1(void) {
  * ------------------------------ */
 void keyboard_init(void) {
 
-    /* 8042 入力バッファ空くまで捨てる 捨てないと実機で立ち上げた瞬間大量の文字が入力されてしまう*/
+    // 8042 入力バッファ空くまで捨てる 捨てないと実機で立ち上げた瞬間大量の文字が入力されてしまう
     while (inb(0x64) & 1) {
         inb(0x60);
     }
 
     idt_set_gate(0x21, (uint32_t)irq1); // IRQ1
 }
+
 

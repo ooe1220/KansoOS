@@ -21,38 +21,36 @@ nasm -f elf32 src/kernel/switch32.asm -o build/switch32.o
 # -O2 : 最適化する
 # -c : コンパイルのみ、リンクはしない　これがないと gcc は最終的な実行ファイル（.exe や a.out）を作ろうとする
 # -machine isapcを使う場合、新しい機械語が生成される場合は-march=i486を指定する　Commit e4b87aa参照
-gcc -m32 -ffreestanding -I./src -O2 -c src/kernel/kernel.c -o build/kernel.o
-gcc -m32 -ffreestanding -I./src -O2 -c src/kernel/command.c -o build/command.o
-gcc -m32 -ffreestanding -I./src -O2 -c src/kernel/user_exec.c -o build/user_exec.o
-gcc -m32 -ffreestanding -I./src -O2 -c src/drivers/cmos.c -o build/cmos.o
-gcc -m32 -ffreestanding -I./src -O2 -c src/x86/console.c -o build/console.o
-gcc -m32 -ffreestanding -I./src -O2 -c src/x86/pic.c -o build/pic.o
-gcc -m32 -ffreestanding -I./src -c src/x86/idt.c -o build/idt.o
-gcc -m32 -ffreestanding -I./src -c src/x86/gdt.c -o build/gdt.o
-gcc -m32 -ffreestanding -I./src -c src/x86/paging.c -o build/paging.o
-gcc -m32 -ffreestanding -I./src -O2 -c src/drivers/ata.c -o build/ata.o
-gcc -m32 -ffreestanding -I./src -O2 -c src/drivers/atapi.c -o build/atapi.o
+gcc -m32 -ffreestanding -I./src -march=i486 -O2 -c src/kernel/kernel.c -o build/kernel.o
+gcc -m32 -ffreestanding -I./src -march=i486  -O2 -c src/kernel/command.c -o build/command.o
+gcc -m32 -ffreestanding -I./src -march=i486  -O2 -c src/kernel/user_exec.c -o build/user_exec.o
+gcc -m32 -ffreestanding -I./src -march=i486  -O2 -c src/drivers/cmos.c -o build/cmos.o
+gcc -m32 -ffreestanding -I./src -march=i486  -O2 -c src/x86/console.c -o build/console.o
+gcc -m32 -ffreestanding -I./src -march=i486  -O2 -c src/x86/pic.c -o build/pic.o
+gcc -m32 -ffreestanding -I./src -march=i486  -c src/x86/idt.c -o build/idt.o
+gcc -m32 -ffreestanding -I./src -march=i486  -c src/x86/gdt.c -o build/gdt.o
+gcc -m32 -ffreestanding -I./src -march=i486  -c src/x86/paging.c -o build/paging.o
+gcc -m32 -ffreestanding -I./src -march=i486  -O2 -c src/drivers/ata.c -o build/ata.o
+gcc -m32 -ffreestanding -I./src -march=i486  -O2 -c src/drivers/atapi.c -o build/atapi.o
 gcc -m32 -ffreestanding -I./src -march=i486 -O2 -c src/drivers/keyboard.c -o build/keyboard.o
-gcc -m32 -ffreestanding -I./src -c src/x86/panic.c -o build/panic.o
-gcc -m32 -ffreestanding -I./src -c src/x86/syscall.c -o build/syscall.o
-gcc -m32 -ffreestanding -I./src -c src/lib/string.c -o build/string.o
-gcc -m32 -ffreestanding -I./src -c src/kernel/mem.c -o build/mem.o
-gcc -m32 -ffreestanding -I./src -O2 -c src/fs/dir.c -o build/dir.o
-gcc -m32 -ffreestanding -I./src -O2 -c src/fs/fat16_file.c -o build/fat16_file.o
-gcc -m32 -ffreestanding -I./src -O2 -c src/fs/fs_file.c -o build/fs_file.o
-gcc -m32 -ffreestanding -I./src -c src/x86/vbe.c -o build/vbe.o
-gcc -m32 -ffreestanding -I./src -c src/x86/pit.c -o build/pit.o
-gcc -m32 -ffreestanding -I./src -c src/x86/cpu.c -o build/cpu.o
-gcc -m32 -ffreestanding -I./src -c src/x86/timer.c -o build/timer.o
-gcc -m32 -ffreestanding -I./src -c src/lib/itoa.c -o build/itoa.o
-#gcc -m32 -ffreestanding -I./src -c src/lib/bmp.c -o build/bmp.o
-gcc -m32 -ffreestanding -I./src -march=i486 -c src/lib/bmp.c -o build/bmp.o
-gcc -m32 -ffreestanding -I./src -c src/debug/serial.c -o build/serial.o
-gcc -m32 -ffreestanding -I./src -c src/debug/debug_print.c -o build/debug_print.o # -O2厳禁
-gcc -m32 -ffreestanding -I./src -c src/debug/detect.c -o build/detect.o
+gcc -m32 -ffreestanding -I./src -march=i486  -c src/x86/panic.c -o build/panic.o
+gcc -m32 -ffreestanding -I./src -march=i486  -c src/x86/syscall.c -o build/syscall.o
+gcc -m32 -ffreestanding -I./src -march=i486  -c src/lib/string.c -o build/string.o
+gcc -m32 -ffreestanding -I./src -march=i486  -c src/kernel/mem.c -o build/mem.o
+gcc -m32 -ffreestanding -I./src -march=i486  -O2 -c src/fs/dir.c -o build/dir.o
+gcc -m32 -ffreestanding -I./src -march=i486  -O2 -c src/fs/fat16_file.c -o build/fat16_file.o
+gcc -m32 -ffreestanding -I./src -march=i486  -O2 -c src/fs/fs_file.c -o build/fs_file.o
+gcc -m32 -ffreestanding -I./src -march=i486  -c src/x86/vbe.c -o build/vbe.o
+gcc -m32 -ffreestanding -I./src -march=i486  -c src/x86/pit.c -o build/pit.o
+gcc -m32 -ffreestanding -I./src -march=i486  -c src/x86/cpu.c -o build/cpu.o
+gcc -m32 -ffreestanding -I./src -march=i486  -c src/x86/timer.c -o build/timer.o
+gcc -m32 -ffreestanding -I./src -march=i486  -c src/lib/itoa.c -o build/itoa.o
+gcc -m32 -ffreestanding -I./src -march=i486 -c src/lib/bmp.c -o build/bmp.o # isapcのcmovs対策
+gcc -m32 -ffreestanding -I./src -march=i486  -c src/debug/serial.c -o build/serial.o
+gcc -m32 -ffreestanding -I./src -march=i486  -c src/debug/debug_print.c -o build/debug_print.o # -O2厳禁
+gcc -m32 -ffreestanding -I./src -march=i486  -c src/debug/detect.c -o build/detect.o
 
 gcc -m32 -ffreestanding -I./src -c src/x86/font_8x16.c -o build/font_8x16.o
-
 gcc -m32 -ffreestanding -fno-pic -fno-pie -c src/x86/syscall_entry.S -o build/syscall_entry.o
 
 # 4. リンカで ELF 作成
