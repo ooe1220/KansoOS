@@ -16,6 +16,8 @@ bios_start:
     mov es, ax 
     mov word [es:0x10 * 4],     int10h_handler
     mov word [es:0x10 * 4 + 2], cs
+    mov word [es:0x12 * 4],     int12h_handler
+    mov word [es:0x12 * 4 + 2], cs
     mov word [es:0x13 * 4],     int13h_handler
     mov word [es:0x13 * 4 + 2], cs
     mov word [es:0x19 * 4],     int19h_handler
@@ -58,6 +60,7 @@ hlt_loop:
 %include "src/bios/vbe.asm"
 %include "src/bios/int10h.asm"
 %include "src/bios/teletype.asm"
+%include "src/bios/int12h.asm"
 %include "src/bios/int13h.asm"
 %include "src/bios/int19h.asm"
 font_8x16: incbin "src/bios/font_8x16.bin" 
