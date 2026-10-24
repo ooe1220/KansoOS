@@ -1,4 +1,37 @@
 #include "../debug/debug_print.h"
+#include "../lib/string.h"
+
+// 
+static inline int cpuid_supported(void)
+{
+    unsigned long saved, test;
+    asm volatile (
+        "pushfl\n\t"
+        "pop %0\n\t"
+        "mov %0,%1\n\t"
+        "bts $21,%0\n\t"          /* EFLAGS.ID を立てる */
+        "push %0\n\t"
+        "popfl\n\t"
+        "pushfl\n\t"
+        "pop %0"
+        : "=&r"(test), "=&r"(saved)
+        :
+        : "cc"
+    );
+    return (test ^ saved) & (1UL << 21);
+}
+
+static inline void cpuid_raw(uint32_t leaf,
+                             uint32_t *a, uint32_t *b,
+                             uint32_t *c, uint32_t *d)
+{
+    asm volatile (
+        "cpuid"
+        : "=a"(*a), "=b"(*b), "=c"(*c), "=d"(*d)
+        : "a"(leaf)
+    );
+}
+
 /*
  * CPU名を取得する関数
  * char* buf(32ビット) は取得したCPU名を格納するバッファの先頭アドレス
@@ -7,6 +40,16 @@
 */
 void get_cpu_name(char* buf)
 {
+    // CPUID命令に対応しているか
+    if (!cpuid_supported())
+        goto fail;
+    
+    uint32_t a, b, c, d;
+    unsigned int maxext;
+    cpuid_raw(0x80000000, &maxext, &b, &c, &d);
+    if (maxext < 0x80000004)
+        goto fail;          /* 486 / PentiumIII 系はここで抜ける */
+
     register char* _buf asm("edi") = buf;
 
     asm volatile (
@@ -36,6 +79,10 @@ void get_cpu_name(char* buf)
     );
 
     buf[47] = '\0';
+    return;
+
+fail:
+    strcpy(buf, "CPU unknown (<=486?)");
 }
 
 void cpu_cache_disable(){
@@ -48,3 +95,5 @@ void cpu_cache_disable(){
         : : : "eax"
     );
 }
+
+
