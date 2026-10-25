@@ -13,7 +13,7 @@ struct atapi_dev {
 };
 
 
-struct atapi_dev atapi_detect_slave(void);
+struct atapi_dev atapi_detect(void);
 
 int atapi_read_sector(uint32_t lba, uint8_t *buf);
 

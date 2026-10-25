@@ -7,7 +7,7 @@ static inline void io_wait(void) {
     outb(0x80, 0);
 }
 
-struct atapi_dev atapi_detect_slave(void) {
+struct atapi_dev atapi_detect(void) {
     struct atapi_dev dev = {0};
 
     /* Secondary Master に固定 */
@@ -83,7 +83,7 @@ int atapi_read_sector(uint32_t lba, uint8_t *buf)
     outb(C, 0xA0);
     io_wait();
 
-    /* 4. コマンド受付フェーズ：BSY 落ち + DRQ 立ち */
+    /* 4. コマンド受付：BSY 落ち + DRQ 立ち */
     for (int i = 0; i < 1000000; i++) {
         uint8_t s = inb(C);
         if (s & 0x01) {
@@ -102,27 +102,27 @@ int atapi_read_sector(uint32_t lba, uint8_t *buf)
         return -1;
     }
 
-/* 5. CDB 送出（READ(10)） */
-uint8_t cdb[12] = {0};
-cdb[0] = 0x28;                     /* READ(10) */
-/* cdb[1] = 0; FUA 等なし */
-cdb[2] = (lba >> 24) & 0xff;       /* LBA は 4 バイト */
-cdb[3] = (lba >> 16) & 0xff;
-cdb[4] = (lba >>  8) & 0xff;
-cdb[5] = (lba >>  0) & 0xff;
-cdb[6] = 0;
-cdb[7] = 0;                        /* Transfer Length */
-cdb[8] = 1;
-cdb[9] = 0;                        /* Control */
+    /* 5. CDB 送出（READ(10)） */
+    uint8_t cdb[12] = {0};
+    cdb[0] = 0x28;                     /* READ(10) */
+    /* cdb[1] = 0; FUA 等なし */
+    cdb[2] = (lba >> 24) & 0xff;       /* LBA は 4 バイト */
+    cdb[3] = (lba >> 16) & 0xff;
+    cdb[4] = (lba >>  8) & 0xff;
+    cdb[5] = (lba >>  0) & 0xff;
+    cdb[6] = 0;
+    cdb[7] = 0;                        /* Transfer Length */
+    cdb[8] = 1;
+    cdb[9] = 0;                        /* Control */
 
-for (int i = 0; i < 6; i++) {
-    uint16_t w = cdb[i*2] | ((uint16_t)cdb[i*2+1] << 8); /* リトルエンディアン送出 */
-    outw(D, w);
-}
-io_wait();
+    for (int i = 0; i < 6; i++) {
+        uint16_t w = cdb[i*2] | ((uint16_t)cdb[i*2+1] << 8); /* リトルエンディアン送出 */
+        outw(D, w);
+    }
+    io_wait();
     debug_printf("[4] cdb sent, st=%x", inb(C));
 
-    /* 6. データ転送フェーズ：BSY 落ち + DRQ 立ち */
+    /* 6. データ転送：BSY 落ち + DRQ 立ち */
     for (int i = 0; i < 1000000; i++) {
         uint8_t s = inb(C);
         if (s & 0x01) {

@@ -67,17 +67,20 @@ void kernel_main() {
     cpu_cache_disable();// キャッシュを切っておく
     kputs("CPU cache disabled\n");
     
-    // ATAPIドライバ開発中
-    struct atapi_dev dev = atapi_detect_slave();
-
+    // 光学ドライブ検出
+    struct atapi_dev dev = atapi_detect();
     if (dev.present) {
+        kputs("atapi: optical drive detected: ");
         kputs(dev.model);
+        kputs("\n");
+    } else {
+        kputs("atapi: no optical drive found\n");
     }
-    kputs("\n");
     
+    // 1セクタ読み出す
     uint8_t sector[2048];
     atapi_read_sector(35, sector);
-    debug_dump_mem((uint32_t)sector, 2048);
+    //debug_dump_mem((uint32_t)sector, 2048);
     
      // メモリ管理初期化　QEMUは通るが実機では固まる
     //kheap_init(); // カーネル用
