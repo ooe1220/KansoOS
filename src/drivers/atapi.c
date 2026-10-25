@@ -1,5 +1,6 @@
 #include "x86/io.h"
 #include "atapi.h"
+#include "string.h"
 #include "debug/debug_print.h"
 
 static inline void io_wait(void) {
@@ -50,57 +51,111 @@ struct atapi_dev atapi_detect_slave(void) {
     return dev;
 }
 
-/* LBA 指定で 1セクタ読む（PIO） */
-int atapi_read_sector(uint32_t lba, uint8_t *buf) {
-    /* 1. Device Select (Secondary Master) */
-    outb(0x176, 0xA0);
-    io_wait();
+
+
+#define D 0x170
+#define F 0x171
+#define M 0x174   /* Byte Count Low  */
+#define H 0x175   /* Byte Count High */
+#define V 0x176
+#define C 0x177
+
+static uint8_t wait_clr(uint8_t m) { uint8_t s; while ((s=inb(C))&m) io_wait(); return s; }
+
+int atapi_read_sector(uint32_t lba, uint8_t *buf)
+{
+    memset(buf, 0xAA, 2048);
+
+    debug_printf("[1] pre  st=%x", inb(C));
+
+    /* 1. 待機：BSY も DRQ も落ちていること */
+    wait_clr(0x80 | 0x08);
+    debug_printf("[2] idle st=%x", inb(C));
+
+    /* 2. レジスタ設定 */
+    outb(F, 0x00);          /* Features = 0 (PIO) */
+    outb(M, 0x00);          /* Byte Count Low  = 0x0800 */
+    outb(H, 0x08);          /* Byte Count High = 0x0800 */
+    outb(V, 0xA0);          /* マスター。モデル名が取れた値と同じにする */
     io_wait();
 
-    /* 2. READ(10) Command Packet (12 bytes) */
-uint8_t cmd[12] = {
-    0xA8,
-    0x00,
-    (lba >> 24) & 0xFF,   /* Big Endian のまま */
-    (lba >> 16) & 0xFF,
-    (lba >>  8) & 0xFF,
-    (lba >>  0) & 0xFF,
-    0x00,
-    0x00,
-    0x00, 0x01,           /* 1 sector */
-    0x00
-};
+    /* 3. PACKET 発行 */
+    outb(C, 0xA0);
+    io_wait();
 
-    for (int i = 0; i < 12; i++) {
-        outb(0x170, cmd[i]);
+    /* 4. コマンド受付フェーズ：BSY 落ち + DRQ 立ち */
+    for (int i = 0; i < 1000000; i++) {
+        uint8_t s = inb(C);
+        if (s & 0x01) {
+            debug_printf("[3] ERR st=%x err=%x", s, inb(F));
+            return -1;
+        }
+        if (!(s & 0x80) && (s & 0x08)) {
+            debug_printf("[3] CDB-ready st=%x bcl=%x%x",
+                         s, inb(H), inb(M));
+            break;
+        }
         io_wait();
     }
-
-    /* 3. Wait DRQ */
-    int timeout = 100000;
-    while (!(inb(0x177) & 0x08) && timeout--) {
-        io_wait();
-    }
-
-    if (timeout == 0) {
-        debug_printf("ATAPI DRQ TIMEOUT");
+    if (!(inb(C) & 0x08)) {
+        debug_printf("[3] NO CDB DRQ st=%x", inb(C));
         return -1;
     }
-    
-uint8_t st = inb(0x177);
-debug_printf("STATUS=%x", st);
-uint16_t v = inw(0x170);
 
-while (!(inb(0x177) & 0x08));
+/* 5. CDB 送出（READ(10)） */
+uint8_t cdb[12] = {0};
+cdb[0] = 0x28;                     /* READ(10) */
+/* cdb[1] = 0; FUA 等なし */
+cdb[2] = (lba >> 24) & 0xff;       /* LBA は 4 バイト */
+cdb[3] = (lba >> 16) & 0xff;
+cdb[4] = (lba >>  8) & 0xff;
+cdb[5] = (lba >>  0) & 0xff;
+cdb[6] = 0;
+cdb[7] = 0;                        /* Transfer Length */
+cdb[8] = 1;
+cdb[9] = 0;                        /* Control */
 
-    /* 4. Read 2048 bytes */
-    uint16_t *p = (uint16_t *)buf;
-    for (int i = 0; i < 1024; i++) {
-        *p++ = inw(0x170);
+for (int i = 0; i < 6; i++) {
+    uint16_t w = cdb[i*2] | ((uint16_t)cdb[i*2+1] << 8); /* リトルエンディアン送出 */
+    outw(D, w);
+}
+io_wait();
+    debug_printf("[4] cdb sent, st=%x", inb(C));
+
+    /* 6. データ転送フェーズ：BSY 落ち + DRQ 立ち */
+    for (int i = 0; i < 1000000; i++) {
+        uint8_t s = inb(C);
+        if (s & 0x01) {
+            debug_printf("[5] ERR st=%x err=%x", s, inb(F));
+            return -1;
+        }
+        if (!(s & 0x80) && (s & 0x08)) {
+            debug_printf("[5] DATA-ready st=%x bcl=%x%x",
+                         s, inb(H), inb(M));
+            break;
+        }
         io_wait();
-        //kputc((char)((uintptr_t)p));
+    }
+    if (!(inb(C) & 0x08)) {
+        debug_printf("[5] NO DATA DRQ st=%x", inb(C));
+        return -1;
     }
 
+    /* 7. 実際の転送バイト数を取得 */
+    uint16_t limit = inb(M) | (inb(H) << 8);
+    debug_printf("[6] limit=%x", limit);
+    if (limit == 0 || limit > 2048) limit = 2048;
+    limit &= ~1;
+
+    /* 8. 先頭 1 ワードだけ試し読み */
+    uint16_t first = inw(D);
+    debug_printf("[7] FIRST=%x", first);
+
+    volatile uint16_t *p = (volatile uint16_t *)buf;
+    p[0] = first;
+    for (int i = 1; i < limit / 2; i++) p[i] = inw(D);
+
+    debug_printf("[8] done head=%x %x %x %x",
+                 buf[0], buf[1], buf[2], buf[3]);
     return 0;
 }
-

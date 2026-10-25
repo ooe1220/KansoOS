@@ -1,26 +1,6 @@
 #include "../debug/debug_print.h"
 #include "../lib/string.h"
 
-// 
-static inline int cpuid_supported(void)
-{
-    unsigned long saved, test;
-    asm volatile (
-        "pushfl\n\t"
-        "pop %0\n\t"
-        "mov %0,%1\n\t"
-        "bts $21,%0\n\t"          /* EFLAGS.ID を立てる */
-        "push %0\n\t"
-        "popfl\n\t"
-        "pushfl\n\t"
-        "pop %0"
-        : "=&r"(test), "=&r"(saved)
-        :
-        : "cc"
-    );
-    return (test ^ saved) & (1UL << 21);
-}
-
 static inline void cpuid_raw(uint32_t leaf,
                              uint32_t *a, uint32_t *b,
                              uint32_t *c, uint32_t *d)
@@ -40,10 +20,6 @@ static inline void cpuid_raw(uint32_t leaf,
 */
 void get_cpu_name(char* buf)
 {
-    // CPUID命令に対応しているか
-    if (!cpuid_supported())
-        goto fail;
-    
     uint32_t a, b, c, d;
     unsigned int maxext;
     cpuid_raw(0x80000000, &maxext, &b, &c, &d);

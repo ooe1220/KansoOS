@@ -132,7 +132,7 @@ void debug_dump_mem(uint32_t addr, int bytes) {
         for (j = 0; j < 16 && (i + j) < bytes; j++) {
             debug_printf("0x%x ", *(uint8_t*)(addr + i + j));
         }
-        serial_putc('\n');
+        debug_printf("\n");
     }
 }
 

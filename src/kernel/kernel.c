@@ -20,7 +20,7 @@
 #include "user_exec.h"
 #include "debug/serial.h"
 #include "debug/debug_print.h"
-
+#include "debug/detect.h"
 #include "drivers/atapi.h"
 
 void kernel_main() {
@@ -75,9 +75,9 @@ void kernel_main() {
     }
     kputs("\n");
     
-    //uint8_t sector[2048];
-    //atapi_read_sector(35, sector);
-    //debug_dump_mem((uint32_t)sector, 2048);
+    uint8_t sector[2048];
+    atapi_read_sector(35, sector);
+    debug_dump_mem((uint32_t)sector, 2048);
     
      // メモリ管理初期化　QEMUは通るが実機では固まる
     //kheap_init(); // カーネル用
