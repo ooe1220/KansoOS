@@ -4,12 +4,13 @@
 [BITS 16]
 [ORG 0x7C00]
 
-jmp start
+start
+jmp code
 
 boot_drive:
 dw 0
 
-start:
+code:
     ; CS:IP=0x07C0:0x0000とするBIOS対策、0x0000:0x7C00統一
     jmp 0x0000:real_start
 real_start:
