@@ -21,7 +21,7 @@ struct atapi_dev atapi_detect(void) {
 
     uint8_t st = inb(0x177);
     if (st == 0x00) {
-        debug_printf("NOTHING on Secondary");
+        //debug_printf("NOTHING on Secondary");
         return dev;
     }
 
@@ -66,11 +66,11 @@ int atapi_read_sector(uint32_t lba, uint8_t *buf)
 {
     memset(buf, 0xAA, 2048);
 
-    debug_printf("[1] pre  st=%x", inb(C));
+    //debug_printf("[1] pre  st=%x", inb(C));
 
     /* 1. 待機：BSY も DRQ も落ちていること */
     wait_clr(0x80 | 0x08);
-    debug_printf("[2] idle st=%x", inb(C));
+    //debug_printf("[2] idle st=%x", inb(C));
 
     /* 2. レジスタ設定 */
     outb(F, 0x00);          /* Features = 0 (PIO) */
@@ -87,18 +87,17 @@ int atapi_read_sector(uint32_t lba, uint8_t *buf)
     for (int i = 0; i < 1000000; i++) {
         uint8_t s = inb(C);
         if (s & 0x01) {
-            debug_printf("[3] ERR st=%x err=%x", s, inb(F));
+            //debug_printf("[3] ERR st=%x err=%x", s, inb(F));
             return -1;
         }
         if (!(s & 0x80) && (s & 0x08)) {
-            debug_printf("[3] CDB-ready st=%x bcl=%x%x",
-                         s, inb(H), inb(M));
+            //debug_printf("[3] CDB-ready st=%x bcl=%x%x",s, inb(H), inb(M));
             break;
         }
         io_wait();
     }
     if (!(inb(C) & 0x08)) {
-        debug_printf("[3] NO CDB DRQ st=%x", inb(C));
+        //debug_printf("[3] NO CDB DRQ st=%x", inb(C));
         return -1;
     }
 
@@ -120,42 +119,40 @@ int atapi_read_sector(uint32_t lba, uint8_t *buf)
         outw(D, w);
     }
     io_wait();
-    debug_printf("[4] cdb sent, st=%x", inb(C));
+    //debug_printf("[4] cdb sent, st=%x", inb(C));
 
     /* 6. データ転送：BSY 落ち + DRQ 立ち */
     for (int i = 0; i < 1000000; i++) {
         uint8_t s = inb(C);
         if (s & 0x01) {
-            debug_printf("[5] ERR st=%x err=%x", s, inb(F));
+            //debug_printf("[5] ERR st=%x err=%x", s, inb(F));
             return -1;
         }
         if (!(s & 0x80) && (s & 0x08)) {
-            debug_printf("[5] DATA-ready st=%x bcl=%x%x",
-                         s, inb(H), inb(M));
+            //debug_printf("[5] DATA-ready st=%x bcl=%x%x",s, inb(H), inb(M));
             break;
         }
         io_wait();
     }
     if (!(inb(C) & 0x08)) {
-        debug_printf("[5] NO DATA DRQ st=%x", inb(C));
+        //debug_printf("[5] NO DATA DRQ st=%x", inb(C));
         return -1;
     }
 
     /* 7. 実際の転送バイト数を取得 */
     uint16_t limit = inb(M) | (inb(H) << 8);
-    debug_printf("[6] limit=%x", limit);
+    //debug_printf("[6] limit=%x", limit);
     if (limit == 0 || limit > 2048) limit = 2048;
     limit &= ~1;
 
     /* 8. 先頭 1 ワードだけ試し読み */
     uint16_t first = inw(D);
-    debug_printf("[7] FIRST=%x", first);
+    //debug_printf("[7] FIRST=%x", first);
 
     volatile uint16_t *p = (volatile uint16_t *)buf;
     p[0] = first;
     for (int i = 1; i < limit / 2; i++) p[i] = inw(D);
 
-    debug_printf("[8] done head=%x %x %x %x",
-                 buf[0], buf[1], buf[2], buf[3]);
+    //debug_printf("[8] done head=%x %x %x %x",buf[0], buf[1], buf[2], buf[3]);
     return 0;
 }

@@ -18,8 +18,8 @@ start:
     call print_string
     
     ;;;;;;;;;;;;;
-    ;cli
-    ;hlt
+    cli
+    hlt
     ;;;;;;;;;;;;;
 
     ; A20有効

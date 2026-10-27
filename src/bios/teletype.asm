@@ -65,7 +65,7 @@ tty:
 .cr:
     ; 行頭に戻る（列を0に）
     call read_cursor_1d      ; AX = pos
-    mov bl, 80
+    mov bx, 80
     xor dx, dx
     div bx                   ; AX = 行番号, DX = 列
     mul bx                   ; AX = 行頭のpos
@@ -79,6 +79,8 @@ tty:
     call set_cursor_1d
     ret
     
-    
+; div bx → (DX:AX) ÷ BX = AX...DX
+; mul bx → AX × BX : DX:AX
+; mul bx → AX × BX = DX : AX
     
     
