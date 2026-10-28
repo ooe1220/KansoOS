@@ -17,10 +17,9 @@ start:
     mov si, kernei_msg
     call print_string
     
-    ;;;;;;;;;;;;;
-    cli
-    hlt
-    ;;;;;;;;;;;;;
+    ; 16bitコードの点検用
+    ;cli
+    ;hlt
 
     ; A20有効
     call a20_enable_8042
