@@ -1,73 +1,28 @@
 
 vga_mode3_init:
-
     cld                         ; 方向フラグ前進
+     
+    call set_palette
     
-; --- パレット設定処理の開始 ---
-    mov dx, 0x03C8      ; DAC Address Write Mode Register
-    mov al, 0           ; インデックス0から開始
-    out dx, al
-
-    mov dx, 0x03C9      ; DAC Data Register
-    mov si, palette2    ; データのアドレスをSIにロード
-    mov cx, 64 * 3      ; 64色 * RGB(3バイト) = 192バイト
-
-set_palette_loop:
-    lodsb               ; [ds:si]から1バイト読み込んでALへ、SI
-    out dx, al          ; ポート0x03C9に書き込み
-    loop set_palette_loop
-    
-; 1. Miscellaneous Output Register の設定
+    ;======================================================================
+    ; Miscellaneous Output Register（MOR）設定
+    ;======================================================================
     mov dx, 0x3C2
     mov al, 0x67
     out dx, al
 
-    call vga_seq_init
-    call vga_crtc_write
-    call vga_gc_write
-    call vga_attr_write
-    
-    mov al, 0x20 ; 映像出力を有効化 (PAS bit をセット)
-    out dx, al
-    
-    call vga_plane2_font_open
-    call register_char
-    call vga_restore_textplane
-    ret
-    
-; ----------以下は関数----------
-
-;======================================================================
-; Sequencer(4つのVRAMの使用方法を決める)の登録
-;======================================================================
-vga_seq_init:
-
-    mov dx, 0x3C4       ; Sequencer Index ポート
+    ;======================================================================
+    ; Sequencer設定
+    ;======================================================================
+    mov dx, 0x3C4
     mov si, seq_data
     mov cx, 5
-    xor bl, bl
-.seq_loop:
-    push cx
-
-    mov al, bl
-    out dx, al          ; Index 指定
-    inc dx              ; 0x3C5 (Data ポート)
-    lodsb
-    out dx, al
-
-    dec dx              ; 0x3C4 に戻す
-    inc bl
-    pop cx
-    loop .seq_loop
+    call vga_write_regs
     
-    ret
-
-;======================================================================
-; CRTC(走査に関する設定)の登録
-;======================================================================
-vga_crtc_write:
-    ; Index 0x11 の Bit 7 を 0 にして書き込み禁止を解除
-    mov dx, 0x3D4
+    ;======================================================================
+    ; CRTC設定
+    ;======================================================================
+    mov dx, 0x3D4 ; Index 0x11 の Bit 7 を 0 にして書き込み禁止を解除
     mov al, 0x11
     out dx, al
     inc dx
@@ -75,44 +30,83 @@ vga_crtc_write:
     and al, 0x7F
     out dx, al
     dec dx
-
-    ; CRTC 全データ書き込み (Index 00h - 18h)
+    
     mov si, crtc_data
     mov cx, 25      ; 0x18 までなので 25個
-    xor bl, bl      ; Index 0 から
-.crtc_loop:
-    mov al, bl
-    out dx, al
-    inc dx
-    lodsb
-    out dx, al
-    dec dx
-    inc bl
-    loop .crtc_loop
-    
-    ret
-    
-;======================================================================
-; Graphics Controller
-;======================================================================
-vga_gc_write:
+    call vga_write_regs
+
+    ;======================================================================
+    ; Graphics Controller設定
+    ;======================================================================
     mov dx, 0x3CE
     mov si, grap_data
     mov cx, 9
-    xor bl, bl
-.grap_loop:
+    call vga_write_regs
+    
+    
+    call vga_attr_write
+    call vga_plane2_font_open
+    call register_char
+    call vga_restore_textplane
+    
+    ; 映像出力を有効化
+    mov dx, 0x3C0 
+    mov al, 0x20
+    out dx, al
+    
+    ret
+    
+; ----------以下は関数----------
+
+;======================================================================
+; パレット設定
+;======================================================================
+
+set_palette:
+    mov dx, 0x03C8      ; DAC Address Write Mode Register
+    mov al, 0           ; インデックス0から開始
+    out dx, al
+
+    mov dx, 0x03C9      ; DAC Data Register
+    mov si, palette    ; データのアドレスをSIにロード
+    mov cx, 64 * 3      ; 64色 * RGB(3バイト) = 192バイト
+
+set_palette_loop:
+    lodsb               ; [ds:si]から1バイト読み込んでALへ、SI
+    out dx, al          ; ポート0x03C9に書き込み
+    loop set_palette_loop
+    
+    ret
+    
+
+;------------------------------------------------------------
+; 汎用 VGA レジスタ書き込み
+;   DX   = Index ポート (Data は DX+1)
+;   DS:SI = データ表
+;   CX   = 件数
+;   破壊: AL, SI, CX, BL（DX は元の値に戻る）
+;------------------------------------------------------------
+vga_write_regs:
+    push dx             ; 退避
+    xor bl, bl          ; 索引
+.wr_loop:
     mov al, bl
     out dx, al
     inc dx
-    lodsb
+    lodsb               ; AL ← [DS:SI] SI++
     out dx, al
-    dec dx
-    inc bl
-    loop .grap_loop
 
+    dec dx              ; Index ポートへ戻す
+    inc bl
+    loop .wr_loop
+
+    pop dx              ; dx を復元
     ret
-    
-    
+
+
+;======================================================================
+; 字体登録
+;======================================================================
 register_char:
     mov ax, cs
     mov ds, ax
@@ -164,7 +158,7 @@ vga_attr_write:
 
 
 ;======================================================================
-; フォント RAM (Plane 2) へアクセスできるように VRAM 配線を切り替える
+; 字体 RAM へアクセスできるように VRAM 配線を切り替える
 ;======================================================================
 vga_plane2_font_open:
     mov dx, 0x3C4
@@ -183,7 +177,7 @@ vga_plane2_font_open:
     ret
     
 ;======================================================================
-; フォント登録などでいじった配線を、「テキストモード用」に戻す
+; 字体登録などでいじった配線を、「テキストモード用」に戻す
 ;======================================================================
 vga_restore_textplane:
     mov dx, 0x3C4
@@ -206,7 +200,6 @@ seq_data  db 0x03, 0x00, 0x03, 0x00, 0x02
 crtc_data db 0x5F, 0x4F, 0x50, 0x82, 0x55, 0x81, 0xBF, 0x1F, \
                  0x00, 0x4F, 0x0D, 0x0E, 0x00, 0x00, 0x00, 0x00, \
                  0x9C, 0x8E, 0x8F, 0x28, 0x0F, 0x96, 0xB9, 0xA3, 0xFF
-                 ;0x9C, 0x8E, 0x8F, 0x28, 0x1F, 0x96, 0xB9, 0xA3, 0xFF
 
 grap_data db 0x00, 0x00, 0x00, 0x00, 0x00, 0x10, 0x0E, 0x0F, 0xFF
 
@@ -214,7 +207,7 @@ attr_data db 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x14, 0x07, \
                  0x38, 0x09, 0x3A, 0x0B, 0x3C, 0x0D, 0x3E, 0x0F, \
                  0x0C, 0x01, 0x0F, 0x13, 0x00
                                
-palette2:
+palette:
     ; 1行あたり8色（24バイト）ずつ配置
     db 0x00,0x00,0x00, 0x00,0x00,0x2a, 0x00,0x2a,0x00, 0x00,0x2a,0x2a, 0x2a,0x00,0x00, 0x2a,0x00,0x2a, 0x2a,0x2a,0x00, 0x2a,0x2a,0x2a
     db 0x00,0x00,0x15, 0x00,0x00,0x3f, 0x00,0x2a,0x15, 0x00,0x2a,0x3f, 0x2a,0x00,0x15, 0x2a,0x00,0x3f, 0x2a,0x2a,0x15, 0x2a,0x2a,0x3f
