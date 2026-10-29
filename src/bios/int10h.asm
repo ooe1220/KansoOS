@@ -21,7 +21,13 @@ int10h_handler:
     jmp .done
 
 .mode_set:
+    cmp al, 0x13
+    je  .mode13 ; それ以外は全部 Mode 3 扱い
+    
     call vga_mode3_init
+    jmp .done
+.mode13:
+    call vga_mode13_init
     jmp .done
 
 .teletype:

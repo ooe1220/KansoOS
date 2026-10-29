@@ -42,6 +42,23 @@ bios_start:
     or   al, 0x02
     and  al, 0xFE
     out  0x92, al
+    
+    
+    ;;;;;mode13動作確認用
+    ;mov ah, 0x00
+    ;mov al, 0x13
+    ;int 0x10
+    
+    ;mov ax, 0xA000
+    ;mov es, ax
+    ;xor di, di
+    ;mov al, 0x3F ; 色
+    ;mov cx, 320 * 200     ; 画面全体
+    ;rep stosb           ; 0xA000:0000 に CX バイト分書く
+    
+    ;cli
+    ;hlt
+    ;;;;;
    
     mov si, msg_bios
     call print_string

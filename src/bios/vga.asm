@@ -1,4 +1,65 @@
 
+; モード13は開発途中
+vga_mode13_init:
+    cld
+
+    mov dx, 0x3C2          ; MOR
+    mov al, 0x63           ; ← Mode13 は 0x63
+    out dx, al
+
+    mov dx, 0x3C4          ; Sequencer (4個)
+    mov si, mode13_seq_data
+    mov cx, 4
+    call vga_write_regs
+
+
+    mov dx, 0x3D4 ; Index 0x11 の Bit 7 を 0 にして書き込み禁止を解除
+    mov al, 0x11
+    out dx, al
+    inc dx
+    in al, dx
+    and al, 0x7F
+    out dx, al
+    dec dx
+    
+    mov dx, 0x3D4          ; CRTC (24個)
+    mov si, mode13_crtc_data
+    mov cx, 24
+    call vga_write_regs
+
+    mov dx, 0x3CE          ; Graphics Controller (9個)
+    mov si, mode13_grap_data
+    mov cx, 9
+    call vga_write_regs
+
+    mov si, mode13_attr_data ; Attribute (20個)
+    mov cx, 20
+    call vga_attr_write
+
+    call set_palette
+    
+    mov dx, 0x3C0
+    mov al, 0x20
+    out dx, al        ; AC のビデオ出力を有効化
+    
+    ;;;;;;;;;;;;;;;
+mov dx, 0x3C4
+mov ax, 0x0F02      ; SR02: 全平面書き込み許可（Chain4 下では実質無視されるが慣例）
+out dx, ax
+mov ax, 0x0E04      ; SR04: Chain4 = 1, Extended Mem = 1
+out dx, ax
+
+mov dx, 0x3CE
+mov ax, 0x0005      ; GC05: Write Mode 2
+out dx, ax
+mov ax, 0x0506      ; GC06: Map A0000, Chain4 = 1
+out dx, ax
+mov ax, 0x0F08      ; GC08: Bit Mask = 全ビット（書き込み時に 0 で塗れなくなるのを防ぐ）
+out dx, ax
+    ;;;;;;;;;;;;;;;;
+    
+    ret
+
 vga_mode3_init:
     cld ; 方向フラグ前進
      
@@ -211,6 +272,18 @@ mode3_grap_data db 0x00, 0x00, 0x00, 0x00, 0x00, 0x10, 0x0E, 0x0F, 0xFF
 mode3_attr_data db 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x14, 0x07, \
                  0x38, 0x09, 0x3A, 0x0B, 0x3C, 0x0D, 0x3E, 0x0F, \
                  0x0C, 0x01, 0x0F, 0x13, 0x00
+                 
+mode13_seq_data  db 0x01, 0x0F, 0x00, 0x0E
+
+mode13_crtc_data db 0x5F, 0x4F, 0x50, 0x82, 0x54, 0x80, 0xBF, 0x1F, \
+                 0x00, 0x41, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, \
+                 0x9C, 0x8E, 0x8F, 0x28, 0x40, 0x96, 0xB9, 0xA3
+
+mode13_grap_data db 0x00, 0x00, 0x00, 0x00, 0x00, 0x40, 0x05, 0x0F, 0xFF
+
+mode13_attr_data db 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, \
+                 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, \
+                 0x41, 0x00, 0x0F, 0x00
                                
 palette:
     ; 1行あたり8色（24バイト）ずつ配置
