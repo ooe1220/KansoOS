@@ -1,9 +1,7 @@
 
 vga_mode3_init:
-    cld                         ; 方向フラグ前進
+    cld ; 方向フラグ前進
      
-    call set_palette
-    
     ;======================================================================
     ; Miscellaneous Output Register（MOR）設定
     ;======================================================================
@@ -15,7 +13,7 @@ vga_mode3_init:
     ; Sequencer設定
     ;======================================================================
     mov dx, 0x3C4
-    mov si, seq_data
+    mov si, mode3_seq_data
     mov cx, 5
     call vga_write_regs
     
@@ -31,7 +29,7 @@ vga_mode3_init:
     out dx, al
     dec dx
     
-    mov si, crtc_data
+    mov si, mode3_crtc_data
     mov cx, 25      ; 0x18 までなので 25個
     call vga_write_regs
 
@@ -39,24 +37,32 @@ vga_mode3_init:
     ; Graphics Controller設定
     ;======================================================================
     mov dx, 0x3CE
-    mov si, grap_data
+    mov si, mode3_grap_data
     mov cx, 9
     call vga_write_regs
     
-    
+    ;======================================================================
+    ; ATTR設定
+    ;======================================================================  
+    mov si, mode3_attr_data
     call vga_attr_write
+    
+    ;======================================================================
+    ; パレット設定 → [配線を Plane2 に切替] → 字体登録 → [テキスト用に復帰]
+    ;======================================================================
+    call set_palette
     call vga_plane2_font_open
     call register_char
     call vga_restore_textplane
     
+    ;====================================================================== 
     ; 映像出力を有効化
+    ;====================================================================== 
     mov dx, 0x3C0 
     mov al, 0x20
     out dx, al
     
     ret
-    
-; ----------以下は関数----------
 
 ;======================================================================
 ; パレット設定
@@ -143,7 +149,6 @@ vga_attr_write:
     in al, dx
     
     mov dx, 0x3C0
-    mov si, attr_data
     mov cx, 21      ; Palette(16) + Mode Control 等(5)
     xor bl, bl
 .attr_loop:
@@ -195,15 +200,15 @@ vga_restore_textplane:
     ret
 
 ; QEMU初期化のVGAレジスタダンプ値に基づいたデータ(CRTC 0x0E,0x0Fのカーソル以外)
-seq_data  db 0x03, 0x00, 0x03, 0x00, 0x02
+mode3_seq_data  db 0x03, 0x00, 0x03, 0x00, 0x02
     
-crtc_data db 0x5F, 0x4F, 0x50, 0x82, 0x55, 0x81, 0xBF, 0x1F, \
+mode3_crtc_data db 0x5F, 0x4F, 0x50, 0x82, 0x55, 0x81, 0xBF, 0x1F, \
                  0x00, 0x4F, 0x0D, 0x0E, 0x00, 0x00, 0x00, 0x00, \
                  0x9C, 0x8E, 0x8F, 0x28, 0x0F, 0x96, 0xB9, 0xA3, 0xFF
 
-grap_data db 0x00, 0x00, 0x00, 0x00, 0x00, 0x10, 0x0E, 0x0F, 0xFF
+mode3_grap_data db 0x00, 0x00, 0x00, 0x00, 0x00, 0x10, 0x0E, 0x0F, 0xFF
 
-attr_data db 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x14, 0x07, \
+mode3_attr_data db 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x14, 0x07, \
                  0x38, 0x09, 0x3A, 0x0B, 0x3C, 0x0D, 0x3E, 0x0F, \
                  0x0C, 0x01, 0x0F, 0x13, 0x00
                                

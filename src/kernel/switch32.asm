@@ -18,8 +18,8 @@ start:
     call print_string
     
     ; 16bitコードの点検用
-    ;cli
-    ;hlt
+    cli
+    hlt
 
     ; A20有効
     call a20_enable_8042
