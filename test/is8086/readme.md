@@ -20,8 +20,10 @@ sudo dd if=test.bin of=/dev/sdb bs=512 count=1 conv=notrunc
 # 実行結果
 
 QEMU
+<img width="810" height="548" alt="截图 2026-10-30 19-59-44" src="https://github.com/user-attachments/assets/9b0ee32f-071d-4eb2-8109-27bd2356dc36" />
 
 
 東芝SS M10 及び V30復刻機
+<img width="1440" height="1920" alt="85306033ce9f88" src="https://github.com/user-attachments/assets/6984c609-8320-4d0e-99e1-3c02036f81b6" />
 
 
