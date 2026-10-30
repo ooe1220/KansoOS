@@ -13,7 +13,7 @@ nasm -f bin src/boot/mbr.asm -o build/mbr.bin
 nasm -f bin src/boot/vbr.asm -o build/vbr.bin
 
 # 2. 追加アセンブリをオブジェクトに
-nasm -f elf32 src/kernel/switch32.asm -o build/switch32.o
+nasm -f elf32 src/boot/switch32.asm -o build/switch32.o
 
 # 3. C をオブジェクトファイルに
 # -m32 : 32ビットの機械語を生成
