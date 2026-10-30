@@ -67,6 +67,9 @@ msg_vbe_fail   db "[VBR] VBE info acquisition failed", 0x0D, 0x0A, 0
 msg_loaded db "[VBR] Execution started at 0x0000:0x7C00", 0x0D, 0x0A, 0
 error_msg db "Failed to load KERNEL.BIN", 0x0D, 0x0A, 0
 
+msg_386only   db "This OS is 386-only. Booting from an 8086 is not supported.", 0x0D, 0x0A, 0
+msg_not_8086  db "CPU check passed. Continuing...", 0x0D, 0x0A, 0
+
 ; 残りの領域を512バイトまで埋める
 times 510-($-$$) db 0
 dw 0xBB66 ; メモリ上でMBRとVBRを区別する為、便宜的に(本来はこんな書き方をすべきではない)

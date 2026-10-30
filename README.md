@@ -107,5 +107,13 @@ ATAPI(光学ドライバ実装中)
 - ringの切り替え
 - 複数プロセス
 
+# 開発環境構築
+
+```bash
+sudo apt install nasm
+sudo apt install qemu-system-x86
+sudo apt install -y gcc-multilib libc6-dev-i386
+```
+
 
 

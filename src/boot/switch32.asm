@@ -13,27 +13,9 @@ start:
     mov ss, ax
     mov sp, 0x7C00
     
-    ; 8086の場合は起動しない    
-    call is8086
-    je not_8086
-    jne is_8086
-    
-is_8086:
-    mov si, msg_386only
-    call print_string
-hang:
+    ; 16bitコードの点検用
     cli
     hlt
-    jmp hang
-    
-not_8086: ; 8086で無かったらOSを起動する
-
-    mov si, msg_not_8086
-    call print_string
-    
-    ; 16bitコードの点検用
-    ;cli
-    ;hlt
 
     ; A20有効
     call a20_enable_8042
@@ -129,15 +111,6 @@ gdt_descriptor:
     
 %include "src/kernel/a20.asm"; A20有効処理の実装
 
-; =========================================
-;   8086判定 戻り値: ZF=1 → 286以降   ZF=0 → 8086系
-; =========================================
-is8086:
-    push sp          ; 8086系なら「SP-2 した値」が積まれる
-    pop  bx
-    cmp  bx, sp      ; 一致すれば8086ではない
-    ret
-
 ; -----------------------------
 [bits 32]
 pm_start:
@@ -176,9 +149,6 @@ pm_start:
 .hlt_loop:
     hlt
     jmp .hlt_loop
-    
-msg_386only   db "This OS is 386-only. Booting from an 8086 is not supported.", 0x0D, 0x0A, 0
-msg_not_8086  db "CPU check passed. Continuing...", 0x0D, 0x0A, 0
 
 ; objdump -b binary -m i8086 -D build/kernel.bin | head -60
 

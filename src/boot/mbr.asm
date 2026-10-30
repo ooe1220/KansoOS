@@ -14,6 +14,13 @@ code:
     ; CS:IP=0x07C0:0x0000とするBIOS対策、0x0000:0x7C00統一
     jmp 0x0000:real_start
 real_start:
+
+    ;セグメントレジスタの初期化
+    xor ax, ax
+    mov ds, ax
+    mov es, ax
+    mov ss, ax
+    mov sp, 0x7C00
     
     ; MBRを安全な領域（0x0600）へ退避
     xor ax, ax
@@ -24,12 +31,23 @@ real_start:
     mov cx, 512
     rep movsb
 
-    ;セグメントレジスタの初期化
-    xor ax, ax
-    mov ds, ax
-    mov es, ax
-    mov ss, ax
-    mov sp, 0x7C00
+    ; 8086の場合は起動しない    
+    call is8086
+    je not_8086
+    jne is_8086
+    
+is_8086:
+    mov si, msg_386only
+    call print_string
+hang:
+    cli
+    hlt
+    jmp hang
+    
+not_8086: ; 8086で無かったらOSを起動する
+
+    mov si, msg_not_8086
+    call print_string
     
     mov si, msg_loading - start + 0x0600
     call print_string
@@ -77,9 +95,21 @@ disk_error:
     call print_string
     jmp $
 
+; =========================================
+;   8086判定 戻り値: ZF=1 → 286以降   ZF=0 → 8086系
+; =========================================
+is8086:
+    push sp          ; 8086系なら「SP-2 した値」が積まれる
+    pop  bx
+    cmp  bx, sp      ; 一致すれば8086ではない
+    ret
+
 msg_loading db "[MBR] Execution started at 0x0000:0x7C00", 0x0D, 0x0A, 0
 msg_relocated db "[MBR] Relocated to 0x0000:0x0600", 0x0D, 0x0A, 0
 msg_disk_error db "Disk read error!", 0x0D, 0x0A, 0
+
+msg_386only   db "This OS is 386-only. Booting from an 8086 is not supported.", 0x0D, 0x0A, 0
+msg_not_8086  db "CPU check passed. Continuing...", 0x0D, 0x0A, 0
 
 ; MBRの残りを埋める
 times 446-($-$$) db 0
