@@ -145,12 +145,12 @@ int main(void) {
     uint8_t *disk = calloc(1, DISK_SIZE); // 1MB の0埋めバッファ確保
     printf("[mkfs] 1MB disk image buffer allocated (zero-filled)\n");
     
-    //write_file(disk, "build/mbr.bin", 0);
-    //write_file(disk, "build/vbr.bin", 63);
-   // patch_vbr(disk + 63 * SECTOR_SIZE); // dd if=build/disk.img bs=512 skip=63 count=1 | hexdump -C
+    // write_file(disk, "build/mbr.bin", 0);
+    // write_file(disk, "build/vbr.bin", 63);
+    // patch_vbr(disk + 63 * SECTOR_SIZE); // dd if=build/disk.img bs=512 skip=63 count=1 | hexdump -C
     
-    write_file(disk, "build/vbr.bin", 0); // パーティション断念。MBR使用しない
-     patch_vbr(disk); // dd if=build/disk.img bs=512 skip=63 count=1 | hexdump -C
+     write_file(disk, "build/vbr.bin", 0); // パーティション断念。MBR使用しない
+    // patch_vbr(disk); // dd if=build/disk.img bs=512 skip=63 count=1 | hexdump -C
     write_file(disk, "build/kernel.bin", DATA_START_LBA);
     
     write_fat(disk); // FAT表生成(現在未使用)

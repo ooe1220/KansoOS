@@ -61,7 +61,9 @@ continue:
     mov si, msg_relocated - start + 0x0600
     call print_string
     
-    ; VBRを0x7C00に読み込む（このコードを上書き）
+    ; VBRを0x7C00に読み込む（このコードを上書き）a
+    xor ax, ax
+    mov ds, ax
     mov ah, 0x42
     mov si, mbr_dap
     int 0x13

@@ -145,13 +145,13 @@ cp build/kernel.bin  build/iso_root/
 
 # 7. QEMU で実行
 # 標準BIOSで立ち上げる
-# qemu-system-i386 -hda build/disk.img -monitor stdio
+qemu-system-i386 -hda build/disk.img -monitor stdio
 # qemu-system-i386 -hda build/disk.img -serial stdio
 
 #qemu-system-i386 -hda build/disk.img -serial stdio -d in_asm,int,cpu_reset -D /tmp/qemu.log
 
 # 自作BIOSで立ち上げる  isapcを使いVBEのVRAM起点を固定する
-  qemu-system-i386   -bios build/mybios.bin   -drive file=build/disk.img,format=raw,if=ide,index=0   -serial stdio   -machine isapc   -vga std
+# qemu-system-i386   -bios build/mybios.bin   -drive file=build/disk.img,format=raw,if=ide,index=0   -serial stdio   -machine isapc   -vga std
 #  qemu-system-i386   -bios build/mybios.bin   -drive file=build/disk.img,format=raw,if=ide,index=0   -monitor stdio   -machine isapc   -vga std
 
 #  qemu-system-i386   -bios build/mybios.bin   -drive file=build/disk.img,format=raw,if=ide,index=0   -serial stdio -vga std

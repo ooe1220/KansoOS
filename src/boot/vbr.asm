@@ -1,6 +1,5 @@
 [BITS 16]
 [ORG 0x7C00]
-; dlはMBRからスタック経由で貰う、MBR同様DLをメモリ経由で退避させると失敗する
 
 jmp start
 
@@ -13,12 +12,12 @@ start:
     jmp 0x0000:real_start
 real_start:
 
-    pop dx ; スタック初期化前に取り出す
-
     xor ax, ax
     mov ds, ax
     mov es, ax
     mov si, 0x7C00
+
+    push dx
 
     mov si, msg_loaded
     call print_string
@@ -40,6 +39,7 @@ not_8086: ; 8086で無かったらOSを起動する
     call print_string
         
 load_kernel:
+    pop dx    ; ドライブ番号
     mov  ah, 0x42      ; LBA拡張リード
     mov  si, dap       ; DAP へのポインタ
     int  0x13
