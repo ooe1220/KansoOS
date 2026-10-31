@@ -37,7 +37,7 @@ gcc -m32 -ffreestanding -I./src -march=i486  -c src/x86/panic.c -o build/panic.o
 gcc -m32 -ffreestanding -I./src -march=i486  -c src/x86/syscall.c -o build/syscall.o
 gcc -m32 -ffreestanding -I./src -march=i486  -c src/lib/string.c -o build/string.o
 gcc -m32 -ffreestanding -I./src -march=i486  -c src/kernel/mem.c -o build/mem.o
-gcc -m32 -ffreestanding -I./src -march=i486  -O2 -c src/fs/fat16_file.c -o build/fat16_file.o
+gcc -m32 -ffreestanding -I./src -march=i486  -O2 -c src/fs/fat16.c -o build/fat16.o
 gcc -m32 -ffreestanding -I./src -march=i486  -O2 -c src/fs/fs_file.c -o build/fs_file.o
 gcc -m32 -ffreestanding -I./src -march=i486  -c src/x86/vbe.c -o build/vbe.o
 gcc -m32 -ffreestanding -I./src -march=i486  -c src/x86/pit.c -o build/pit.o
@@ -72,7 +72,7 @@ ld -m elf_i386 -T src/linker.ld -o build/kernel.elf \
   build/syscall.o \
   build/syscall_entry.o \
   build/user_exec.o \
-  build/fat16_file.o \
+  build/fat16.o \
   build/fs_file.o \
   build/cpu.o \
   build/vbe.o \
