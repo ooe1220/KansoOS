@@ -37,7 +37,6 @@ gcc -m32 -ffreestanding -I./src -march=i486  -c src/x86/panic.c -o build/panic.o
 gcc -m32 -ffreestanding -I./src -march=i486  -c src/x86/syscall.c -o build/syscall.o
 gcc -m32 -ffreestanding -I./src -march=i486  -c src/lib/string.c -o build/string.o
 gcc -m32 -ffreestanding -I./src -march=i486  -c src/kernel/mem.c -o build/mem.o
-gcc -m32 -ffreestanding -I./src -march=i486  -O2 -c src/fs/dir.c -o build/dir.o
 gcc -m32 -ffreestanding -I./src -march=i486  -O2 -c src/fs/fat16_file.c -o build/fat16_file.o
 gcc -m32 -ffreestanding -I./src -march=i486  -O2 -c src/fs/fs_file.c -o build/fs_file.o
 gcc -m32 -ffreestanding -I./src -march=i486  -c src/x86/vbe.c -o build/vbe.o
@@ -84,8 +83,7 @@ ld -m elf_i386 -T src/linker.ld -o build/kernel.elf \
   build/itoa.o \
   build/bmp.o \
   build/debug_print.o \
-  build/detect.o \
-  build/dir.o
+  build/detect.o
   
 # 5. kernel.elf(ELF) → kernel.bin(バイナリ)
 objcopy -O binary build/kernel.elf build/kernel.bin

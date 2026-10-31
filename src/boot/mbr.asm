@@ -108,8 +108,8 @@ msg_loading db "[MBR] Execution started at 0x0000:0x7C00", 0x0D, 0x0A, 0
 msg_relocated db "[MBR] Relocated to 0x0000:0x0600", 0x0D, 0x0A, 0
 msg_disk_error db "Disk read error!", 0x0D, 0x0A, 0
 
-msg_386only   db "This OS is 386-only. Booting from an 8086 is not supported.", 0x0D, 0x0A, 0
-msg_not_8086  db "CPU check passed. Continuing...", 0x0D, 0x0A, 0
+msg_386only   db "[MBR] This OS is 386-only. Booting from an 8086 is not supported.", 0x0D, 0x0A, 0
+msg_not_8086  db "[MBR] CPU check passed. Continuing...", 0x0D, 0x0A, 0
 
 ; MBRの残りを埋める
 times 446-($-$$) db 0
