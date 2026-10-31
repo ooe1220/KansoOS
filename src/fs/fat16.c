@@ -6,7 +6,9 @@
 static uint32_t data_start_lba = 0;
 static uint8_t  sec_per_clus = 0;
 
+//************************************************
 // 文字を大文字に変換（自作）
+//************************************************
 static char to_upper_char(char c) {
     if (c >= 'a' && c <= 'z') {
         return c - ('a' - 'A');
@@ -14,7 +16,9 @@ static char to_upper_char(char c) {
     return c;
 }
 
+//************************************************
 // ファイル名を8.3形式に変換　例）"test2.bin"→"TEST2   BIN"
+//************************************************
 void to_83_format(const char* filename, char* result) {
     int i, j = 0;
     
@@ -53,7 +57,10 @@ void to_83_format(const char* filename, char* result) {
     result[11] = '\0';
 }
 
-// ファイルを検索して情報を取得
+
+//************************************************
+// 指定したファイルの存在有無を確認
+//************************************************
 int fat16_find_file(const char* filename, uint32_t* start_cluster, uint32_t* file_size) {
     uint8_t buf[512];
     fat_dirent_t* ent;
@@ -87,7 +94,9 @@ int fat16_find_file(const char* filename, uint32_t* start_cluster, uint32_t* fil
     return 0; // ファイルが見つからない
 }
 
-// 8.3形式のファイル名を表示する
+//************************************************
+// 8.3形式のファイル名へ変換し直接コンソールへ表示
+//************************************************
 static void print_name(const char* name) {
     int i;
 
@@ -107,6 +116,9 @@ static void print_name(const char* name) {
     }
 }
 
+//************************************************
+// ディレクトリの中身を直接コンソールへ表示
+//************************************************
 void fs_dir_list(void) {
     uint8_t buf[512];
     fat_dirent_t* ent;
