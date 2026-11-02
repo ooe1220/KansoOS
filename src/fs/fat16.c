@@ -3,8 +3,43 @@
 #include "fat16.h"
 #include "../x86/console.h"
 
-static uint32_t data_start_lba = 0;
-static uint8_t  sec_per_clus = 0;
+uint32_t g_fat_lba  = 0;
+uint32_t g_root_lba = 0;
+uint32_t g_data_lba = 0;
+uint32_t g_root_sec = 0;   /* ルートディレクトリのセクタ数 */
+uint8_t  g_sec_per_clus = 0;
+
+
+//************************************************
+// BPB(0x7c00) から FAT16 の各領域 LBA を計算
+// 実値値: res=8, fats=2, fatsec=16, rent=512, spc=8, hidden=0
+//   FAT  = 8
+//   ROOT = 8 + 2 * 16      = 40  (0x28)
+//   DATA = 40 + 32(root) = 72  (0x48)
+//************************************************
+void fat16_init(void) {
+    const bpb_t* b = VBR_ADDR;
+
+    uint32_t bps    = b->bytes_per_sec;   // 0x200 = 512 （1セクタあたりのバイト数）
+    uint32_t res    = b->reserved_sec;    // 8　（予約セクタ）
+    uint32_t nfats  = b->num_fats;       // 2　（FATの数　通常2）
+    uint32_t rent   = b->root_ent_cnt;    // 512セクタ　（ルートディレクトリの要素数）
+    uint32_t fatsec = b->fat_size16;      // 16　（FAT1つが占めるセクタ数）
+
+    uint32_t root_sec = (rent * 32u + bps - 1u) / bps;   // 32　（ルートディレクトリが占めているセクタ数）
+
+    g_fat_lba       = res;
+    g_root_lba      = g_fat_lba + nfats * fatsec;
+    g_data_lba      = g_root_lba + root_sec;
+    g_sec_per_clus  = b->sec_per_clus;    // 8
+    g_root_sec      = root_sec;
+
+    kprintf("FAT=%d", g_fat_lba);
+    kprintf(" ROOT=%d", g_root_lba);
+    kprintf(" DATA=%d", g_data_lba);
+    kprintf(" SPC=%d", (int)g_sec_per_clus); 
+    kprintf("\n");
+}
 
 //************************************************
 // 文字を大文字に変換（自作）
@@ -69,8 +104,8 @@ int fat16_find_file(const char* filename, uint32_t* start_cluster, uint32_t* fil
     
     to_83_format(filename, target_name); // target_name=8.3変換後
     
-    for (s = 0; s < ROOT_DIR_SECTORS; s++) {
-        ata_read_sector(ROOT_DIR_LBA + s, buf);
+    for (s = 0; s < g_root_sec; s++) { // 32セクタ分操作
+        ata_read_sector(g_root_lba + s, buf);
         ent = (fat_dirent_t*)buf;
 
         for (i = 0; i < 512 / sizeof(fat_dirent_t); i++) {
@@ -124,8 +159,8 @@ void fs_dir_list(void) {
     fat_dirent_t* ent;
     int s, i;
 
-    for (s = 0; s < ROOT_DIR_SECTORS; s++) {
-        ata_read_sector(ROOT_DIR_LBA + s, buf);
+    for (s = 0; s < g_root_sec; s++) {
+        ata_read_sector(g_root_lba + s, buf);
         ent = (fat_dirent_t*)buf;
 
         for (i = 0; i < 512 / sizeof(fat_dirent_t); i++) {

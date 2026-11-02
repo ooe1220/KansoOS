@@ -20,6 +20,14 @@ export MTOOLSRC=$PWD/mtoolsrc
 
 mcopy build/kernel.bin x:KERNEL.BIN
 
+mcopy build/test2.bin   x:TEST2.BIN
+mcopy build/test3.bin   x:TEST3.BIN
+mcopy build/cat.bin     x:CAT.BIN
+mcopy build/memtest.bin x:MEMTEST.BIN
+
+cp user/test.txt build/test.txt
+mcopy build/test.txt x:TEST.TXT
+
 qemu-system-i386 -hda build/fat16.img  -monitor stdio
 
 # kernel.binの逆アセンブル　kernel.binはLBA72から始まっている
@@ -34,3 +42,6 @@ qemu-system-i386 -hda build/fat16.img  -monitor stdio
 
 # 起動ディスク内ファイル一覧
 # mdir -i "build/fat16.img" ::
+
+## test.txt
+cp user/test.txt build/test.txt

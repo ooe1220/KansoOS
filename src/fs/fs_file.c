@@ -21,7 +21,7 @@ static int alloc_fd(void)
 
 static uint32_t cluster_to_lba(uint32_t start_cluster)
 {
-    return DATA_START_LBA + (start_cluster - 2) * 8;
+    return g_data_lba + (start_cluster - 2) * 8;
 }
 
 // filenameが存在したらFDを返す

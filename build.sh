@@ -119,8 +119,8 @@ objcopy -O binary build/memtest.elf build/memtest.bin
 cp user/test.txt build/test.txt
 
 ## 成果物をdisk.imgに纏める
-gcc tool/mkfs.c -o build/mkfs
-build/mkfs
+#gcc tool/mkfs.c -o build/mkfs
+#build/mkfs
 
 
 # ---CD起動用のISO生成----------------------------------------------------------------

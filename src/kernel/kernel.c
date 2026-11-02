@@ -22,6 +22,7 @@
 #include "debug/debug_print.h"
 #include "debug/detect.h"
 #include "drivers/atapi.h"
+#include "fs/fat16.h"
 
 void kernel_main() { 
 
@@ -63,6 +64,8 @@ void kernel_main() {
     
     cpu_cache_disable();// キャッシュを切っておく
     kputs("CPU cache disabled\n");
+
+    fat16_init();
     
     // 光学ドライブ検出
     struct atapi_dev dev = atapi_detect();
