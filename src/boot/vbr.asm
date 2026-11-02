@@ -2,8 +2,8 @@
 [ORG 0x7C00]
 
 jmp start
+nop
 
-; BPBはmkfs.cで後から埋める
 times 59 db 0
 
 start:
@@ -54,7 +54,8 @@ dap:
     dw 128              ; 読み込みセクタ数 (空HDDに書き込むから64KBまで0埋めは不要)
     dw 0x0000          ; バッファオフセット (ES:BX)
     dw 0x0800          ; バッファセグメント
-    dd 126             ; LBA 下位32bit
+    ;dd 126             ; LBA 下位32bit
+    dd 72             ; LBA 下位32bit FAT16初期化直後にmcopyでkernel.binを複製するとデータ領域最初のLBA72へ置かれる（今後BPBから計算するように変更予定）
     dd 0               ; LBA 上位32bit (通常0)
     
 print_string:

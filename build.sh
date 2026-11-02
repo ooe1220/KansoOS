@@ -9,7 +9,7 @@ xxd -i src/kernel/penguin.bmp > src/kernel/penguin_bmp.h
 nasm -f bin src/bios/mybios.asm -o build/mybios.bin
 
 # 1. ブートローダーを bin に
-nasm -f bin src/boot/mbr.asm -o build/mbr.bin
+# nasm -f bin src/boot/mbr.asm -o build/mbr.bin # パーティション一時断念によりコメントアウト
 nasm -f bin src/boot/vbr.asm -o build/vbr.bin
 
 # 2. 追加アセンブリをオブジェクトに
@@ -145,13 +145,13 @@ cp build/kernel.bin  build/iso_root/
 
 # 7. QEMU で実行
 # 標準BIOSで立ち上げる
-qemu-system-i386 -hda build/disk.img -monitor stdio
-# qemu-system-i386 -hda build/disk.img -serial stdio
+# qemu-system-i386 -hda build/disk.img -monitor stdio
+#  qemu-system-i386 -hda build/disk.img -serial stdio
 
 #qemu-system-i386 -hda build/disk.img -serial stdio -d in_asm,int,cpu_reset -D /tmp/qemu.log
 
 # 自作BIOSで立ち上げる  isapcを使いVBEのVRAM起点を固定する
-# qemu-system-i386   -bios build/mybios.bin   -drive file=build/disk.img,format=raw,if=ide,index=0   -serial stdio   -machine isapc   -vga std
+ #  qemu-system-i386   -bios build/mybios.bin   -drive file=build/disk.img,format=raw,if=ide,index=0   -serial stdio   -machine isapc   -vga std
 #  qemu-system-i386   -bios build/mybios.bin   -drive file=build/disk.img,format=raw,if=ide,index=0   -monitor stdio   -machine isapc   -vga std
 
 #  qemu-system-i386   -bios build/mybios.bin   -drive file=build/disk.img,format=raw,if=ide,index=0   -serial stdio -vga std
