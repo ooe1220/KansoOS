@@ -44,11 +44,10 @@ gcc -m32 -ffreestanding -I./src -march=i486  -c src/x86/pit.c -o build/pit.o
 gcc -m32 -ffreestanding -I./src -march=i486  -c src/x86/cpu.c -o build/cpu.o
 gcc -m32 -ffreestanding -I./src -march=i486  -c src/x86/timer.c -o build/timer.o
 gcc -m32 -ffreestanding -I./src -march=i486  -c src/lib/itoa.c -o build/itoa.o
-gcc -m32 -ffreestanding -I./src -march=i486 -c src/lib/bmp.c -o build/bmp.o # isapcのcmovs対策
+gcc -m32 -ffreestanding -I./src -march=i486 -c src/lib/bmp.c -o build/bmp.o # isapcのcmovs対策必須
 gcc -m32 -ffreestanding -I./src -march=i486  -c src/debug/serial.c -o build/serial.o
 gcc -m32 -ffreestanding -I./src -march=i486  -c src/debug/debug_print.c -o build/debug_print.o # -O2厳禁
 gcc -m32 -ffreestanding -I./src -march=i486  -c src/debug/detect.c -o build/detect.o
-
 gcc -m32 -ffreestanding -I./src -c src/x86/font_8x16.c -o build/font_8x16.o
 gcc -m32 -ffreestanding -fno-pic -fno-pie -c src/x86/syscall_entry.S -o build/syscall_entry.o
 
@@ -118,10 +117,29 @@ objcopy -O binary build/memtest.elf build/memtest.bin
 ## test.txt
 cp user/test.txt build/test.txt
 
-## 成果物をdisk.imgに纏める
-#gcc tool/mkfs.c -o build/mkfs
-#build/mkfs
+# ---FAT16イメージ生成----------------------------------------------------------------
+dd if=/dev/zero of=build/fat16.img bs=1M count=16
+mkfs.fat -F16 -s 8 -S 512 build/fat16.img
+dd if=build/fat16.img of=build/vbr_until_start.bin bs=1 count=62
+dd if=build/vbr_until_start.bin of=build/vbr.bin bs=1 seek=0 conv=notrunc
+dd if=build/vbr.bin of=build/fat16.img bs=512 count=1 conv=notrunc
 
+echo 'drive x: file="build/fat16.img" fat_bits=16' > mtoolsrc
+export MTOOLSRC=$PWD/mtoolsrc
+
+mcopy build/kernel.bin x:KERNEL.BIN
+
+mcopy build/test2.bin   x:TEST2.BIN
+mcopy build/test3.bin   x:TEST3.BIN
+mcopy build/cat.bin     x:CAT.BIN
+mcopy build/memtest.bin x:MEMTEST.BIN
+
+cp user/test.txt build/test.txt
+mcopy build/test.txt x:TEST.TXT
+
+# qemu-system-i386 -hda build/fat16.img  -monitor stdio
+
+qemu-system-i386   -bios build/mybios.bin   -drive file=build/fat16.img,format=raw,if=ide,index=0   -serial stdio   -machine isapc   -vga std
 
 # ---CD起動用のISO生成----------------------------------------------------------------
 
@@ -138,32 +156,6 @@ cp build/kernel.bin  build/iso_root/
   -boot-load-size 4 \
   build/iso_root
 
+# qemu-system-i386 -m 64M  -enable-kvm -cpu qemu32,+pse -device ide-cd,bus=ide.0,unit=0 -cdrom build/os.iso -boot d -serial stdio
 
- # qemu-system-i386 -m 64M  -enable-kvm -cpu qemu32,+pse -device ide-cd,bus=ide.0,unit=0 -cdrom build/os.iso -boot d -serial stdio
-
-# ------------------------------------------------------------------------------------------
-
-# 7. QEMU で実行
-# 標準BIOSで立ち上げる
-# qemu-system-i386 -hda build/disk.img -monitor stdio
-#  qemu-system-i386 -hda build/disk.img -serial stdio
-
-#qemu-system-i386 -hda build/disk.img -serial stdio -d in_asm,int,cpu_reset -D /tmp/qemu.log
-
-# 自作BIOSで立ち上げる  isapcを使いVBEのVRAM起点を固定する
- #  qemu-system-i386   -bios build/mybios.bin   -drive file=build/disk.img,format=raw,if=ide,index=0   -serial stdio   -machine isapc   -vga std
-#  qemu-system-i386   -bios build/mybios.bin   -drive file=build/disk.img,format=raw,if=ide,index=0   -monitor stdio   -machine isapc   -vga std
-
-#  qemu-system-i386   -bios build/mybios.bin   -drive file=build/disk.img,format=raw,if=ide,index=0   -serial stdio -vga std
-
-#qemu-system-i386 -bios build/mybios.bin -drive file=build/disk.img,format=raw,if=ide,index=0 -serial stdio -machine isapc -vga std -d int -no-reboot -no-shutdown
-#objdump -d build/kernel.elf | grep -B5 -A5 "b5d0"
-  
-# xp /32768hx 0x0
-# xp /16384hx 0x10000
-# info registers
-
-
-# git status
-# git diff
-
+# -serial stdio

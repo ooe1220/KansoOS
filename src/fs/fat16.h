@@ -1,15 +1,6 @@
 #pragma once
 #include <stdint.h>
 
-/* 固定ディスク配置 */
-#define FAT_BASE_LBA        64
-#define FAT_COUNT          2
-#define SECTORS_PER_FAT    1
-#define ROOT_ENTRIES       32
-#define ROOT_DIR_SECTORS   2
-
-#define ROOT_DIR_LBA (FAT_BASE_LBA + FAT_COUNT)
-
 extern uint32_t g_data_lba;
 
 #define VBR_ADDR ((const bpb_t*)0x00007c00u)
@@ -49,12 +40,6 @@ typedef struct {
     uint32_t size;
 } fat_dirent_t;
 #pragma pack(pop)
-
-// 本来はBPBから計算するべきだが、設計当初LBA開始位置を126にしたせいで計算が合わない
-// BPBから計算するには色々調整が必要な為、今後の課題とする 
-// VBRの中で126からkernel.binを呼ぶようにCHSを直書きしている為、調整の際は注意
-#define DATA_START_LBA 126
-
 
 void fat16_init(void);
 
