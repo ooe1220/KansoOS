@@ -12,6 +12,15 @@
 
 ## 開発環境
 
+現在(途中でOSを入れ直しました)
+```
+OS  :Linux Lite 8.2
+CPU : Intel(R) Core(TM) i5-7200U CPU @ 2.50GHz
+コンパイラ : gcc version 15.2.0 (Ubuntu 15.2.0-16ubuntu1)
+アセンブラ : NASM version 3.01
+```
+
+旧環境
 ```
 OS : Ubuntu 22.04.5 LTS
 CPU : Intel(R) Core(TM) i5-7200U CPU @ 2.50GHz
@@ -22,18 +31,9 @@ CPU : Intel(R) Core(TM) i5-7200U CPU @ 2.50GHz
 ## 動作環境
 
 ```
-仮想環境 : QEMU emulator version 6.2.0 (Debian 1:6.2+dfsg-2ubuntu6.31)
+仮想環境 : (今)QEMU emulator version 10.2.1 (Debian 1:10.2.1+ds-1ubuntu3.3)
+                  (旧)QEMU emulator version 6.2.0 (Debian 1:6.2+dfsg-2ubuntu6.31)
 実機検証 : 東芝 dynabook SS M10 (Intel(R) Pentium(R) M Processor 1.10GHz)
-```
-
-# 起動の流れ
-
-```
-[ 簡易BIOS ] ─int19h→ [ VBR@0x0600 ] → [ MBR@0x7C00 ] → [ kernel.bin@0x8000 ]
-                                                              │
-                                                     switch32.asm
-                                                              │
-                                                     kernel_main (32bit)
 ```
 
 ## 簡易BIOS
@@ -51,7 +51,6 @@ CPU : Intel(R) Core(TM) i5-7200U CPU @ 2.50GHz
 
 ## 簡素OS
 
-VBR : メモリ上0x0600へ自己退避し、MBRを0x7C00へ展開してjmp 0x0000:0x7C00
 MBR : kernel.binを64kb分メモリ0x8000へ展開してjmp 0x0000:0x8000
 switch32.asm(kernel.bin先頭) : A20を設定、VBE800*600*16bpp設定、32ビットモード切り替え、call kernel_main
 

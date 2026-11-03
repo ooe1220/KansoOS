@@ -8,10 +8,6 @@ xxd -i src/kernel/penguin.bmp > src/kernel/penguin_bmp.h
 # 自作BIOSのビルド
 nasm -f bin src/bios/mybios.asm -o build/mybios.bin
 
-# 1. ブートローダーを bin に
-# nasm -f bin src/boot/mbr.asm -o build/mbr.bin # パーティション一時断念によりコメントアウト
-nasm -f bin src/boot/vbr.asm -o build/vbr.bin
-
 # 2. 追加アセンブリをオブジェクトに
 nasm -f elf32 src/boot/switch32.asm -o build/switch32.o
 
@@ -118,6 +114,8 @@ objcopy -O binary build/memtest.elf build/memtest.bin
 cp user/test.txt build/test.txt
 
 # ---FAT16イメージ生成----------------------------------------------------------------
+nasm -f bin src/boot/vbr.asm -o build/vbr.bin
+
 dd if=/dev/zero of=build/fat16.img bs=1M count=16
 mkfs.fat -F16 -s 8 -S 512 build/fat16.img
 dd if=build/fat16.img of=build/vbr_until_start.bin bs=1 count=62
