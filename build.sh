@@ -97,6 +97,8 @@ gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-
 gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -c src/debug/detect.c -o build/detect.o
 gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -fno-plt -masm=intel -fverbose-asm -S src/debug/detect.c -o build/detect.asm
 
+gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -c src/drivers/ata_block.c -o build/ata_block.o
+
 gcc -m32 -ffreestanding -I./src -c src/x86/font_8x16.c -o build/font_8x16.o
 gcc -m32 -ffreestanding -fno-pic -fno-pie -c src/x86/syscall_entry.S -o build/syscall_entry.o
 
@@ -113,6 +115,7 @@ ld -m elf_i386 -T src/linker.ld -o build/kernel.elf \
   build/idt.o \
   build/gdt.o \
   build/ata.o \
+  build/ata_block.o \
   build/atapi.o \
   build/panic.o \
   build/keyboard.o \

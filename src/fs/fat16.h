@@ -2,6 +2,7 @@
 #include <stdint.h>
 
 extern uint32_t g_data_lba;
+extern uint8_t  g_sec_per_clus;
 
 #define VBR_ADDR ((const bpb_t*)0x00007c00u)
 

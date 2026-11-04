@@ -1,9 +1,21 @@
 #include "fs_file.h"
 #include "fat16.h"
-#include "drivers/ata.h"
+//#include "drivers/ata.h"
+#include "drivers/block.h"
 #include "x86/console.h"
+#include "../lib/stddef.h"
+#include "../lib/stdint.h"
 
 kfile_t kfiles[MAX_KFILES]; // 開いているファイルの情報 fs_file.h中構造体定義
+
+extern block_dev_t ata_blkdev;          // ata_block.c中で定義
+static block_dev_t *g_fs_blk = &ata_blkdev;   // fs_read が実際に使う「読み込み先」のデバイスを設定 CD追加時はここを変更
+
+// 以降の fs_read は、このデバイスから読むという設定
+void fs_set_blkdev(block_dev_t *b)
+{
+    g_fs_blk = b;
+}
 
 // 新しいFDを割り当てる
 // 返り値 int → 割り当てた fd 番号（0～MAX_KFILES-1）、空きがなければ -1
@@ -19,9 +31,10 @@ static int alloc_fd(void)
     return -1;
 }
 
+
 static uint32_t cluster_to_lba(uint32_t start_cluster)
 {
-    return g_data_lba + (start_cluster - 2) * 8;
+    return g_data_lba + (start_cluster - 2) * g_sec_per_clus;
 }
 
 // filenameが存在したらFDを返す
@@ -38,19 +51,39 @@ int fs_open(const char* filename)
     return fd;
 }
 
-// FDが存在したら、ディスクから読み込みbufへ格納
-// 読み込んだバイト数を返す　今は固定
-// ＊＊＊＊＊＊＊＊＊＊＊＊
-// FAT未実装により1クラスタ(8セクタ)のみ読み込む　今後拡張予定！！！！！！！！！！
-// ＊＊＊＊＊＊＊＊＊＊＊＊
+/*=============================================================
+ * fs_read
+ *-------------------------------------------------------------
+ * 役割 : 既に開いているファイルからデータを読む。
+ *        FAT16 の「クラスタチェーン」はまだ未実装なので、
+ *        現状は「開始クラスタ 1 つぶん（= 1 クラスタ）」しか読まない。
+ *
+ * 引数 :
+ *   fd   : fs_open で貰ったファイルディスクリプタ
+ *   buf  : 読み込んだデータを置くバッファ
+ *   size : 読みたいバイト数（今は無視して 1 クラスタ分だけ読む）
+ *
+ * 戻り値 :
+ *   正の値 : 実際に読んだバイト数（今は常に 8×512 = 4096）
+ *   -1     : 失敗（FD が不正 / 未オープン / デバイス未マウント / 読み込みエラー）
+ *
+ * 処理の流れ :
+ *   1. FD の正当性確認
+ *   2. デバイスがマウントされてるかチェック（g_fs_blk が NULL なら弾く）
+ *   3. 開始クラスタ → LBA に変換
+ *   4. block_read で 1 クラスタ（8 セクタ）読む
+ *   5. 読んだぶん読み取り位置(pos)を進めてバイト数を返す
+ *=============================================================*/
 int fs_read(int fd, void* buf, int size)
 {
-
     if(fd<0||fd>=MAX_KFILES) return -1; // FDが存在しない fs_open未実行
     if(!kfiles[fd].used) return -1; // 開かれていない若しくは閉じた    
+    if(!g_fs_blk) return -1;             // ★ デバイスがセットされてない
 
     uint32_t lba = cluster_to_lba(kfiles[fd].start_cluster);
-    ata_read_lba28(lba,8,buf);
+
+    //ata_read_lba28(lba,8,buf);
+    if (block_read(g_fs_blk, lba, g_sec_per_clus, buf) != 0)return -1;  // FATを辿り１クラスタ以上呼ぶ場合はここを複数回呼び出す
 
     kfiles[fd].pos += 8*512;  // 1クラスタだけ
     return 8*512;
@@ -71,4 +104,3 @@ int fs_get_file_size(int fd, uint32_t *out_size) {
     *out_size = kfiles[fd].size;
     return 0;
 }
-
