@@ -61,15 +61,14 @@ fail:
     strcpy(buf, "CPU unknown (<=486?)");
 }
 
-void cpu_cache_disable(){
+void cpu_cache_disable(void)
+{
     asm volatile (
-        "mov %%cr0, %%eax\n"
-        "and $0xDFFFFFFF, %%eax\n"   // bit 29 (NW) を 0 にクリア
-        "or  $0x40000000, %%eax\n"   // bit 30 (CD) を 1 にセット
-        "mov %%eax, %%cr0\n"
-        "wbinvd\n"
-        : : : "eax"
+        "wbinvd\n"                   // キャッシュを空に
+        "movl %%cr0, %%eax\n"
+        "andl $0xDFFFFFFF, %%eax\n"  // ② NW (bit29) = 0
+        "orl  $0x40000000, %%eax\n"  // ③ CD (bit30) = 1
+        "movl %%eax, %%cr0\n"
+        : : : "eax", "memory"
     );
 }
-
-

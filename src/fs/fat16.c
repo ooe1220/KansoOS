@@ -34,11 +34,7 @@ void fat16_init(void) {
     g_sec_per_clus  = b->sec_per_clus;    // 8
     g_root_sec      = root_sec;
 
-    kprintf("FAT=%d", g_fat_lba);
-    kprintf(" ROOT=%d", g_root_lba);
-    kprintf(" DATA=%d", g_data_lba);
-    kprintf(" SPC=%d", (int)g_sec_per_clus); 
-    kprintf("\n");
+    kprintf("FAT16 init ok: fat=%u root=%u data=%u spc=%u\n",g_fat_lba, g_root_lba, g_data_lba, (uint32_t)g_sec_per_clus);
 }
 
 //************************************************
