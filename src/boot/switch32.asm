@@ -12,10 +12,25 @@ start:
     mov es, ax
     mov ss, ax
     mov sp, 0x7C00
-    
+
     ; 16bitコードの点検用
     ;cli
     ;hlt
+
+    call IsFPU?
+    jz   .has_fpu
+    mov si, msg_no
+    call print_string
+    jmp .done
+.has_fpu:
+    mov si, msg_yes
+    call print_string
+    jmp fpu_pass
+.done:
+    cli
+    hlt
+
+fpu_pass:
 
     ; A20有効
     call a20_enable_8042
@@ -76,7 +91,23 @@ print_string:
     jmp print_string
 .done:
     ret
-    
+
+; ───────────────────
+; IsFPU? — AMI BIOS 627.10参考
+;   AX に(0x3C69)を入れて fninit/fnstsw。
+;   0 に戻れば FPU は有効。
+;   戻り: ZF=1 有り / ZF=0 無し   破壊: AX
+; ───────────────────
+IsFPU?:
+    mov ax, 0x3C69
+    fninit
+    fnstsw ax 
+    or  al, al
+    ret
+
+msg_yes db "FPU is available.", 0x0D, 0x0A, 0
+msg_no  db "No FPU detected.", 0x0D, 0x0A, 0
+
 kernei_msg   db "Kernel loaded.", 13, 10, 0
 error_msg db "FVBE Error", 0x0D, 0x0A, 0
     
