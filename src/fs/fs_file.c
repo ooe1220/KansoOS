@@ -1,50 +1,14 @@
 #include "fs_file.h"
 #include "fat16.h"
-//#include "drivers/ata.h"
 #include "drivers/block.h"
 #include "x86/console.h"
 #include "../lib/stddef.h"
 #include "../lib/stdint.h"
 
-#define VBR_BASE         0x00007c00u 
-#define ROOTDEV_SIG_OFF   0x1FD   /* VBR の 'rootdev_sig' のオフセット */
-#define ROOTDEV_HDD       'H'
-#define ROOTDEV_CD        'C'
+static kfile_t kfiles[MAX_KFILES]; // 開いているファイルの情報 fs_file.h中構造体定義
 
-kfile_t kfiles[MAX_KFILES]; // 開いているファイルの情報 fs_file.h中構造体定義
-
-extern block_dev_t ata_blkdev;          // ata_block.c中で定義
-//static block_dev_t *g_fs_blk = &ata_blkdev;   // fs_read が実際に使う「読み込み先」のデバイスを設定 CD追加時はここを変更
-static block_dev_t *g_fs_blk; // ファイルシステムの対象ドライブ
-
-// ファイルシステムが最初に見るドライブを起動ディスクに設定
-void fs_init_from_boot_sig(void)
-{
-    const uint8_t sig = *(const uint8_t *)(VBR_BASE + ROOTDEV_SIG_OFF);
-
-    const char *target; // OS起動媒体
-    switch (sig) {
-    case ROOTDEV_CD:
-        // ATAPI経由は開発中
-        //g_fs_blk = &atapi_cd_blkdev;   // CD: ATAPI 経由
-        target  = "CD/DVD";
-        break;
-    case ROOTDEV_HDD:
-    default:
-        g_fs_blk = &ata_blkdev;        // HDD: ATA 経由（不正値もHDD 扱い）
-        target  = "HDD";
-        break;
-    }
-    kputs("file system: first target is ");
-    kputs(target);
-    kputs("\n");
-}
-
-// 以降の fs_read は、このデバイスから読むという設定
-void fs_set_blkdev(block_dev_t *b)
-{
-    g_fs_blk = b;
-}
+extern block_dev_t ata_blkdev;
+static block_dev_t *g_fs_blk = &ata_blkdev;
 
 // 新しいFDを割り当てる
 // 返り値 int → 割り当てた fd 番号（0～MAX_KFILES-1）、空きがなければ -1
@@ -61,21 +25,21 @@ static int alloc_fd(void)
 }
 
 
-static uint32_t cluster_to_lba(uint32_t start_cluster)
+static uint32_t cluster_to_lba(uint32_t first_block)
 {
-    return g_data_lba + (start_cluster - 2) * g_sec_per_clus;
+    return g_data_lba + (first_block - 2) * g_sec_per_clus;
 }
 
 // filenameが存在したらFDを返す
 int fs_open(const char* filename)
 {
-    uint32_t start_cluster, file_size;
-    if(!fat16_find_file(filename, &start_cluster, &file_size)) // ファイル名からファイル検索
+    uint32_t first_block, file_size;
+    if(!fat16_find_file(filename, &first_block, &file_size)) // ファイル名からファイル検索
         return -1;
 
     int fd = alloc_fd(); // FD割り当て
     if(fd<0) return -1; // 割り当て失敗(既に８ファイル開いている)
-    kfiles[fd].start_cluster = start_cluster; // ファイルの開始クラスタ
+    kfiles[fd].first_block = first_block; // ファイルの開始クラスタ
     kfiles[fd].size = file_size;              // ファイルの大きさ
     return fd;
 }
@@ -107,11 +71,10 @@ int fs_read(int fd, void* buf, int size)
 {
     if(fd<0||fd>=MAX_KFILES) return -1; // FDが存在しない fs_open未実行
     if(!kfiles[fd].used) return -1; // 開かれていない若しくは閉じた    
-    if(!g_fs_blk) return -1;             // ★ デバイスがセットされてない
+    if(!g_fs_blk) return -1;          // デバイスがセットされてない
 
-    uint32_t lba = cluster_to_lba(kfiles[fd].start_cluster);
+    uint32_t lba = cluster_to_lba(kfiles[fd].first_block);
 
-    //ata_read_lba28(lba,8,buf);
     if (block_read(g_fs_blk, lba, g_sec_per_clus, buf) != 0)return -1;  // FATを辿り１クラスタ以上呼ぶ場合はここを複数回呼び出す
 
     kfiles[fd].pos += 8*512;  // 1クラスタだけ

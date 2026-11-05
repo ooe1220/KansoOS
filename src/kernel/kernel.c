@@ -22,8 +22,8 @@
 #include "debug/debug_print.h"
 #include "debug/detect.h"
 #include "drivers/atapi.h"
+#include "drivers/devmount.h"
 #include "fs/fat16.h"
-#include "fs/fs_file.h"
 
 void kernel_main() { 
 
@@ -68,7 +68,11 @@ void kernel_main() {
 
     fat16_init();
 
-    fs_init_from_boot_sig();  // ファイルシステムが最初に見るドライブを起動ディスクに設定
+    // ファイルシステムが最初に見るドライブを起動ディスクに設定
+    bootdev_type();
+    kputs("boot device: ");
+    kputs(bootdev_name());   // "HDD"
+    kputs("\n");
 
     // 光学ドライブ検出
     struct atapi_dev dev = atapi_detect();
@@ -79,27 +83,26 @@ void kernel_main() {
     } else {
         kputs("atapi: no optical drive found\n");
     }
+
     
     // 1セクタ読み出す
-    uint8_t sector[2048];
-    atapi_read_sector(35, sector);
+    //uint8_t sector[2048];
+    //atapi_read_sector(35, sector);
     //debug_dump_mem((uint32_t)sector, 2048);
-    atapi_read_sector(16, sector);
+    //atapi_read_sector(16, sector);
     /* type と CD001  */
-    debug_printf("[PVD] type=%x magic=%c%c%c%c%c",
-             sector[0],
-             sector[1], sector[2], sector[3], sector[4], sector[5]);
+    //debug_printf("[PVD] type=%x magic=%c%c%c%c%c",sector[0],sector[1], sector[2], sector[3], sector[4], sector[5]);
 
     /* ボリュームラベル（32バイト、印字可能文字だけ表示） */
-    debug_printf("[PVD] magic=%c%c%c%c%c <<<",
-             sector[1], sector[2], sector[3], sector[4], sector[5]);
+    //debug_printf("[PVD] magic=%c%c%c%c%c <<<",sector[1], sector[2], sector[3], sector[4], sector[5]);
 
     /* 論理セクタサイズ（リトルエンディアン） */
-    debug_printf("[PVD] block_size=%u",
-             (unsigned)(sector[0x9C]
-                     | (sector[0x9D] << 8)
-                     | (sector[0x9E] << 16)
-                     | (sector[0x9F] << 24)));
+    //debug_printf("[PVD] block_size=%u",
+    //        (unsigned)(sector[0x9C]
+    //                 | (sector[0x9D] << 8)
+     //                | (sector[0x9E] << 16)
+        //             | (sector[0x9F] << 24)));
+
     
      // メモリ管理初期化　QEMUは通るが実機では固まる
     //kheap_init(); // カーネル用
