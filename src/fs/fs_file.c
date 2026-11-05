@@ -6,10 +6,39 @@
 #include "../lib/stddef.h"
 #include "../lib/stdint.h"
 
+#define VBR_BASE         0x00007c00u 
+#define ROOTDEV_SIG_OFF   0x1FD   /* VBR の 'rootdev_sig' のオフセット */
+#define ROOTDEV_HDD       'H'
+#define ROOTDEV_CD        'C'
+
 kfile_t kfiles[MAX_KFILES]; // 開いているファイルの情報 fs_file.h中構造体定義
 
 extern block_dev_t ata_blkdev;          // ata_block.c中で定義
-static block_dev_t *g_fs_blk = &ata_blkdev;   // fs_read が実際に使う「読み込み先」のデバイスを設定 CD追加時はここを変更
+//static block_dev_t *g_fs_blk = &ata_blkdev;   // fs_read が実際に使う「読み込み先」のデバイスを設定 CD追加時はここを変更
+static block_dev_t *g_fs_blk; // ファイルシステムの対象ドライブ
+
+// ファイルシステムが最初に見るドライブを起動ディスクに設定
+void fs_init_from_boot_sig(void)
+{
+    const uint8_t sig = *(const uint8_t *)(VBR_BASE + ROOTDEV_SIG_OFF);
+
+    const char *target; // OS起動媒体
+    switch (sig) {
+    case ROOTDEV_CD:
+        // ATAPI経由は開発中
+        //g_fs_blk = &atapi_cd_blkdev;   // CD: ATAPI 経由
+        target  = "CD/DVD";
+        break;
+    case ROOTDEV_HDD:
+    default:
+        g_fs_blk = &ata_blkdev;        // HDD: ATA 経由（不正値もHDD 扱い）
+        target  = "HDD";
+        break;
+    }
+    kputs("file system: first target is ");
+    kputs(target);
+    kputs("\n");
+}
 
 // 以降の fs_read は、このデバイスから読むという設定
 void fs_set_blkdev(block_dev_t *b)

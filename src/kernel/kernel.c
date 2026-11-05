@@ -23,6 +23,7 @@
 #include "debug/detect.h"
 #include "drivers/atapi.h"
 #include "fs/fat16.h"
+#include "fs/fs_file.h"
 
 void kernel_main() { 
 
@@ -66,7 +67,9 @@ void kernel_main() {
     kputs("CPU cache disabled\n");
 
     fat16_init();
-    
+
+    fs_init_from_boot_sig();  // ファイルシステムが最初に見るドライブを起動ディスクに設定
+
     // 光学ドライブ検出
     struct atapi_dev dev = atapi_detect();
     if (dev.present) {

@@ -93,6 +93,10 @@ error_msg db "Failed to load KERNEL.BIN", 0x0D, 0x0A, 0
 msg_386only   db "KansoOS requires i386 or later. 8086/8088 not supported.", 0x0D, 0x0A, 0
 msg_cpu_ok    db "CPU check passed (i386+). Continuing...", 0x0D, 0x0A, 0
 
+; 何からOSを起動したかを記憶(ファイルシステムの初期マウントに使用)
+times 0x1FD-($-$$) db 0   ; 0x1FD (509) まで0埋め
+rootdev_sig db 'H' ; HDD
+
 ; 残りの領域を512バイトまで埋める
 times 510-($-$$) db 0
 dw 0xAA55

@@ -18,3 +18,5 @@ int fs_read(int fd, void* buf, int size);
 int fs_close(int fd);
 
 int fs_get_file_size(int fd, uint32_t *out_size);
+
+void fs_init_from_boot_sig(void);

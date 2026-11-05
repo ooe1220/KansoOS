@@ -58,4 +58,10 @@ print_string:
 msg_boot   db "CD Boot Loader Started", 13, 10, 0
 error_msg db "Failed to load KERNEL.BIN", 0x0D, 0x0A, 0
 
+; 何からOSを起動したかを記憶(ファイルシステムの初期マウントに使用)
+; 1 セクタに収まらなくなったら ↓ を有効化
+; jmp rootdev_sig_skip
+times 0x1FD-($-$$) db 0   ; 0x1FD (509) まで0埋め
+rootdev_sig db 'C' ; CD/DVD
+
 times 2048-($-$$) db 0
