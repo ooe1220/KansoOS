@@ -3,11 +3,11 @@
 #include "fat16.h"
 #include "../x86/console.h"
 
-uint32_t g_fat_lba  = 0;
-uint32_t g_root_lba = 0;
-uint32_t g_data_lba = 0;
-uint32_t g_root_sec = 0;   /* ルートディレクトリのセクタ数 */
-uint8_t  g_sec_per_clus = 0;
+static uint32_t g_fat_lba  = 0;
+static uint32_t g_root_lba = 0;
+static uint32_t g_data_lba = 0;
+static uint32_t g_root_sec = 0;   /* ルートディレクトリのセクタ数 */
+static uint8_t  g_sec_per_clus = 0;
 
 
 //************************************************
@@ -36,6 +36,17 @@ void fat16_init(void) {
 
     kprintf("FAT16 init ok: fat=%u root=%u data=%u spc=%u\n",g_fat_lba, g_root_lba, g_data_lba, (uint32_t)g_sec_per_clus);
 }
+
+uint32_t fat16_data_lba(void)
+{
+    return g_data_lba;   /* static の中身を外に出さずに「値だけ」渡す */
+}
+
+uint32_t fat16_sec_per_cluster(void)
+{
+    return g_sec_per_clus;
+}
+
 
 //************************************************
 // 文字を大文字に変換（自作）
@@ -180,3 +191,7 @@ void fs_dir_list(void) {
     }
 }
 
+uint32_t fat16_cluster_to_lba(uint32_t cluster)
+{
+    return g_data_lba + (cluster - 2) * g_sec_per_clus;
+}

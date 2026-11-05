@@ -1,9 +1,6 @@
 #pragma once
 #include <stdint.h>
 
-extern uint32_t g_data_lba;
-extern uint8_t  g_sec_per_clus;
-
 #define VBR_ADDR ((const bpb_t*)0x00007c00u)
 
 #pragma pack(push,1)
@@ -44,6 +41,9 @@ typedef struct {
 
 void fat16_init(void);
 
+uint32_t fat16_data_lba(void);        /* データ領域の開始 LBA */
+uint32_t fat16_sec_per_cluster(void); /* 1 クラスタのセクタ数 */
+
 /* dir / ls */
 void fs_dir_list(void);
 
@@ -54,3 +54,5 @@ void to_83_format(const char* filename, char* result);
 int fat16_find_file(const char* filename, uint32_t* start_cluster, uint32_t* file_size);
 
 void fs_dir_list(void);
+
+uint32_t fat16_cluster_to_lba(uint32_t cluster);

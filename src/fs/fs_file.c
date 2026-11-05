@@ -24,12 +24,6 @@ static int alloc_fd(void)
     return -1;
 }
 
-
-static uint32_t cluster_to_lba(uint32_t first_block)
-{
-    return g_data_lba + (first_block - 2) * g_sec_per_clus;
-}
-
 // filenameが存在したらFDを返す
 int fs_open(const char* filename)
 {
@@ -67,18 +61,35 @@ int fs_open(const char* filename)
  *   4. block_read で 1 クラスタ（8 セクタ）読む
  *   5. 読んだぶん読み取り位置(pos)を進めてバイト数を返す
  *=============================================================*/
+/*
 int fs_read(int fd, void* buf, int size)
 {
     if(fd<0||fd>=MAX_KFILES) return -1; // FDが存在しない fs_open未実行
     if(!kfiles[fd].used) return -1; // 開かれていない若しくは閉じた    
     if(!g_fs_blk) return -1;          // デバイスがセットされてない
 
-    uint32_t lba = cluster_to_lba(kfiles[fd].first_block);
+    uint32_t lba = fat16_cluster_to_lba(kfiles[fd].first_block);
 
     if (block_read(g_fs_blk, lba, g_sec_per_clus, buf) != 0)return -1;  // FATを辿り１クラスタ以上呼ぶ場合はここを複数回呼び出す
 
     kfiles[fd].pos += 8*512;  // 1クラスタだけ
     return 8*512;
+}*/
+
+int fs_read(int fd, void* buf, int size)
+{
+    if (fd < 0 || fd >= MAX_KFILES) return -1; // FDが存在しない fs_open未実行
+    if (!kfiles[fd].used) return -1;// 開かれていない若しくは閉じた   
+    if (!g_fs_blk) return -1;         // デバイスがセットされてない
+
+    uint32_t lba  = fat16_cluster_to_lba(kfiles[fd].first_block);
+    uint32_t sec_per_cluster = fat16_sec_per_cluster(); 
+
+    if (block_read(g_fs_blk, lba, sec_per_cluster, buf) != 0) return -1;
+
+    uint32_t got = sec_per_cluster * 512;
+    kfiles[fd].pos += got;
+    return (int)got;
 }
 
 // FDを閉じる
