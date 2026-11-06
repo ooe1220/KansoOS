@@ -56,3 +56,12 @@ int fat16_find_file(const char* filename, uint32_t* start_cluster, uint32_t* fil
 void fs_dir_list(void);
 
 uint32_t fat16_cluster_to_lba(uint32_t cluster);
+
+////////////////<<<<<<<<<<<<<<<<
+int fs_open(const char *filename);
+int fs_read(int fd, void *buf, int size);
+int fs_close(int fd);
+int fs_get_file_size(int fd, uint32_t *out_size);
+
+void fs_init_from_boot_sig(void);
+////////////////<<<<<<<<<<<<<<<<

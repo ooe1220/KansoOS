@@ -46,6 +46,10 @@ gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-
 gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -c src/drivers/ata.c -o build/ata.o
 gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -fno-plt -masm=intel -fverbose-asm -S src/drivers/ata.c -o build/ata.asm
 
+gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -c src/fs/fs_mount.c -o build/fs_mount.o
+
+gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -c src/drivers/bootdev.c -o build/bootdev.o
+
 gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -c src/drivers/atapi.c -o build/atapi.o
 gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -fno-plt -masm=intel -fverbose-asm -S src/drivers/atapi.c -o build/atapi.asm
 
@@ -99,8 +103,6 @@ gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-
 
 gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -c src/drivers/ata_block.c -o build/ata_block.o
 
-gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -c src/drivers/devmount.c -o build/devmount.o
-
 gcc -m32 -ffreestanding -I./src -c src/x86/font_8x16.c -o build/font_8x16.o
 gcc -m32 -ffreestanding -fno-pic -fno-pie -c src/x86/syscall_entry.S -o build/syscall_entry.o
 
@@ -119,7 +121,8 @@ ld -m elf_i386 -T src/linker.ld -o build/kernel.elf \
   build/ata.o \
   build/ata_block.o \
   build/atapi.o \
-  build/devmount.o \
+  build/fs_mount.o \
+  build/bootdev.o \
   build/panic.o \
   build/keyboard.o \
   build/string.o \

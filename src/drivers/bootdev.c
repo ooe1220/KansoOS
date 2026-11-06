@@ -1,8 +1,10 @@
 #include "bootdev.h"
-#include "ata_block.h"      /* ata_blkdev */
+#include "block.h"      /* ata_blkdev */
+#include "ata.h"
 /* #include "atapi.h" */    /* CD 対応できたら atapi_cd_blkdev */
+#include "../lib/stddef.h"       // NULL のため
+#include "../lib/stdint.h"
 
-#include <stdint.h>
 
 #define VBR_BASE        0x00007c00u
 #define ROOTDEV_SIG_OFF 0x1FD
@@ -11,6 +13,8 @@
 
 static bootdev_type_t cached_type = BOOTDEV_NONE;
 static int            cached      = 0;
+
+extern block_dev_t ata_blkdev;
 
 /* VBR の sig を見て種別を決める（一度だけ判定） */
 static bootdev_type_t detect(void)

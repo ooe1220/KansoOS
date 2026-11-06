@@ -22,8 +22,9 @@
 #include "debug/debug_print.h"
 #include "debug/detect.h"
 #include "drivers/atapi.h"
-#include "drivers/devmount.h"
 #include "fs/fat16.h"
+#include "fs/fs_mount.h" 
+#include "drivers/bootdev.h"
 
 void kernel_main() { 
 
@@ -74,6 +75,8 @@ void kernel_main() {
     kputs(bootdev_name());   // "HDD"
     kputs("\n");
 
+    fs_mount_root(); //起動ディスクに応じてATA+FAT16かATAPI+ISO9660かを決める（安定したら固定をやめる）
+
     // 光学ドライブ検出
     struct atapi_dev dev = atapi_detect();
     if (dev.present) {
@@ -83,31 +86,6 @@ void kernel_main() {
     } else {
         kputs("atapi: no optical drive found\n");
     }
-
-    
-    // 1セクタ読み出す
-    //uint8_t sector[2048];
-    //atapi_read_sector(35, sector);
-    //debug_dump_mem((uint32_t)sector, 2048);
-    //atapi_read_sector(16, sector);
-    /* type と CD001  */
-    //debug_printf("[PVD] type=%x magic=%c%c%c%c%c",sector[0],sector[1], sector[2], sector[3], sector[4], sector[5]);
-
-    /* ボリュームラベル（32バイト、印字可能文字だけ表示） */
-    //debug_printf("[PVD] magic=%c%c%c%c%c <<<",sector[1], sector[2], sector[3], sector[4], sector[5]);
-
-    /* 論理セクタサイズ（リトルエンディアン） */
-    //debug_printf("[PVD] block_size=%u",
-    //        (unsigned)(sector[0x9C]
-    //                 | (sector[0x9D] << 8)
-     //                | (sector[0x9E] << 16)
-        //             | (sector[0x9F] << 24)));
-
-    
-     // メモリ管理初期化　QEMUは通るが実機では固まる
-    //kheap_init(); // カーネル用
-    //uheap_init(); // ユーザ用
-    //kputs("Heap initialized\n");
         
     idt_init(); // IDT初期化 (x86/idt.h)
     kputs("IDT initialized\n");

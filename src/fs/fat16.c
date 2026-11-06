@@ -2,13 +2,15 @@
 #include "lib/string.h"
 #include "fat16.h"
 #include "../x86/console.h"
+#include "fs_mount.h" 
+#include "fs_file.h" 
+#include "fs_mount.h" 
 
 static uint32_t g_fat_lba  = 0;
 static uint32_t g_root_lba = 0;
 static uint32_t g_data_lba = 0;
 static uint32_t g_root_sec = 0;   /* ルートディレクトリのセクタ数 */
 static uint8_t  g_sec_per_clus = 0;
-
 
 //************************************************
 // BPB(0x7c00) から FAT16 の各領域 LBA を計算
@@ -195,3 +197,46 @@ uint32_t fat16_cluster_to_lba(uint32_t cluster)
 {
     return g_data_lba + (cluster - 2) * g_sec_per_clus;
 }
+
+////////////////<<<<<<<<<<<<<<<<
+
+static int fat16_read(struct kfile *file, void *buf, int size)
+{
+    if (!file || !file->used) return -1;
+    if (!g_fs_blk) return -1;
+
+    uint32_t lba   = fat16_cluster_to_lba(file->first_block);
+    uint32_t sec_p = fat16_sec_per_cluster();
+
+    if (block_read(g_fs_blk, lba, sec_p, buf) != 0) return -1;
+
+    uint32_t got = sec_p * 512;
+    file->pos += got;
+    return (int)got;
+}
+
+/* fs_private[0] に FAT16 の開始クラスタを保持する */
+static int fat16_open_op(struct kfile *file, const char *name)
+{
+    uint32_t cluster, size;
+
+    if (!file || !name) return -1;
+    if (!fat16_find_file(name, &cluster, &size)) return -1;
+
+    file->first_block = cluster;   // ★ FAT16 は「開始クラスタ」として使う
+    file->size        = size;
+    file->pos         = 0;
+    return 0;
+}
+
+static int fat16_close_op(struct kfile *file)
+{
+    (void)file;
+    return 0;
+}
+
+const fs_ops_t fat16_ops = {
+    .open  = fat16_open_op,
+    .read  = fat16_read,
+    .close = fat16_close_op,
+};
