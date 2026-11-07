@@ -1,6 +1,15 @@
 #!/bin/bash
-mkdir build # githubにbuildフォルダをあげていない為ここで追加。
+mkdir -p build # githubにbuildフォルダをあげていない為ここで追加。
 clear
+
+# 逆アセンブル結果格納用フォルダ生成
+while IFS= read -r d; do
+  mkdir -p "build/disasm/${d#src/}"
+done < <(find src -type d)
+
+while IFS= read -r d; do
+  mkdir -p "build/disasm/user/${d#user/}"
+done < <(find user -type d)
 
 # 起動ペンギン画像をHファイルへ変換
 xxd -i src/kernel/penguin.bmp > src/kernel/penguin_bmp.h
@@ -20,79 +29,82 @@ nasm -f elf32 src/boot/switch32.asm -o build/switch32.o
 gcc -m32 -ffreestanding -I./src -march=i486 -O2 -c src/kernel/kernel.c -o build/kernel.o
 
 gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -c src/kernel/command.c -o build/command.o
-gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -fno-plt -masm=intel -fverbose-asm -S src/kernel/command.c -o build/command.asm
+gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -fno-plt -masm=intel -fverbose-asm -S src/kernel/command.c -o build/disasm/kernel/command.asm
 
 gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -c src/kernel/user_exec.c -o build/user_exec.o
-gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -fno-plt -masm=intel -fverbose-asm -S src/kernel/user_exec.c -o build/user_exec.asm
+gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -fno-plt -masm=intel -fverbose-asm -S src/kernel/user_exec.c -o build/disasm/kernel/user_exec.asm
 
 gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -c src/drivers/cmos.c -o build/cmos.o
-gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -fno-plt -masm=intel -fverbose-asm -S src/drivers/cmos.c -o build/cmos.asm
+gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -fno-plt -masm=intel -fverbose-asm -S src/drivers/cmos.c -o build/disasm/drivers/cmos.asm
 
 gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -c src/x86/console.c -o build/console.o
-gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -fno-plt -masm=intel -fverbose-asm -S src/x86/console.c -o build/console.asm
+gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -fno-plt -masm=intel -fverbose-asm -S src/x86/console.c -o build/disasm/x86/console.asm
 
 gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -c src/x86/pic.c -o build/pic.o
-gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -fno-plt -masm=intel -fverbose-asm -S src/x86/pic.c -o build/pic.asm
+gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -fno-plt -masm=intel -fverbose-asm -S src/x86/pic.c -o build/disasm/x86/pic.asm
 
 gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -c src/x86/idt.c -o build/idt.o
-gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -fno-plt -masm=intel -fverbose-asm -S src/x86/idt.c -o build/idt.asm
+gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -fno-plt -masm=intel -fverbose-asm -S src/x86/idt.c -o build/disasm/x86/idt.asm
 
 gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -c src/x86/gdt.c -o build/gdt.o
-gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -fno-plt -masm=intel -fverbose-asm -S src/x86/gdt.c -o build/gdt.asm
+gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -fno-plt -masm=intel -fverbose-asm -S src/x86/gdt.c -o build/disasm/x86/gdt.asm
 
 gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -c src/x86/paging.c -o build/paging.o
-gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -fno-plt -masm=intel -fverbose-asm -S src/x86/paging.c -o build/paging.asm
+gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -fno-plt -masm=intel -fverbose-asm -S src/x86/paging.c -o build/disasm/x86/paging.asm
 
 gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -c src/drivers/ata.c -o build/ata.o
-gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -fno-plt -masm=intel -fverbose-asm -S src/drivers/ata.c -o build/ata.asm
+gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -fno-plt -masm=intel -fverbose-asm -S src/drivers/ata.c -o build/disasm/drivers/ata.asm
 
 gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -c src/fs/fs_mount.c -o build/fs_mount.o
+gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -fno-plt -masm=intel -fverbose-asm -S src/fs/fs_mount.c -o build/disasm/fs/fs_mount.asm
 
 gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -c src/drivers/bootdev.c -o build/bootdev.o
+gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -fno-plt -masm=intel -fverbose-asm -S src/drivers/bootdev.c -o build/disasm/drivers/bootdev.asm
 
 gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -c src/drivers/atapi.c -o build/atapi.o
-gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -fno-plt -masm=intel -fverbose-asm -S src/drivers/atapi.c -o build/atapi.asm
+gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -fno-plt -masm=intel -fverbose-asm -S src/drivers/atapi.c -o build/disasm/drivers/atapi.asm
 
 gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -c src/drivers/keyboard.c -o build/keyboard.o
-gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -fno-plt -masm=intel -fverbose-asm -S src/drivers/keyboard.c -o build/keyboard.asm
+gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -fno-plt -masm=intel -fverbose-asm -S src/drivers/keyboard.c -o build/disasm/drivers/keyboard.asm
 
 gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -c src/x86/panic.c -o build/panic.o
-gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -fno-plt -masm=intel -fverbose-asm -S src/x86/panic.c -o build/panic.asm
+gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -fno-plt -masm=intel -fverbose-asm -S src/x86/panic.c -o build/disasm/x86/panic.asm
 
 gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -c src/x86/syscall.c -o build/syscall.o
-gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -fno-plt -masm=intel -fverbose-asm -S src/x86/syscall.c -o build/syscall.asm
+gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -fno-plt -masm=intel -fverbose-asm -S src/x86/syscall.c -o build/disasm/x86/syscall.asm
 
 gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -c src/lib/string.c -o build/string.o
-gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -fno-plt -masm=intel -fverbose-asm -S src/lib/string.c -o build/string.asm
+gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -fno-plt -masm=intel -fverbose-asm -S src/lib/string.c -o build/disasm/lib/string.asm
 
 gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -c src/kernel/mem.c -o build/mem.o
-gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -fno-plt -masm=intel -fverbose-asm -S src/kernel/mem.c -o build/mem.asm
+gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -fno-plt -masm=intel -fverbose-asm -S src/kernel/mem.c -o build/disasm/kernel/mem.asm
 
 gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -c src/fs/fat16.c -o build/fat16.o
-gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -fno-plt -masm=intel -fverbose-asm -S src/fs/fat16.c -o build/fat16.asm
+gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -fno-plt -masm=intel -fverbose-asm -S src/fs/fat16.c -o build/disasm/fs/fat16.asm
 
 gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -c src/fs/fs_file.c -o build/fs_file.o
-gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -fno-plt -masm=intel -fverbose-asm -S src/fs/fs_file.c -o build/fs_file.asm
+gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -fno-plt -masm=intel -fverbose-asm -S src/fs/fs_file.c -o build/disasm/fs/fs_file.asm
 
 gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -c src/x86/vbe.c -o build/vbe.o
-gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -fno-plt -masm=intel -fverbose-asm -S src/x86/vbe.c -o build/vbe.asm
+gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -fno-plt -masm=intel -fverbose-asm -S src/x86/vbe.c -o build/disasm/x86/vbe.asm
 
 gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -c src/x86/gfx.c -o build/gfx.o
+gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -fno-plt -masm=intel -fverbose-asm -S src/x86/gfx.c -o build/disasm/x86/gfx.asm
 
 gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -c src/x86/pit.c -o build/pit.o
-gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -fno-plt -masm=intel -fverbose-asm -S src/x86/pit.c -o build/pit.asm
+gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -fno-plt -masm=intel -fverbose-asm -S src/x86/pit.c -o build/disasm/x86/pit.asm
 
 gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -c src/x86/cpu.c -o build/cpu.o
-gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -fno-plt -masm=intel -fverbose-asm -S src/x86/cpu.c -o build/cpu.asm
+gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -fno-plt -masm=intel -fverbose-asm -S src/x86/cpu.c -o build/disasm/x86/cpu.asm
 
 gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -c src/x86/timer.c -o build/timer.o
-gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -fno-plt -masm=intel -fverbose-asm -S src/x86/timer.c -o build/timer.asm
+gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -fno-plt -masm=intel -fverbose-asm -S src/x86/timer.c -o build/disasm/x86/timer.asm
 
 gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -c src/lib/itoa.c -o build/itoa.o
-gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -fno-plt -masm=intel -fverbose-asm -S src/lib/itoa.c -o build/itoa.asm
+gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -fno-plt -masm=intel -fverbose-asm -S src/lib/itoa.c -o build/disasm/lib/itoa.asm
 
 gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -c src/lib/bmp.c -o build/bmp.o # isapcのcmovs対策必須
-gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -fno-plt -masm=intel -fverbose-asm -S src/lib/bmp.c -o build/bmp.asm
+gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -fno-plt -masm=intel -fverbose-asm -S src/lib/bmp.c -o build/disasm/lib/bmp.asm
 
 gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -c src/debug/serial.c -o build/serial.o
 gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -fno-plt -masm=intel -fverbose-asm -S src/debug/serial.c -o build/serial.asm
@@ -103,12 +115,11 @@ gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-
 gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -c src/debug/detect.c -o build/detect.o
 gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -fno-plt -masm=intel -fverbose-asm -S src/debug/detect.c -o build/detect.asm
 
-gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -c src/drivers/ata_block.c -o build/ata_block.o
+gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -c src/drivers/ata_block.c -o build//ata_block.o
+gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -fno-plt -masm=intel -fverbose-asm -S src/drivers/ata_block.c -o build/disasm/drivers/ata_block.asm
 
 gcc -m32 -ffreestanding -I./src -c src/x86/font_8x16.c -o build/font_8x16.o
 gcc -m32 -ffreestanding -fno-pic -fno-pie -c src/x86/syscall_entry.S -o build/syscall_entry.o
-
-
 
 # 4. リンカで ELF 作成
 ld -m elf_i386 -T src/linker.ld -o build/kernel.elf \
@@ -146,6 +157,10 @@ ld -m elf_i386 -T src/linker.ld -o build/kernel.elf \
   build/bmp.o \
   build/debug_print.o \
   build/detect.o
+
+# 全体的に逆アセンブル
+mkdir -p build/disasm/
+objdump -d -M intel -S build/kernel.elf | c++filt > build/disasm/disasm_kernel.txt
   
 # 5. kernel.elf(ELF) → kernel.bin(バイナリ)
 objcopy -O binary build/kernel.elf build/kernel.bin
@@ -158,17 +173,17 @@ dd if=/dev/zero bs=1 count=$((65536 - current)) >> build/kernel.bin
 gcc -ffreestanding -nostdlib -fno-pic -fno-pie -m32 -c user/start.S -o build/start.o
 
 ## test2.c
-gcc -O2 -ffreestanding -nostdlib -fno-pic -fno-pie -m32 -c user/test2.c -o build/test2.o
+gcc -O2 -ffreestanding -march=i486  -nostdlib -fno-pic -fno-pie -m32 -c user/test2.c -o build/test2.o
 ld -m elf_i386 -T user/linker.ld build/start.o build/test2.o -o build/test2.elf
 objcopy -O binary build/test2.elf build/test2.bin
 
 ## test3.c
-gcc -O2 -ffreestanding -nostdlib -fno-pic -fno-pie -m32 -c user/test3.c -o build/test3.o
+gcc -O2 -ffreestanding -march=i486  -nostdlib -fno-pic -fno-pie -m32 -c user/test3.c -o build/test3.o
 ld -m elf_i386 -T user/linker.ld build/start.o build/test3.o -o build/test3.elf
 objcopy -O binary build/test3.elf build/test3.bin
 
 ## cat.c
-gcc -O2 -ffreestanding -nostdlib -fno-pic -fno-pie -m32 -c user/cat.c -o build/cat.o
+gcc -O2 -ffreestanding -march=i486  -nostdlib -fno-pic -fno-pie -m32 -c user/cat.c -o build/cat.o
 ld -m elf_i386 -T user/linker.ld build/start.o build/cat.o -o build/cat.elf
 objcopy -O binary build/cat.elf build/cat.bin
 
@@ -178,7 +193,7 @@ ld -m elf_i386 -T user/linker.ld build/start.o build/memtest.o -o build/memtest.
 objcopy -O binary build/memtest.elf build/memtest.bin
 
 ## GUITEST.BIN
-gcc -O2 -ffreestanding -nostdlib -fno-pic -fno-pie -m32 -c user/guitest.c -o build/guitest.o
+gcc -O2 -ffreestanding -march=i486  -nostdlib -fno-pic -fno-pie -m32 -c user/guitest.c -o build/guitest.o
 ld -m elf_i386 -T user/linker.ld build/start.o build/guitest.o -o build/guitest.elf
 objcopy -O binary build/guitest.elf build/guitest.bin
 
@@ -211,7 +226,6 @@ mcopy build/test.txt x:TEST.TXT
 mmd x:SUB
 
 # qemu-system-i386 -hda build/fat16.img  -monitor stdio
-
 qemu-system-i386   -bios build/mybios.bin   -drive file=build/fat16.img,format=raw,if=ide,index=0   -serial stdio   -machine isapc   -vga std
 
 # ---CD起動用のISO生成----------------------------------------------------------------

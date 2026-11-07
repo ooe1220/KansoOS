@@ -1,7 +1,7 @@
 #include "lib/gfx.h"
 
 // 関数が増えたら例外６起こる
-void main(void)
+int main(void)
 {
     /* 背景を黒でクリア */
     g_rect(0, 0, FB_WIDTH, FB_HEIGHT, COLOR_BLACK);
@@ -21,7 +21,16 @@ void main(void)
     /* 1ドットだけ確認用 */
     g_pixel(FB_WIDTH / 2, FB_HEIGHT / 2, COLOR_WHITE);
 
-    g_flip();   /* syscall はこれ1回だけ */
+    g_flip();  // 描画
 
-    for (;;) asm volatile("hlt");
+    // 遅延
+    for (volatile uint32_t i = 0; i < 400000000; i++)
+        asm volatile("nop");
+
+    // 退出前に背景色で画面クリア
+    g_rect(0, 0, FB_WIDTH, FB_HEIGHT, BG_COLOR);
+    g_flip(); 
+
+    return 0;
+    //for (;;) asm volatile("hlt");
 }

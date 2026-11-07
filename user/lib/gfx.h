@@ -34,6 +34,8 @@ static inline uint16_t *g_get_drawbuf(void)
 #define COLOR_RED   0xF800
 #define COLOR_WHITE 0xFFFF
 
+#define BG_COLOR  COLOR_BLUE  
+
 /* ---- 画面情報　ピッチはOS側で考慮する ---- */
 #ifndef FB_WIDTH
 #define FB_WIDTH  800
