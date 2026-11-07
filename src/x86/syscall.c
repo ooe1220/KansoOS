@@ -6,6 +6,8 @@
 #include "../fs/fs_file.h"
 #include "../kernel/mem.h"
 
+int gfx_do_flip(const void *arg);
+
 // -------------------------
 // システムコール用関数（ハンドラ）
 // INT 0x80 割り込みで呼ばれる
@@ -63,6 +65,18 @@ int handle_umalloc(size_t size) {
 
 int handle_ufree(void* ptr) {
     ufree(ptr);
+    return 0;
+}
+
+
+// -------------------------
+// システムコール: GFX flip（到達確認用）
+// -------------------------
+int handle_gfx_flip(void *arg)
+{
+    (void)arg;               // 引数はまだ見ない
+    kputs("[syscall] gfx_flip reached!\n");   // カーネルコンソールに印字
+    return gfx_do_flip(arg);
     return 0;
 }
 

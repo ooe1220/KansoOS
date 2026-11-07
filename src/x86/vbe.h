@@ -54,4 +54,6 @@ void vbe_clear(uint16_t bg_color);
 void draw_char(int x, int y, char c, uint16_t fg_color);
 void draw_rect(int x, int y, int w, int h, uint16_t color);
 
+void vbe_flip(void);
+
 #endif

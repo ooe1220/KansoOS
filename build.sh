@@ -77,6 +77,8 @@ gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-
 gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -c src/x86/vbe.c -o build/vbe.o
 gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -fno-plt -masm=intel -fverbose-asm -S src/x86/vbe.c -o build/vbe.asm
 
+gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -c src/x86/gfx.c -o build/gfx.o
+
 gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -c src/x86/pit.c -o build/pit.o
 gcc -m32 -ffreestanding -I./src -march=i486 -fno-pic -fno-pie -fno-asynchronous-unwind-tables -fno-plt -masm=intel -fverbose-asm -S src/x86/pit.c -o build/pit.asm
 
@@ -135,6 +137,7 @@ ld -m elf_i386 -T src/linker.ld -o build/kernel.elf \
   build/fs_file.o \
   build/cpu.o \
   build/vbe.o \
+  build/gfx.o \
   build/font_8x16.o \
   build/pit.o \
   build/timer.o \
@@ -174,6 +177,11 @@ gcc -O2 -ffreestanding -nostdlib -fno-pic -fno-pie -m32 -c user/memtest.c -o bui
 ld -m elf_i386 -T user/linker.ld build/start.o build/memtest.o -o build/memtest.elf
 objcopy -O binary build/memtest.elf build/memtest.bin
 
+## GUITEST.BIN
+gcc -O2 -ffreestanding -nostdlib -fno-pic -fno-pie -m32 -c user/guitest.c -o build/guitest.o
+ld -m elf_i386 -T user/linker.ld build/start.o build/guitest.o -o build/guitest.elf
+objcopy -O binary build/guitest.elf build/guitest.bin
+
 ## test.txt
 cp user/test.txt build/test.txt
 
@@ -195,6 +203,7 @@ mcopy build/test2.bin   x:TEST2.BIN
 mcopy build/test3.bin   x:TEST3.BIN
 mcopy build/cat.bin     x:CAT.BIN
 mcopy build/memtest.bin x:MEMTEST.BIN
+mcopy build/guitest.bin x:GUITEST.BIN
 
 cp user/test.txt build/test.txt
 mcopy build/test.txt x:TEST.TXT

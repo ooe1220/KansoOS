@@ -35,6 +35,10 @@ syscall_handler:
 
     cmp eax, SYS_UFREE
     je syscall_ufree
+
+cmp eax, SYS_GFX_FLIP
+    je syscall_gfx_flip
+
     
 syscall_write:
     push ebx                # 引数（文字列ポインタ）
@@ -80,6 +84,12 @@ syscall_umalloc:
 syscall_ufree:
     push ebx                # ptr
     call handle_ufree
+    add esp, 4
+    jmp syscall_done
+
+syscall_gfx_flip:
+    push ebx                # EBX = &g_gfx （ユーザ側の struct gfx_buf*）
+    call handle_gfx_flip
     add esp, 4
     jmp syscall_done
 

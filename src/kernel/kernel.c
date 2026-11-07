@@ -154,5 +154,3 @@ void kernel_main() {
     }
 }
 
-
-

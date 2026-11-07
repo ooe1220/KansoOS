@@ -9,8 +9,6 @@
 #define SYS_FS_CLOSE    5
 #define SYS_UMALLOC     6
 #define SYS_UFREE       7
-#define SYS_DRAW_PIXEL  8
-#define SYS_DRAW_RECT   9
-#define SYS_FLIP       10
+#define SYS_GFX_FLIP  8
 
 #endif
