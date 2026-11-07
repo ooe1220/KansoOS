@@ -4,8 +4,8 @@
 #define MAX_KFILES 8 // 同時に開けるファイル数
 
 struct kfile {
-    uint32_t first_block; // ファイルの最初のブロック FAT16=クラスタ，ISO9600=LBA
-    uint32_t size;          // ファイルのサイズ（バイト単位） 
+    uint32_t first_unit; // ファイルの最初の単位 FAT16=クラスタ，ISO9600=LBA
+    uint32_t size;          // ファイルの大きさ（バイト単位） 
     uint32_t pos;           // 読み込み中の位置（現在のオフセット）
     int used;               // この fd が使われているかどうか（0 = 空き, 1 = 使用中）
 };

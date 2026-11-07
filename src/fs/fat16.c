@@ -1,4 +1,3 @@
-#include "drivers/ata.h"
 #include "lib/string.h"
 #include "fat16.h"
 #include "../x86/console.h"
@@ -113,8 +112,13 @@ int fat16_find_file(const char* filename, uint32_t* start_cluster, uint32_t* fil
     
     to_83_format(filename, target_name); // target_name=8.3変換後
     
-    for (s = 0; s < g_root_sec; s++) { // 32セクタ分操作
-        ata_read_sector(g_root_lba + s, buf);
+    for (s = 0; s < g_root_sec; s++) { // ルートの大きさ（セクタ）分走査
+
+        if (block_read(g_fs_blk, g_root_lba + s, 1, buf) != 0) {
+            kputs("fat16: read root dir failed\n");
+            return 0;
+        }
+
         ent = (fat_dirent_t*)buf;
 
         for (i = 0; i < 512 / sizeof(fat_dirent_t); i++) {
@@ -169,7 +173,10 @@ void fs_dir_list(void) {
     int s, i;
 
     for (s = 0; s < g_root_sec; s++) {
-        ata_read_sector(g_root_lba + s, buf);
+        if (block_read(g_fs_blk, g_root_lba + s, 1, buf) != 0) {
+            kputs("fat16: read root dir failed\n");
+            return;
+        }
         ent = (fat_dirent_t*)buf;
 
         for (i = 0; i < 512 / sizeof(fat_dirent_t); i++) {
@@ -198,14 +205,12 @@ uint32_t fat16_cluster_to_lba(uint32_t cluster)
     return g_data_lba + (cluster - 2) * g_sec_per_clus;
 }
 
-////////////////<<<<<<<<<<<<<<<<
-
 static int fat16_read(struct kfile *file, void *buf, int size)
 {
     if (!file || !file->used) return -1;
     if (!g_fs_blk) return -1;
 
-    uint32_t lba   = fat16_cluster_to_lba(file->first_block);
+    uint32_t lba   = fat16_cluster_to_lba(file->first_unit);
     uint32_t sec_p = fat16_sec_per_cluster();
 
     if (block_read(g_fs_blk, lba, sec_p, buf) != 0) return -1;
@@ -215,7 +220,6 @@ static int fat16_read(struct kfile *file, void *buf, int size)
     return (int)got;
 }
 
-/* fs_private[0] に FAT16 の開始クラスタを保持する */
 static int fat16_open_op(struct kfile *file, const char *name)
 {
     uint32_t cluster, size;
@@ -223,7 +227,7 @@ static int fat16_open_op(struct kfile *file, const char *name)
     if (!file || !name) return -1;
     if (!fat16_find_file(name, &cluster, &size)) return -1;
 
-    file->first_block = cluster;   // ★ FAT16 は「開始クラスタ」として使う
+    file->first_unit = cluster;   // ★ FAT16 は「開始クラスタ」として使う
     file->size        = size;
     file->pos         = 0;
     return 0;
