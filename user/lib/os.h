@@ -1,6 +1,6 @@
 // 今は静的リンク
 #pragma once
-#include "stdint.h"
+#include "../../src/lib/stdint.h"
 #include "../../src/x86/syscall_num.h" // 後から-I使う
 
 static inline void write(const char *str) {

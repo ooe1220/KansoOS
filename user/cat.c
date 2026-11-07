@@ -1,5 +1,4 @@
 #include "lib/mystdio.h"
-#include "lib/stdint.h"
 
 int main(int argc, char **argv){ 
 
