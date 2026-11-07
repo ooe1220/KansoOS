@@ -1,51 +1,48 @@
 // 今は静的リンク
 #pragma once
 #include "stdint.h"
+#include "../../src/x86/syscall_num.h" // 後から-I使う
 
 static inline void write(const char *str) {
     // 現在は画面表示専用、ディスク書き込み実装時にfdを足す
     asm volatile(
-        "mov $1, %%eax\n"
+        "mov %[num], %%eax\n"
         "int $0x80\n"
         :
-        : "b"(str)      // ★ EBX 固定
-        : "eax"
+        : [num] "i"(SYS_WRITE), "b"(str)   // ★ EBX 固定はそのまま
+        : "eax", "memory"
     );
 }
 
 static inline int read_sector(uint32_t lba, void* buffer) {
     int ret;
     asm volatile(
-        "mov $2, %%eax\n"   // syscall番号 2
+        "mov %[num], %%eax\n" 
         "int $0x80\n"
-        : "=a"(ret)         // EAX に返り値を入れる
-        : "b"(lba), "c"(buffer) // EBX = lba, ECX = buffer
+        : "=a"(ret)            // EAX に返り値を入れる
+        : [num] "i"(SYS_READ_SECT), "b"(lba), "c"(buffer)
     );
     return ret;
 }
 
-
 /* =======================
    open
-   syscall番号 = 3
    EBX = filename
    返り値 = fd
    ======================= */
 static inline int open(const char* filename) {
     int ret;
     asm volatile(
-        "mov $3, %%eax\n"
+        "mov %[num], %%eax\n"
         "int $0x80\n"
         : "=a"(ret)
-        : "b"(filename)
+        : [num] "i"(SYS_FS_OPEN), "b"(filename)
     );
-
     return ret;
 }
 
 /* =======================
    read
-   syscall番号 = 4
    EBX = fd
    ECX = buf
    EDX = size
@@ -54,27 +51,27 @@ static inline int open(const char* filename) {
 static inline int read(int fd, void* buf, int size) {
     int ret;
     asm volatile(
-        "mov $4, %%eax\n"
+        "mov %[num], %%eax\n"
         "int $0x80\n"
         : "=a"(ret)
-        : "b"(fd), "c"(buf), "d"(size)
+        : [num] "i"(SYS_FS_READ), "b"(fd), "c"(buf), "d"(size)
     );
     return ret;
 }
 
+
 /* =======================
    close
-   syscall番号 = 5
    EBX = fd
    返り値 = 成功0 / 失敗-1
    ======================= */
 static inline int close(int fd) {
     int ret;
     asm volatile(
-        "mov $5, %%eax\n"
+        "mov %[num], %%eax\n"
         "int $0x80\n"
         : "=a"(ret)
-        : "b"(fd)
+        : [num] "i"(SYS_FS_CLOSE), "b"(fd)
     );
     return ret;
 }
@@ -83,20 +80,20 @@ static inline int close(int fd) {
 static inline void* malloc(int size) {
     void* ret;
     asm volatile(
-        "mov $6, %%eax\n"
+        "mov %[num], %%eax\n"
         "int $0x80\n"
         : "=a"(ret)
-        : "b"(size)
+        : [num] "i"(SYS_UMALLOC), "b"(size)
     );
     return ret;
 }
 
 static inline void free(void* ptr) {
     asm volatile(
-        "mov $7, %%eax\n"
+        "mov %[num], %%eax\n"
         "int $0x80\n"
         :
-        : "b"(ptr)
+        : [num] "i"(SYS_UFREE), "b"(ptr)
+        : "eax"          // EAX を壊すからそのまま書いておく
     );
 }
-

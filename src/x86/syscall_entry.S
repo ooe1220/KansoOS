@@ -2,6 +2,7 @@
 # C言語をコンパイルする際にPIC(アドレス間接参照)の影響により
 # コンパイラが勝手に`add $0x1,%eax`命令を追加しEAX(システムコール番号)が破壊される事象が
 # 発生した為、システムコール入口の処理は純アセンブリに書き換えた
+#include "syscall_num.h" 
 .intel_syntax noprefix
 .global syscall_handler
 
@@ -14,25 +15,25 @@ syscall_handler:
     # mov byte ptr [edi+1], 0x0F
     
     # syscall番号分岐
-    cmp eax, 1
+    cmp eax, SYS_WRITE
     je syscall_write
 
-    cmp eax, 2
+    cmp eax, SYS_READ_SECT
     je syscall_read_sector
     
-    cmp eax, 3
+    cmp eax, SYS_FS_OPEN
     je syscall_fs_open
 
-    cmp eax, 4
+    cmp eax, SYS_FS_READ
     je syscall_fs_read
 
-    cmp eax, 5
+    cmp eax, SYS_FS_CLOSE
     je syscall_fs_close
     
-    cmp eax, 6
+    cmp eax, SYS_UMALLOC
     je syscall_umalloc
 
-    cmp eax, 7
+    cmp eax, SYS_UFREE
     je syscall_ufree
     
 syscall_write:
