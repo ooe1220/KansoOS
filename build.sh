@@ -199,6 +199,8 @@ mcopy build/memtest.bin x:MEMTEST.BIN
 cp user/test.txt build/test.txt
 mcopy build/test.txt x:TEST.TXT
 
+mmd x:SUB
+
 # qemu-system-i386 -hda build/fat16.img  -monitor stdio
 
 qemu-system-i386   -bios build/mybios.bin   -drive file=build/fat16.img,format=raw,if=ide,index=0   -serial stdio   -machine isapc   -vga std

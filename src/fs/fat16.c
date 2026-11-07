@@ -167,6 +167,7 @@ static void print_name(const char* name) {
 //************************************************
 // ディレクトリの中身を直接コンソールへ表示
 //************************************************
+/*
 void fs_dir_list(void) {
     uint8_t buf[512];
     fat_dirent_t* ent;
@@ -181,15 +182,15 @@ void fs_dir_list(void) {
 
         for (i = 0; i < 512 / sizeof(fat_dirent_t); i++) {
         
-            /* 終端 */
+            //終端 
             if (ent[i].name[0] == 0x00)
                 return;
 
-            /* 削除済み */
+            // 削除済み
             if (ent[i].name[0] == 0xE5)
                 continue;
 
-            /* Volume label / system */
+            // Volume label / system 
             if (ent[i].attr & 0x08)
                 continue;
 
@@ -198,7 +199,151 @@ void fs_dir_list(void) {
             kputs(" "); // 横表示
         }
     }
+}*/
+
+//>>>>> fs_dir_list MS-DOS版
+
+/* ---- 数値を文字列化（カンマ区切り、末尾から書くので自己完結） ---- */
+static void num_with_commas(uint32_t n, char *out, int *len)
+{
+    char tmp[16];
+    int  idx = 0;
+
+    do {
+        tmp[idx++] = '0' + (n % 10);
+        n /= 10;
+        if (n && idx % 3 == 0) tmp[idx++] = ',';
+    } while (n);
+
+    *len = idx;
+    while (idx--) *out++ = tmp[idx];
 }
+
+/* ---- 右詰で出力（幅に足りなければ左をスペース埋め） ---- */
+static void pr_right(uint32_t n, int width)
+{
+    char buf[16] = {0};      // ゴミを 0 にする
+    int  len;
+
+    num_with_commas(n, buf, &len);
+
+    int pad = (width > len) ? (width - len) : 0;
+    for (int i = 0; i < pad; i++) kputc(' ');   // 空白埋め
+    for (int i = 0; i < len; i++) kputc(buf[i]); //  書いた分だけ出力
+}
+
+/* ---- DOS の日付(u16)・時刻(u16) を "MM-DD-YYYY  H:MMa/p" で出力 ---- */
+static void pr_dos_datetime(uint16_t date, uint16_t time)
+{
+    int day  = date & 0x1F;
+    int mon  = (date >> 5) & 0x0F;
+    int year = 1980 + (date >> 9);
+
+    int sec  = (time & 0x1F) * 2;
+    int min  = (time >> 5) & 0x3F;
+    int hr   = (time >> 11) & 0x1F;
+
+    const char *ampm = (hr >= 12) ? "p" : "a";
+    int h = hr % 12; if (h == 0) h = 12;
+
+    kprintf("%d-%d-%d  %d:%d%s", mon, day, year, h, min, ampm);
+}
+
+/* ----FAT を走査して空きクラスタを数える ---- */
+static uint32_t fat16_free_bytes(void)
+{
+    uint8_t fat[512];
+    uint32_t free_clusters = 0;
+    uint32_t fat_entries  = g_root_lba - g_fat_lba;   // 1 FAT のセクタ数 × (512/2)
+    fat_entries *= 256;                               // 1 セクタあたり 256 エントリ(FAT16)
+
+    for (uint32_t e = 2; e < fat_entries; e++) {
+        uint32_t sec = e / 256;
+        uint32_t off = (e % 256) * 2;
+
+        if (sec == 0 || off == 0) {   // セクタ先頭なら読み直す（簡易キャッシュなし）
+            if (block_read(g_fs_blk, g_fat_lba + sec, 1, fat) != 0)
+                break;
+        }
+        uint16_t val = *(uint16_t *)&fat[off];
+        if (val == 0x0000) free_clusters++;
+    }
+    return free_clusters * g_sec_per_clus * 512u;
+}
+
+/* ============ MS-DOS 風 dir ============ */
+void fs_dir_list(void)
+{
+    uint8_t buf[512];
+    fat_dirent_t *ent;
+    int s, i;
+    uint32_t nfiles = 0, total = 0;
+    char vol_label[12] = "NO NAME";
+
+    // 1 パス目でボリュームラベルを拾う（先頭付近にあるはず）
+    for (s = 0; s < (int)g_root_sec; s++) {
+        if (block_read(g_fs_blk, g_root_lba + s, 1, buf) != 0) break;
+        ent = (fat_dirent_t *)buf;
+        for (i = 0; i < (int)(512 / sizeof(fat_dirent_t)); i++) {
+            if (ent[i].name[0] == 0x00) goto header;
+            if (ent[i].attr & 0x08) {          // Volume label
+                memcpy(vol_label, ent[i].name, 11);
+                vol_label[11] = '\0';
+                goto header;
+            }
+        }
+    }
+header:
+
+    kprintf(" Volume in drive A is %s\n", vol_label);
+    kputs(" Directory of A:\\\n\n");
+
+    // 2 パス目：エントリを列挙 
+    for (s = 0; s < (int)g_root_sec; s++) {
+        if (block_read(g_fs_blk, g_root_lba + s, 1, buf) != 0) {
+            kputs("fat16: read root dir failed\n");
+            return;
+        }
+        ent = (fat_dirent_t *)buf;
+
+        for (i = 0; i < (int)(512 / sizeof(fat_dirent_t)); i++) {
+            if (ent[i].name[0] == 0x00) goto footer;
+            if (ent[i].name[0] == 0xE5)  continue;
+            if (ent[i].attr & 0x08)      continue;   // label はここではスキップ
+            if (ent[i].attr & 0x0F)      continue;   // LFN
+
+            //名前: "FILE    EXT" （8.3 をそのまま DOS 表記）
+            for (int k = 0; k < 11; k++) kputc(ent[i].name[k]);
+
+            //サイズ or <DIR> 
+            if (ent[i].attr & 0x10) {
+                kputs("       <DIR>  ");
+            } else {
+                pr_right(ent[i].size, 10);
+                kputs("  ");
+            }
+
+            //日付・時刻 
+            pr_dos_datetime(ent[i].wrt_date, ent[i].wrt_time);
+            kputs("\n");
+
+            if (!(ent[i].attr & 0x10)) {
+                nfiles++;
+                total += ent[i].size;
+            }
+        }
+    }
+
+footer:
+    kputs("\n");
+    pr_right(nfiles, 0); kputs(" file(s)    ");
+    pr_right(total, 0);  kputs(" bytes\n");
+
+    uint32_t free = fat16_free_bytes();
+    kputs("                ");   // 上の行と桁を揃える（適当なパディング）
+    pr_right(free, 0);   kputs(" bytes free\n");
+}
+//>>>>>>
 
 uint32_t fat16_cluster_to_lba(uint32_t cluster)
 {
