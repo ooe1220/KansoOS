@@ -22,7 +22,6 @@
 #include "debug/debug_print.h"
 #include "debug/detect.h"
 #include "drivers/atapi.h"
-#include "fs/fat16.h"
 #include "fs/fs_mount.h" 
 #include "drivers/bootdev.h"
 
@@ -67,17 +66,16 @@ void kernel_main() {
     cpu_cache_disable();// キャッシュを切っておく
     kputs("CPU cache disabled\n");
 
-    fat16_init();
-
     // ファイルシステムが最初に見るドライブを起動ディスクに設定
-    bootdev_type();
-    kputs("boot device: ");
-    kputs(bootdev_name());   // "HDD"
-    kputs("\n");
+    //bootdev_type();
+    //kputs("boot device: ");
+    //kputs(bootdev_name());   // "HDD"
+    //kputs("\n");
 
     fs_mount_root(); //起動ディスクに応じてATA+FAT16かATAPI+ISO9660かを決める（安定したら固定をやめる）
 
     // 光学ドライブ検出
+    /*
     struct atapi_dev dev = atapi_detect();
     if (dev.present) {
         kputs("atapi: optical drive detected: ");
@@ -85,8 +83,23 @@ void kernel_main() {
         kputs("\n");
     } else {
         kputs("atapi: no optical drive found\n");
-    }
-        
+    }*/
+
+
+    // 動作確認
+   /*
+    uint8_t buf[2048];   //動作確認にブートローダ読み込み
+    block_dev_t *dev = bootdev_get();
+    if (block_read(dev, 35, 1, buf) != 0) {
+        kputs("cd failed\n");
+    } else {
+        kputs("seikou\n");
+        for (int i = 0; i < 64; i++) {      // 先頭 64 バイトだけ 
+            kprintf("%x ", buf[i]);
+            if ((i & 15) == 15) kputs("\n"); // 16バイトごと改行 
+        }
+    }*/
+
     idt_init(); // IDT初期化 (x86/idt.h)
     kputs("IDT initialized\n");
     
@@ -138,10 +151,7 @@ void kernel_main() {
         } else if (c == '\b') { // BACKSPACE : 一文字削除
             if (len > 0) {
                 // BACKSPACE処理
-                // 1. バッファから1文字削除
-                // 2. カーソルを左へ
-                // 3. その位置を空白で上書き（文字を消す）
-                // 4. 空白表示時にカーソルが右へ動く為カーソルを再び左へ
+                // 1. バッファから1文字削除 2. カーソルを左へ 3. その位置を空白で上書き（文字を消す） 4. 空白表示時にカーソルが右へ動く為カーソルを再び左へ
                 len--;
                 kputc('\b'); kputc(' '); kputc('\b');
             }

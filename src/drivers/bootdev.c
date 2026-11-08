@@ -1,6 +1,7 @@
 #include "bootdev.h"
 #include "block.h"      /* ata_blkdev */
 #include "ata.h"
+#include "atapi.h"
 /* #include "atapi.h" */    /* CD 対応できたら atapi_cd_blkdev */
 #include "../lib/stddef.h"       // NULL のため
 #include "../lib/stdint.h"
@@ -15,6 +16,7 @@ static bootdev_type_t cached_type = BOOTDEV_NONE;
 static int            cached      = 0;
 
 extern block_dev_t ata_blkdev;
+extern block_dev_t atapi_blkdev;
 
 /* VBR の sig を見て種別を決める（一度だけ判定） */
 static bootdev_type_t detect(void)
@@ -53,8 +55,7 @@ block_dev_t *bootdev_get(void)
     case BOOTDEV_HDD:
         return &ata_blkdev;      /* HDD = ATA 経由 */
     case BOOTDEV_CD:
-        /* return &atapi_cd_blkdev; */   /* 開発中：まだ使えない */
-        return NULL;
+        return &atapi_blkdev;   /* 開発中：まだ使えない */
     default:
         return NULL;
     }

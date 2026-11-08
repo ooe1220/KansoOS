@@ -23,12 +23,17 @@ void fs_mount_root(void)
     }
 
     // CD対応後にここを分岐にする。今はATA+FAT16固定
-    //switch (bootdev_type()) {           // ← 将来の分岐例
-    //    case BOOTDEV_CD:
-    
-    //fat16_set_blkdev(dev); 
-    g_fs_blk = dev;
-    g_fs_ops = &fat16_ops;
+    switch (bootdev_type()) {
+        case BOOTDEV_CD:
+            g_fs_ops = NULL; // IS09660は開発中
+            break;
+        default:
+            fat16_init();
+            g_fs_ops = &fat16_ops;     /* HDD = FAT16 */
+            break;
+    }
+
+    g_fs_blk = dev; // devmount.cの方で既に起動ディスク分岐している
 
     kputs("file system: mounted via ");
     kputs(bootdev_name());

@@ -153,6 +153,10 @@ $CF   -O0 -c src/drivers/ata_block.c -o build/ata_block.o
 $ASM  -O0 src/drivers/ata_block.c -o build/disasm/drivers/ata_block_O0.asm
 $ASM  -O2 src/drivers/ata_block.c -o build/disasm/drivers/ata_block_O2.asm
 
+$CF   -O0 -c src/drivers/atapi_block.c -o build/atapi_block.o
+$ASM  -O0 src/drivers/ata_block.c -o build/disasm/drivers/atapi_block_O0.asm
+$ASM  -O2 src/drivers/ata_block.c -o build/disasm/drivers/atapi_block_O2.asm
+
 # フラグの並びが違う単発はそのまま
 nasm -f elf32 src/boot/switch32.asm -o build/switch32.o
 gcc -m32 -ffreestanding -I./src -c src/x86/font_8x16.c -o build/font_8x16.o
@@ -174,6 +178,7 @@ ld -m elf_i386 -T src/linker.ld -o build/kernel.elf \
   build/ata.o \
   build/ata_block.o \
   build/atapi.o \
+  build/atapi_block.o \
   build/fs_mount.o \
   build/bootdev.o \
   build/panic.o \
@@ -267,7 +272,7 @@ mcopy build/test.txt x:TEST.TXT
 mmd x:SUB
 
 # qemu-system-i386 -hda build/fat16.img  -monitor stdio
-qemu-system-i386   -bios build/mybios.bin   -drive file=build/fat16.img,format=raw,if=ide,index=0   -serial stdio   -machine isapc   -vga std
+# qemu-system-i386   -bios build/mybios.bin   -drive file=build/fat16.img,format=raw,if=ide,index=0   -serial stdio   -machine isapc   -vga std
 
 # ---CD起動用のISO生成----------------------------------------------------------------
 
@@ -284,6 +289,6 @@ cp build/kernel.bin  build/iso_root/
   -boot-load-size 4 \
   build/iso_root
 
-# qemu-system-i386 -m 64M  -enable-kvm -cpu qemu32,+pse -device ide-cd,bus=ide.0,unit=0 -cdrom build/os.iso -boot d -serial stdio
+ qemu-system-i386 -m 64M  -enable-kvm -cpu qemu32,+pse -device ide-cd,bus=ide.0,unit=0 -cdrom build/os.iso -boot d -serial stdio
 
 # -serial stdio

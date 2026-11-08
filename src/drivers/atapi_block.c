@@ -1,5 +1,7 @@
 #include "atapi.h"         /* ドライバの世界 */
 #include "block.h"         /* ブロックの世界 ← このファイルだけがまたぐ */
+#include "../lib/stddef.h"
+#include "../lib/stdint.h"
 #include "x86/console.h"
 
 /*=============================================================
