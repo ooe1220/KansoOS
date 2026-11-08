@@ -388,4 +388,5 @@ const fs_ops_t fat16_ops = {
     .open  = fat16_open_op,
     .read  = fat16_read,
     .close = fat16_close_op,
+    .dir   = fs_dir_list,
 };

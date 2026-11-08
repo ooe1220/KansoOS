@@ -6,13 +6,15 @@
 #include "lib/stddef.h" // NULLの定義
 #include "user_exec.h"
 #include "drivers/ata.h"
-#include "fs/fat16.h"
+#include "fs/fs_ops.h"
 
 #include "x86/pic.h"
 #include "fs/fs_file.h"
 #include "debug/serial.h"
 #include "debug/debug_print.h"
 #include "x86/paging.h"
+
+extern fs_ops_t *g_fs_ops;
 
 // 内部コマンド実行
 int run_builtin_command(const char *line){
@@ -52,7 +54,11 @@ int run_builtin_command(const char *line){
     
     if (strcmp(line, "ls") == 0 || strcmp(line, "dir") == 0) {
         kputs("\n");
-        fs_dir_list(); // fs/fat16.h
+
+        if (g_fs_ops && g_fs_ops->dir)
+            g_fs_ops->dir();
+        else
+            kputs("dir: not supported\n");
         return 0;
     }
     

@@ -272,7 +272,7 @@ mcopy build/test.txt x:TEST.TXT
 mmd x:SUB
 
 # qemu-system-i386 -hda build/fat16.img  -monitor stdio
-# qemu-system-i386   -bios build/mybios.bin   -drive file=build/fat16.img,format=raw,if=ide,index=0   -serial stdio   -machine isapc   -vga std
+ qemu-system-i386   -bios build/mybios.bin   -drive file=build/fat16.img,format=raw,if=ide,index=0   -serial stdio   -machine isapc   -vga std
 
 # ---CD起動用のISO生成----------------------------------------------------------------
 
@@ -289,6 +289,6 @@ cp build/kernel.bin  build/iso_root/
   -boot-load-size 4 \
   build/iso_root
 
- qemu-system-i386 -m 64M  -enable-kvm -cpu qemu32,+pse -device ide-cd,bus=ide.0,unit=0 -cdrom build/os.iso -boot d -serial stdio
+# qemu-system-i386 -m 64M  -enable-kvm -cpu qemu32,+pse -device ide-cd,bus=ide.0,unit=0 -cdrom build/os.iso -boot d -serial stdio
 
 # -serial stdio

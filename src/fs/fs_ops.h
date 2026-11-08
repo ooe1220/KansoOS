@@ -10,6 +10,7 @@ typedef struct {
     int  (*open)(struct kfile *kf, const char *name);
     int  (*read)(struct kfile *kf, void *buf, int len); 
     int  (*close)(struct kfile *kf); 
+    void (*dir)(void); // commmandのDIR/LSへ現在のファイルシステムを意識させない為
 } fs_ops_t;
 
 /* 今、どの FS が刺さってるか（fs_init_from_boot_sig でセット） */
