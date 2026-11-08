@@ -54,7 +54,7 @@ void kernel_main() {
     
     console_clear();
     
-    kputs("       C Kernel Booted           \n");
+    kputs("       KansoOS           \n");
     kputs("       "); kputs(cpuname); kputs("\n");
     kputs("       "); kputs(boot_time); kputs(" (UTC)\n");
 
