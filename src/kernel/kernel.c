@@ -23,6 +23,7 @@
 #include "debug/detect.h"
 #include "drivers/atapi.h"
 #include "fs/fs_mount.h" 
+#include "fs/iso9660.h" // OPS作ったら消す 
 #include "drivers/bootdev.h"
 
 void kernel_main() { 
@@ -73,6 +74,8 @@ void kernel_main() {
     //kputs("\n");
 
     fs_mount_root(); //起動ディスクに応じてATA+FAT16かATAPI+ISO9660かを決める（安定したら固定をやめる）
+
+    iso9660_list_root();
 
     // 光学ドライブ検出
     /*

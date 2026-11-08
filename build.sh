@@ -106,6 +106,10 @@ $CF   -O0 -c src/fs/fat16.c -o build/fat16.o
 $ASM  -O0 src/fs/fat16.c -o build/disasm/fs/fat16_O0.asm
 $ASM  -O2 src/fs/fat16.c -o build/disasm/fs/fat16_O2.asm
 
+$CF   -O0 -c src/fs/iso9660.c -o build/iso9660.o
+$ASM  -O0 src/fs/iso9660.c -o build/disasm/fs/iso9660_O0.asm
+$ASM  -O2 src/fs/iso9660.c -o build/disasm/fs/iso9660_O2.asm
+
 $CF   -O0 -c src/fs/fs_file.c -o build/fs_file.o
 $ASM  -O0 src/fs/fs_file.c -o build/disasm/fs/fs_file_O0.asm
 $ASM  -O2 src/fs/fs_file.c -o build/disasm/fs/fs_file_O2.asm
@@ -190,6 +194,7 @@ ld -m elf_i386 -T src/linker.ld -o build/kernel.elf \
   build/syscall_entry.o \
   build/user_exec.o \
   build/fat16.o \
+  build/iso9660.o \
   build/fs_file.o \
   build/cpu.o \
   build/vbe.o \

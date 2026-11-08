@@ -34,7 +34,7 @@ dap:
     dw 32            ; 転送ブロック数 64KB分
     dw 0x0000        ; offset
     dw 0x0800        ; segment（物理 0x8000）
-    dq 35            ; KERNEL.BIN の LBA = 35
+    dq 37;dq 35            ; KERNEL.BIN の LBA = 35
     
 disk_fail:
     mov si, error_msg
