@@ -36,6 +36,8 @@ typedef struct __attribute__((packed)) {
 /* セミコロンの扱い：そのまま表示する */
 /* #define ISO_STRIP_SEMICOLON 1 を定義すれば ";1" を消す */
 
+int iso9660_init(void);
+
 /* ---- 公開 API ---- */
 
 /*

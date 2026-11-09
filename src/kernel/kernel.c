@@ -67,41 +67,7 @@ void kernel_main() {
     cpu_cache_disable();// キャッシュを切っておく
     kputs("CPU cache disabled\n");
 
-    // ファイルシステムが最初に見るドライブを起動ディスクに設定
-    //bootdev_type();
-    //kputs("boot device: ");
-    //kputs(bootdev_name());   // "HDD"
-    //kputs("\n");
-
     fs_mount_root(); //起動ディスクに応じてATA+FAT16かATAPI+ISO9660かを決める（安定したら固定をやめる）
-
-    iso9660_list_root();
-
-    // 光学ドライブ検出
-    /*
-    struct atapi_dev dev = atapi_detect();
-    if (dev.present) {
-        kputs("atapi: optical drive detected: ");
-        kputs(dev.model);
-        kputs("\n");
-    } else {
-        kputs("atapi: no optical drive found\n");
-    }*/
-
-
-    // 動作確認
-   /*
-    uint8_t buf[2048];   //動作確認にブートローダ読み込み
-    block_dev_t *dev = bootdev_get();
-    if (block_read(dev, 35, 1, buf) != 0) {
-        kputs("cd failed\n");
-    } else {
-        kputs("seikou\n");
-        for (int i = 0; i < 64; i++) {      // 先頭 64 バイトだけ 
-            kprintf("%x ", buf[i]);
-            if ((i & 15) == 15) kputs("\n"); // 16バイトごと改行 
-        }
-    }*/
 
     idt_init(); // IDT初期化 (x86/idt.h)
     kputs("IDT initialized\n");
@@ -123,6 +89,16 @@ void kernel_main() {
     
     //タイマーを入れるとスタックが壊れる。一旦保留
     //timer_init();
+
+   // 本来はmount_fsの中でやるべきだが、実機の場合ここでやらないと何故か失敗する
+    struct atapi_dev dev = atapi_detect();
+        if (dev.present) {
+            kputs("atapi: optical drive detected: ");
+            kputs(dev.model);
+            kputs("\n");
+        } else {
+            kputs("atapi: no optical drive found\n");
+    } 
       
     char line[128]; // コマンド入力バッファ
     int len = 0; // 現在の入力位置（文字数）

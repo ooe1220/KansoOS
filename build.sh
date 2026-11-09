@@ -277,7 +277,7 @@ mcopy build/test.txt x:TEST.TXT
 mmd x:SUB
 
 # qemu-system-i386 -hda build/fat16.img  -monitor stdio
- qemu-system-i386   -bios build/mybios.bin   -drive file=build/fat16.img,format=raw,if=ide,index=0   -serial stdio   -machine isapc   -vga std
+# qemu-system-i386   -bios build/mybios.bin   -drive file=build/fat16.img,format=raw,if=ide,index=0   -serial stdio   -machine isapc   -vga std
 
 # ---CD起動用のISO生成----------------------------------------------------------------
 
@@ -286,6 +286,10 @@ nasm -f bin src/boot/cdboot.asm -o build/cdboot.bin
 mkdir -p build/iso_root/boot
 cp build/cdboot.bin build/iso_root/boot/
 cp build/kernel.bin  build/iso_root/
+cp build/cat.bin  build/iso_root/
+cp build/memtest.bin  build/iso_root/
+cp build/guitest.bin  build/iso_root/
+cp build/test.txt  build/iso_root/
 
  xorriso -as mkisofs \
   -o build/os.iso \
@@ -295,5 +299,8 @@ cp build/kernel.bin  build/iso_root/
   build/iso_root
 
 # qemu-system-i386 -m 64M  -enable-kvm -cpu qemu32,+pse -device ide-cd,bus=ide.0,unit=0 -cdrom build/os.iso -boot d -serial stdio
-
 # -serial stdio
+
+# kernel.cのLBAを探す ファイル増えたら変わる　今後はブートローダ内で探すように改良予定
+# isoinfo -l -i build/os.iso | grep KERNEL
+# dd if=build/os.iso bs=2048 skip=37 count=32 | cmp - build/kernel.bin && echo OK
