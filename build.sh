@@ -59,9 +59,6 @@ $CF   -O0 -c src/x86/idt.c -o build/idt.o
 $ASM  -O0 src/x86/idt.c -o build/disasm/x86/idt_O0.asm
 $ASM  -O2 src/x86/idt.c -o build/disasm/x86/idt_O2.asm
 
-$CF   -O0 -c src/x86/gdt.c -o build/gdt.o # O2厳禁
-$ASM  -O0 src/x86/gdt.c -o build/disasm/x86/gdt_O0.asm
-
 $CF   -O0 -c src/x86/paging.c -o build/paging.o
 $ASM  -O0 src/x86/paging.c -o build/disasm/x86/paging_O0.asm
 $ASM  -O2 src/x86/paging.c -o build/disasm/x86/paging_O2.asm
@@ -178,7 +175,6 @@ ld -m elf_i386 -T src/linker.ld -o build/kernel.elf \
   build/pic.o \
   build/paging.o \
   build/idt.o \
-  build/gdt.o \
   build/ata.o \
   build/ata_block.o \
   build/atapi.o \
@@ -295,6 +291,7 @@ cp build/kernel.bin  build/iso_root/
 cp build/cat.bin  build/iso_root/
 cp build/memtest.bin  build/iso_root/
 cp build/guitest.bin  build/iso_root/
+cp build/getchar.bin  build/iso_root/
 cp build/test.txt  build/iso_root/
 
  xorriso -as mkisofs \

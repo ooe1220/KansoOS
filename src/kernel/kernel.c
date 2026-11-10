@@ -1,6 +1,5 @@
 #include "x86/pic.h"
 #include "x86/idt.h"
-#include "x86/gdt.h"
 #include "x86/vbe.h"
 #include "x86/io.h"
 #include "x86/console.h"
@@ -27,9 +26,6 @@
 #include "drivers/bootdev.h"
 
 void kernel_main() { 
-
-    gdt_init();
-    tss_init(0x9FC00); // swich32.asmと2重定義になるのでいつか纏める
 
     // 起動時間取得
     char boot_time[20];
@@ -58,8 +54,6 @@ void kernel_main() {
     kputs("       "); kputs(cpuname); kputs("\n");
     kputs("       "); kputs(boot_time); kputs(" (UTC)\n");
 
-    kputs("GDT initialized\n");
-    kputs("TSS initialized\n");
     kputs("VBE initialized\n");
     
     show_penguin();// shell画面左上にペンギン画像を表示
