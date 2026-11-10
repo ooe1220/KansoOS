@@ -24,8 +24,11 @@ int main(void)
     g_flip();  // 描画
 
     // 遅延
-    for (volatile uint32_t i = 0; i < 400000000; i++)
-        asm volatile("nop");
+//    for (volatile uint32_t i = 0; i < 400000000; i++)
+//        asm volatile("nop");
+
+    write("Press any key...\n");
+    getchar();
 
     // 退出前に背景色で画面クリア
     g_rect(0, 0, FB_WIDTH, FB_HEIGHT, BG_COLOR);
