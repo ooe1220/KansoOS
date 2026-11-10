@@ -163,8 +163,11 @@ static int iso9660_find_file(const char *name, uint32_t *extent, uint32_t *size)
         return 0;
     }
 
+    //kprintf(name); // catbim.cとでた
+
     /* "KERNEL.BIN" の長さ。';' 以降（バージョン）は無視する */
     while (name[namelen] && name[namelen] != ';') namelen++;
+
 
     p   = root;
     end = root + ISO_SECTOR_SIZE;
@@ -182,6 +185,10 @@ static int iso9660_find_file(const char *name, uint32_t *extent, uint32_t *size)
             /* ISO の名前は "KERNEL.BIN;1"。';' の前まで比較する */
             while (rlen < rec->id_len && rn[rlen] != ';') rlen++;
 
+            // 比較対象も文字列を表示
+            //for (int i = 0; i < rlen; i++) kputc(rn[i]);
+            //kputs("\n"); 
+
             if (rlen == namelen && memcmp(name, rn, namelen) == 0) {
                 *extent = le32((const uint8_t *)rec + ISO_REC_EXTENT);
                 *size   = le32((const uint8_t *)rec + ISO_REC_SIZE);
@@ -196,12 +203,28 @@ static int iso9660_find_file(const char *name, uint32_t *extent, uint32_t *size)
     return 0;
 }
 
+// ファイル名を大文字化（';'以降は無視）。
+static void iso_uppername(const char *src, char *dst)
+{
+    int i = 0;
+    while (src[i] && src[i] != ';' && i < 255) {
+        char c = src[i];
+        if (c >= 'a' && c <= 'z') c -= ('a' - 'A');
+        dst[i++] = c;
+    }
+    dst[i] = '\0';
+}
+
 static int iso9660_open_op(struct kfile *file, const char *name)
 {
     uint32_t extent, size;
+    char upper[256];
 
     if (!file || !name) return -1;
-    if (!iso9660_find_file(name, &extent, &size)) return -1;
+
+iso_uppername(name, upper); 
+    //if (!iso9660_find_file(name, &extent, &size)) return -1;
+if (!iso9660_find_file(upper, &extent, &size)) return -1;
 
     file->first_unit = extent;   /* ★ ISO9660 は「開始 LBA」として使う */
     file->size       = size;
