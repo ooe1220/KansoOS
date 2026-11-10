@@ -5,6 +5,7 @@
 #include "drivers/ata.h"
 #include "../fs/fs_file.h"
 #include "../kernel/mem.h"
+#include "drivers/keyboard.h"
 
 int gfx_do_flip(const void *arg);
 
@@ -48,6 +49,15 @@ int handle_fs_open(const char* filename)
     //return fd;
 }
 
+/* -------------------------
+ * システムコール: getchar
+ * キーボードから1文字取得（文字が来るまでHLT）
+ * 戻り値: ASCII文字(0〜127)
+ * ------------------------- */
+int handle_getchar(void) {
+    return keyboard_getchar();   // char → int に拡張して返す
+}
+
 int handle_fs_read(int fd, void* buf, int size)
 {
     return fs_read(fd, buf, size);  // カーネル内部の fs_read を呼ぶ
@@ -75,9 +85,9 @@ int handle_ufree(void* ptr) {
 int handle_gfx_flip(void *arg)
 {
     (void)arg;               // 引数はまだ見ない
-    kputs("[syscall] gfx_flip reached!\n");   // カーネルコンソールに印字
+    //kputs("[syscall] gfx_flip reached!\n");   // カーネルコンソールに印字
     return gfx_do_flip(arg);
-    return 0;
+    //return 0;
 }
 
     /* ==== 確認用：VRAMに 'C' を出す ==== */

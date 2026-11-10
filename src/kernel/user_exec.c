@@ -143,10 +143,8 @@ int run_file(const char *line){
     fs_read(fd, (void*)USER_PROG_MEM, size); // ユーザプログラムをメモリ0x10000上へ展開 (drivers/ata.h)
     fs_close(fd);
     
-    pic_mask_irq(1); // IRQ1キーボード無効化 (x86/pic.h)
     int ret = user_exec((void*)USER_PROG_MEM, argc, argv);// ユーザプログラムへ遷移 (kernel/user_exec.h)
     //kprintf("ret = %d\n",ret);
-    pic_unmask_irq(1); // IRQ1キーボード有効化 (x86/pic.h)
     
     return 0;
 }

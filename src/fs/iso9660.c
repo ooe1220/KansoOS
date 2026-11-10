@@ -7,13 +7,17 @@
 #include "../lib/stddef.h"
 
 #include "drivers/block.h"    /* block_read */
-#include "fs/fs_mount.h"      /* g_fs_blk / block_dev_t がここにあるはず */
+#include "fs/fs_mount.h" 
 #include "drivers/bootdev.h"  /* bootdev_get */
+
+#include "fs/fs_file.h" 
 
 #define ISO_PVD_LBA       16u
 #define ISO_SECTOR_SIZE   2048u
-#define ISO_ROOT_OFFSET   156u
+#define ISO_ROOT_OFFSET   156u // 構造体使うまでも無いのでオフセットで指す
 #define ISO_MAGIC         "CD001"
+
+#define ISO_REC_FLAGS    25u      /* 追加: 0x02 = ディレクトリ */
 
 /* レコード内オフセット */
 #define ISO_REC_EXTENT    2u
@@ -22,6 +26,8 @@
 /* ---- 全局（ファイル内 static）: FAT16 の g_fat_lba 等と同じ役割 ---- */
 static uint32_t g_iso_root_lba  = 0;
 static uint32_t g_iso_root_size = 0;
+
+
 
 /* リトルエンディアンの u32 をホスト順に（環境になければこれで OK） */
 static uint32_t le32(const uint8_t *b)
@@ -40,7 +46,7 @@ static const uint8_t *iso_name_ptr(const iso_dir_rec_t *rec)
 
 int iso9660_init(void)
 {
-    uint8_t pvd[ISO_SECTOR_SIZE];
+    uint8_t pvd[ISO_SECTOR_SIZE]; // PVD、ルートの位置を知る為に使用
     const uint8_t *rec;
     uint32_t extent, size;
     block_dev_t *dev = bootdev_get();
@@ -143,9 +149,96 @@ void iso9660_list_root(void)
     iso9660_list_names_only(root, 2048);
 }
 
+/* ルート内から名前一致のレコードを探す（FAT16 の fat16_find_file 相当） */
+static int iso9660_find_file(const char *name, uint32_t *extent, uint32_t *size)
+{
+    uint8_t root[ISO_SECTOR_SIZE];
+    const uint8_t *p, *end;
+    int namelen = 0;
+
+    if (g_iso_root_lba == 0) return 0;
+
+    if (block_read(g_fs_blk, g_iso_root_lba, 1, root) != 0) {
+        kputs("iso9660: read root failed\n");
+        return 0;
+    }
+
+    /* "KERNEL.BIN" の長さ。';' 以降（バージョン）は無視する */
+    while (name[namelen] && name[namelen] != ';') namelen++;
+
+    p   = root;
+    end = root + ISO_SECTOR_SIZE;
+
+    while (p < end) {
+        const iso_dir_rec_t *rec = (const iso_dir_rec_t *)p;
+
+        if (rec->len == 0) break;
+        if (rec->len < ISO_DIR_REC_FIXED_SZ || p + rec->len > end) break;
+
+        if (!(rec->flags & ISO_FILE_DIR)) {
+            const uint8_t *rn = iso_name_ptr(rec);
+            int rlen = 0;
+
+            /* ISO の名前は "KERNEL.BIN;1"。';' の前まで比較する */
+            while (rlen < rec->id_len && rn[rlen] != ';') rlen++;
+
+            if (rlen == namelen && memcmp(name, rn, namelen) == 0) {
+                *extent = le32((const uint8_t *)rec + ISO_REC_EXTENT);
+                *size   = le32((const uint8_t *)rec + ISO_REC_SIZE);
+                return 1;
+            }
+        }
+
+        p += rec->len;
+    }
+
+    kputs("nai ");
+    return 0;
+}
+
+static int iso9660_open_op(struct kfile *file, const char *name)
+{
+    uint32_t extent, size;
+
+    if (!file || !name) return -1;
+    if (!iso9660_find_file(name, &extent, &size)) return -1;
+
+    file->first_unit = extent;   /* ★ ISO9660 は「開始 LBA」として使う */
+    file->size       = size;
+    file->pos        = 0;
+    return 0;
+}
+
+
+static int iso9660_read(struct kfile *file, void *buf, int size)
+{
+    uint32_t want, nsec;
+
+    if (!file || !file->used || !g_fs_blk) return -1;
+
+    /* ISO9660 のファイルは連続配置なので、「開始LBA + pos/2048」で直読める */
+    if (file->pos >= file->size) return 0;   /* EOF */
+
+    want = (size + ISO_SECTOR_SIZE - 1u) / ISO_SECTOR_SIZE;
+    nsec = (want < 8u) ? want : 8u;          /* 1回の上限（バッファ溢れ防止） */
+
+    if (block_read(g_fs_blk, file->first_unit + file->pos / ISO_SECTOR_SIZE,
+                   nsec, buf) != 0)
+        return -1;
+
+    file->pos += nsec * ISO_SECTOR_SIZE;
+    return (int)(nsec * ISO_SECTOR_SIZE);
+}
+
+static int iso9660_close_op(struct kfile *file)
+{
+    (void)file;
+    return 0;
+}
+
 const fs_ops_t iso9660_ops = {
-    .open  = NULL,
-    .read  = NULL,
-    .close = NULL,
+    .open  = iso9660_open_op,
+    .read  = iso9660_read,
+    .close = iso9660_close_op,
     .dir   = iso9660_list_root,
 };

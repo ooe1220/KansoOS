@@ -36,8 +36,11 @@ syscall_handler:
     cmp eax, SYS_UFREE
     je syscall_ufree
 
-cmp eax, SYS_GFX_FLIP
+    cmp eax, SYS_GFX_FLIP
     je syscall_gfx_flip
+
+    cmp eax, SYS_GETCHAR
+    je syscall_getchar
 
     
 syscall_write:
@@ -91,6 +94,10 @@ syscall_gfx_flip:
     push ebx                # EBX = &g_gfx （ユーザ側の struct gfx_buf*）
     call handle_gfx_flip
     add esp, 4
+    jmp syscall_done
+
+syscall_getchar:               # 引数なしなので push 不要
+    call handle_getchar
     jmp syscall_done
 
 syscall_done:

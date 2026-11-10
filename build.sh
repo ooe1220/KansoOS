@@ -248,6 +248,11 @@ gcc -O2 -ffreestanding -march=i486  -nostdlib -fno-pic -fno-pie -m32 -c user/gui
 ld -m elf_i386 -T user/linker.ld build/start.o build/guitest.o -o build/guitest.elf
 objcopy -O binary build/guitest.elf build/guitest.bin
 
+## GETCHAR
+gcc -O2 -ffreestanding -march=i486  -nostdlib -fno-pic -fno-pie -m32 -c user/getchar.c -o build/getchar.o
+ld -m elf_i386 -T user/linker.ld build/start.o build/getchar.o -o build/getchar.elf
+objcopy -O binary build/getchar.elf build/getchar.bin
+
 ## test.txt
 cp user/test.txt build/test.txt
 
@@ -270,6 +275,7 @@ mcopy build/test3.bin   x:TEST3.BIN
 mcopy build/cat.bin     x:CAT.BIN
 mcopy build/memtest.bin x:MEMTEST.BIN
 mcopy build/guitest.bin x:GUITEST.BIN
+mcopy build/getchar.bin x:GETCHAR.BIN
 
 cp user/test.txt build/test.txt
 mcopy build/test.txt x:TEST.TXT

@@ -10,5 +10,6 @@
 #define SYS_UMALLOC     6
 #define SYS_UFREE       7
 #define SYS_GFX_FLIP  8
+#define SYS_GETCHAR    9
 
 #endif

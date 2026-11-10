@@ -76,6 +76,21 @@ static inline int close(int fd) {
     return ret;
 }
 
+/* =======================
+   getchar
+   返り値 = 読み取った文字（ASCII）
+   ======================= */
+static inline int getchar(void) {
+    int ret;
+    asm volatile(
+        "mov %[num], %%eax\n"
+        "int $0x80\n"
+        : "=a"(ret)
+        : [num] "i"(SYS_GETCHAR)
+        : "memory" 
+    );
+    return ret;
+}
 
 static inline void* malloc(int size) {
     void* ret;

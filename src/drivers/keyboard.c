@@ -49,8 +49,8 @@ int keyboard_available(void) {
 }
 
 char keyboard_getchar(void) {
-    while (!keyboard_available())
-        asm volatile("hlt");   // 静かに待つ（ポーリングしない）
+    while (!keyboard_available()) // 他のIRQが来ても又HLTさせる
+        asm volatile("sti; hlt"); 
     char c = buf[tail];
     tail = (tail + 1) % KBD_BUF_SIZE;
     return c;
@@ -80,7 +80,7 @@ void keyboard_handler(void) {
  * IRQ1 Cハンドラ呼び出し
  * ------------------------------ */
 __attribute__((naked))
-void irq1(void) {
+void irq1(void) {             // 例:popa が無いとmov ax, 3 とadd ax, 2の間にIRQ1が発生した時答えが5にならないかもしれない
     __asm__ volatile (
         "pusha\n"
         "call keyboard_handler\n"
@@ -102,5 +102,3 @@ void keyboard_init(void) {
 
     idt_set_gate(0x21, (uint32_t)irq1); // IRQ1
 }
-
-
