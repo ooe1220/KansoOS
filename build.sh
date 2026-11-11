@@ -39,6 +39,10 @@ $CF   -O2 -c src/kernel/command.c -o build/command.o
 $ASM  -O0 src/kernel/command.c -o build/disasm/kernel/command_O0.asm
 $ASM  -O2 src/kernel/command.c -o build/disasm/kernel/command_O2.asm
 
+$CF   -O2 -c src/kernel/shell.c -o build/shell.o
+$ASM  -O0 src/kernel/shell.c -o build/disasm/kernel/shell.asm
+$ASM  -O2 src/kernel/shell.c -o build/disasm/kernel/shell.asm
+
 $CF   -O2 -c src/kernel/user_exec.c -o build/user_exec.o
 $ASM  -O0 src/kernel/user_exec.c -o build/disasm/kernel/user_exec_O0.asm
 $ASM  -O2 src/kernel/user_exec.c -o build/disasm/kernel/user_exec_O2.asm
@@ -171,6 +175,7 @@ ld -m elf_i386 -T src/linker.ld -o build/kernel.elf \
   build/switch32.o \
   build/kernel.o \
   build/command.o \
+  build/shell.o \
   build/cmos.o \
   build/pic.o \
   build/paging.o \
