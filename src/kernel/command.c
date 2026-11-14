@@ -12,7 +12,6 @@
 #include "fs/fs_file.h"
 #include "debug/serial.h"
 #include "debug/debug_print.h"
-#include "x86/paging.h"
 
 extern fs_ops_t *g_fs_ops;
 

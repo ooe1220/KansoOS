@@ -7,7 +7,6 @@
 #include "x86/timer.h"
 #include "x86/panic.h"
 #include "x86/syscall.h"
-#include "x86/paging.h"
 #include "drivers/keyboard.h"
 #include "drivers/cmos.h"
 #include "lib/stdint.h"

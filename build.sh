@@ -63,10 +63,6 @@ $CF   -O0 -c src/x86/idt.c -o build/idt.o
 $ASM  -O0 src/x86/idt.c -o build/disasm/x86/idt_O0.asm
 $ASM  -O2 src/x86/idt.c -o build/disasm/x86/idt_O2.asm
 
-$CF   -O0 -c src/x86/paging.c -o build/paging.o
-$ASM  -O0 src/x86/paging.c -o build/disasm/x86/paging_O0.asm
-$ASM  -O2 src/x86/paging.c -o build/disasm/x86/paging_O2.asm
-
 $CF   -O0 -c src/drivers/ata.c -o build/ata.o
 $ASM  -O0 src/drivers/ata.c -o build/disasm/drivers/ata_O0.asm
 $ASM  -O2 src/drivers/ata.c -o build/disasm/drivers/ata_O2.asm
@@ -178,7 +174,6 @@ ld -m elf_i386 -T src/linker.ld -o build/kernel.elf \
   build/shell.o \
   build/cmos.o \
   build/pic.o \
-  build/paging.o \
   build/idt.o \
   build/ata.o \
   build/ata_block.o \
