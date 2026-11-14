@@ -79,6 +79,10 @@ $CF   -O0 -c src/drivers/atapi.c -o build/atapi.o
 $ASM  -O0 src/drivers/atapi.c -o build/disasm/drivers/atapi_O0.asm
 $ASM  -O2 src/drivers/atapi.c -o build/disasm/drivers/atapi_O2.asm
 
+$CF   -O0 -c src/drivers/pci.c -o build/pci.o
+$ASM  -O0 src/drivers/pci.c -o build/disasm/drivers/pci_O0.asm
+$ASM  -O2 src/drivers/pci.c -o build/disasm/drivers/pci_O2.asm
+
 $CF   -O0 -c src/drivers/keyboard.c -o build/keyboard.o
 $ASM  -O0 src/drivers/keyboard.c -o build/disasm/drivers/keyboard_O0.asm
 $ASM  -O2 src/drivers/keyboard.c -o build/disasm/drivers/keyboard_O2.asm
@@ -178,6 +182,7 @@ ld -m elf_i386 -T src/linker.ld -o build/kernel.elf \
   build/ata.o \
   build/ata_block.o \
   build/atapi.o \
+  build/pci.o \
   build/atapi_block.o \
   build/fs_mount.o \
   build/bootdev.o \

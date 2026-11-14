@@ -140,7 +140,7 @@ gdt_descriptor:
     dw gdt_end - gdt_start - 1
     dd gdt_start
     
-%include "src/kernel/a20.asm"; A20有効処理の実装
+%include "src/boot/a20.asm"; A20有効処理の実装
 
 ; -----------------------------
 [bits 32]

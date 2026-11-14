@@ -6,6 +6,7 @@
 #include "lib/stddef.h" // NULLの定義
 #include "user_exec.h"
 #include "drivers/ata.h"
+#include "drivers/pci.h"
 #include "fs/fs_ops.h"
 
 #include "x86/pic.h"
@@ -22,8 +23,9 @@ int run_builtin_command(const char *line){
         kputs("\nAvailable commands:\n");
         kputs("  help     - Show this message\n");
         kputs("  clear    - Clear screen\n");
-        //kputs("  reboot   - Reboot CPU\n");
+        kputs("  reboot   - Reboot CPU (QEMU only)\n");
         kputs("  shutdown - Shutdown system (QEMU only)\n");
+        kputs("  lspci    - List PCI devices\n");
         kputs("  ls       - List files in current directory\n");
         kputs("  dir      - Same as 'ls'");
         return 0;
@@ -34,12 +36,10 @@ int run_builtin_command(const char *line){
         return 0;
     }
    
-    /*
     if (strcmp(line, "reboot") == 0) {
         outb(0x64, 0xFC);
         return 0;
-    }*/
-    
+    }
     
     if (strcmp(line, "shutdown") == 0) {
         outw(0x604, 0x2000);//QEMU専用
@@ -47,7 +47,17 @@ int run_builtin_command(const char *line){
     }
     
     if (strcmp(line, "test") == 0) {
-        kputs("test\n");
+        kputs("\ntest\n");
+        return 0;
+    }
+
+    if (strcmp(line, "lspci") == 0) {
+        pci_scan();
+        return 0;
+    }
+
+    if (strcmp(line, "reboot") == 0) {
+        outb(0x64, 0xFC);
         return 0;
     }
     
