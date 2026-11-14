@@ -214,6 +214,8 @@ mkdir -p build/disasm/
 #objdump -d -M intel -S build/kernel.elf | c++filt > build/disasm/disasm_kernel.txt
 objdump -D -M intel -S build/kernel.elf | c++filt > build/disasm/disasm_kernel.txt  
 
+readelf -S build/kernel.elf > build/disasm/section.txt
+
 # 5. kernel.elf(ELF) → kernel.bin(バイナリ)
 objcopy -O binary build/kernel.elf build/kernel.bin
 
