@@ -8,11 +8,12 @@
 #include "debug/serial.h"
 #include "debug/debug_print.h"
 
-// RING3のマルチプロセスは断念。RING0のまま協調性で実現する
-// 今後スタック切り替えをしないといけない
+extern uint32_t saved_kernel_esp;
+extern uint32_t saved_kernel_ebp;
 
 // argc: 引数個数, argv: 引数配列
 // 引数を指定しない場合、argc=1, argv[0]=ファイル名
+/*
 int user_exec(void* entry, int argc, char **argv)
 {
     int ret;
@@ -43,6 +44,7 @@ int user_exec(void* entry, int argc, char **argv)
     
     return ret;
 }
+*/
 
 int run_file(const char *line){
     if (line[0] == 0) return 1; // 空行なら何もしない
@@ -142,8 +144,16 @@ int run_file(const char *line){
     fs_get_file_size(fd, &size); // ユーザプログラムの大きさ取得
     fs_read(fd, (void*)USER_PROG_MEM, size); // ユーザプログラムをメモリ0x10000上へ展開 (drivers/ata.h)
     fs_close(fd);
+
+    uint32_t esp;
+    asm volatile ("mov %%esp, %0" : "=r"(esp));
+    debug_printf("ESP = 0x%x\n", esp);
     
     int ret = user_exec((void*)USER_PROG_MEM, argc, argv);// ユーザプログラムへ遷移 (kernel/user_exec.h)
+
+    asm volatile ("mov %%esp, %0" : "=r"(esp));
+    debug_printf("ESP = 0x%x\n", esp);
+
     //kprintf("ret = %d\n",ret);
     
     return 0;

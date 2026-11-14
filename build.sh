@@ -47,6 +47,8 @@ $CF   -O2 -c src/kernel/user_exec.c -o build/user_exec.o
 $ASM  -O0 src/kernel/user_exec.c -o build/disasm/kernel/user_exec_O0.asm
 $ASM  -O2 src/kernel/user_exec.c -o build/disasm/kernel/user_exec_O2.asm
 
+$CF   -O0 -c src/kernel/user_exec_asm.S -o build/user_exec_asm.o
+
 $CF   -O2 -c src/drivers/cmos.c -o build/cmos.o
 $ASM  -O0 src/drivers/cmos.c -o build/disasm/drivers/cmos_O0.asm
 $ASM  -O2 src/drivers/cmos.c -o build/disasm/drivers/cmos_O2.asm
@@ -194,6 +196,7 @@ ld -m elf_i386 -T src/linker.ld -o build/kernel.elf \
   build/syscall.o \
   build/syscall_entry.o \
   build/user_exec.o \
+  build/user_exec_asm.o \
   build/fat16.o \
   build/iso9660.o \
   build/fs_file.o \

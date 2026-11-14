@@ -52,6 +52,7 @@ int run_builtin_command(const char *line){
     }
 
     if (strcmp(line, "lspci") == 0) {
+        kputs("\n");
         pci_scan();
         return 0;
     }
