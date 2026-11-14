@@ -25,11 +25,21 @@ int gfx_do_flip(const void *arg)
     uint8_t *vram = (uint8_t *)vbe->vram_addr;
     uint32_t vram_pitch = (uint32_t)vbe->lfb_pitch;
 
+/*
     for (int y = 0; y < h; y++) {
         const uint8_t *s = src + (uint32_t)y * rs;
         uint8_t       *d = vram + (uint32_t)y * vram_pitch;
         for (uint32_t x = 0; x < rs; x++)
             d[x] = s[x];
+    }
+*/
+    // 4バイトずつ複製するようにしたらかなり速くなった
+    for (int y = 0; y < h; y++) {
+       const uint8_t *s = src + (uint32_t)y * rs;
+       uint8_t       *d = vram + (uint32_t)y * vram_pitch;
+
+        for (uint32_t x = 0; x < rs; x += 4)
+            *(uint32_t *)(d + x) = *(const uint32_t *)(s + x);
     }
     return 0;
 }
