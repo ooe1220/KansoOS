@@ -3,40 +3,63 @@
 #include "string.h"
 #include "debug/debug_print.h"
 
+#define ATA_DATA    0x170
+#define ATA_FEAT    0x171
+#define ATA_BC_LOW  0x174
+#define ATA_BC_HIGH 0x175
+#define ATA_DEV     0x176
+#define ATA_CMD     0x177
+
+#define DEV_MASTER  0xA0
+#define ST_ERR      0x01
+#define ST_DRQ      0x08
+#define ST_BSY      0x80
+
+#define CMD_IDENTIFY    0xA1
+#define CMD_PACKET      0xA0
+#define CMD_READ_10     0x28
+
+#define SECTOR_SIZE 2048
+
 static inline void io_wait(void) {
     outb(0x80, 0);
+}
+
+/* 戻り値: 0=DRQ準備完了, -1=ERR または 時間切れ */
+static int wait_drq(void) {
+    for (int i = 0; i < 1000000; i++) {
+        uint8_t s = inb(ATA_CMD);
+        if (s & ST_ERR) return -1;
+        if (!(s & ST_BSY) && (s & ST_DRQ)) return 0;
+        io_wait();
+    }
+    return -1;
 }
 
 struct atapi_dev atapi_detect(void) {
     struct atapi_dev dev = {0};
 
-    /* Secondary Master に固定 */
-    outb(0x176, 0xA0);
+    outb(ATA_DEV, DEV_MASTER);
     io_wait();
     io_wait();
 
-    outb(0x177, 0xA1);  /* ATAPI IDENTIFY */
+    outb(ATA_CMD, CMD_IDENTIFY); 
     io_wait();
     io_wait();
 
-    uint8_t st = inb(0x177);
+    uint8_t st = inb(ATA_CMD);
     if (st == 0x00) {
-        //debug_printf("NOTHING on Secondary");
         return dev;
     }
 
     dev.present = 1;
-    //debug_printf("ATAPI PRESENT on SECONDARY, st=0x%x", st);
     
-   while (inb(0x177) & 0x80); // BSY
-   
-   while (!(inb(0x177) & 0x08)); // DRQ
-
+    wait_drq();
 
     /* IDENTIFY データ読み込み */
     uint16_t id[256];
     for (int i = 0; i < 256; i++) {
-        id[i] = inw(0x170);  /* ← データポートは 0x170 */
+        id[i] = inw(ATA_DATA);  /* ← データポートは 0x170 */
     }
 
     /* 機種名（word 27–46） */
@@ -51,59 +74,34 @@ struct atapi_dev atapi_detect(void) {
     return dev;
 }
 
-
-
-#define D 0x170
-#define F 0x171
-#define M 0x174   /* Byte Count Low  */
-#define H 0x175   /* Byte Count High */
-#define V 0x176
-#define C 0x177
-
-static uint8_t wait_clr(uint8_t m) { uint8_t s; while ((s=inb(C))&m) io_wait(); return s; }
-
 int atapi_read_sector(uint32_t lba, uint8_t *buf)
 {
-    memset(buf, 0xAA, 2048);
-
-    //debug_printf("[1] pre  st=%x", inb(C));
+    memset(buf, 0xAA, SECTOR_SIZE);
 
     /* 1. 待機：BSY も DRQ も落ちていること */
-    wait_clr(0x80 | 0x08);
-    //debug_printf("[2] idle st=%x", inb(C));
+    while (inb(ATA_CMD) & (ST_BSY | ST_DRQ)) {
+        io_wait();
+    }
 
     /* 2. レジスタ設定 */
-    outb(F, 0x00);          /* Features = 0 (PIO) */
-    outb(M, 0x00);          /* Byte Count Low  = 0x0800 */
-    outb(H, 0x08);          /* Byte Count High = 0x0800 */
-    outb(V, 0xA0);          /* マスター。モデル名が取れた値と同じにする */
+    outb(ATA_FEAT, 0x00);          /* Features = 0 (PIO) */
+    outb(ATA_BC_LOW, 0x00);          /* Byte Count Low  = 0x0800 */
+    outb(ATA_BC_HIGH, 0x08);          /* Byte Count High = 0x0800 */
+    outb(ATA_DEV, 0xA0);          /* マスター。モデル名が取れた値と同じにする */
     io_wait();
 
     /* 3. PACKET 発行 */
-    outb(C, 0xA0);
+    outb(ATA_CMD, CMD_PACKET);
     io_wait();
 
     /* 4. コマンド受付：BSY 落ち + DRQ 立ち */
-    for (int i = 0; i < 1000000; i++) {
-        uint8_t s = inb(C);
-        if (s & 0x01) {
-            //debug_printf("[3] ERR st=%x err=%x", s, inb(F));
-            return -1;
-        }
-        if (!(s & 0x80) && (s & 0x08)) {
-            //debug_printf("[3] CDB-ready st=%x bcl=%x%x",s, inb(H), inb(M));
-            break;
-        }
-        io_wait();
-    }
-    if (!(inb(C) & 0x08)) {
-        //debug_printf("[3] NO CDB DRQ st=%x", inb(C));
-        return -1;
-    }
+    wait_drq();
+
+    if (!(inb(ATA_CMD) & 0x08))return -1;
 
     /* 5. CDB 送出（READ(10)） */
     uint8_t cdb[12] = {0};
-    cdb[0] = 0x28;                     /* READ(10) */
+    cdb[0] = CMD_READ_10;                     /* READ(10) */
     /* cdb[1] = 0; FUA 等なし */
     cdb[2] = (lba >> 24) & 0xff;       /* LBA は 4 バイト */
     cdb[3] = (lba >> 16) & 0xff;
@@ -116,43 +114,22 @@ int atapi_read_sector(uint32_t lba, uint8_t *buf)
 
     for (int i = 0; i < 6; i++) {
         uint16_t w = cdb[i*2] | ((uint16_t)cdb[i*2+1] << 8); /* リトルエンディアン送出 */
-        outw(D, w);
+        outw(ATA_DATA,w);
     }
     io_wait();
-    //debug_printf("[4] cdb sent, st=%x", inb(C));
 
     /* 6. データ転送：BSY 落ち + DRQ 立ち */
-    for (int i = 0; i < 1000000; i++) {
-        uint8_t s = inb(C);
-        if (s & 0x01) {
-            //debug_printf("[5] ERR st=%x err=%x", s, inb(F));
-            return -1;
-        }
-        if (!(s & 0x80) && (s & 0x08)) {
-            //debug_printf("[5] DATA-ready st=%x bcl=%x%x",s, inb(H), inb(M));
-            break;
-        }
-        io_wait();
-    }
-    if (!(inb(C) & 0x08)) {
-        //debug_printf("[5] NO DATA DRQ st=%x", inb(C));
-        return -1;
-    }
+    wait_drq();
+
+    if (!(inb(ATA_CMD) & ST_DRQ))return -1;
 
     /* 7. 実際の転送バイト数を取得 */
-    uint16_t limit = inb(M) | (inb(H) << 8);
-    //debug_printf("[6] limit=%x", limit);
-    if (limit == 0 || limit > 2048) limit = 2048;
+    uint16_t limit = inb(ATA_BC_LOW) | (inb(ATA_BC_HIGH) << 8);
+    if (limit == 0 || limit > SECTOR_SIZE) limit = SECTOR_SIZE;
     limit &= ~1;
 
-    /* 8. 先頭 1 ワードだけ試し読み */
-    uint16_t first = inw(D);
-    //debug_printf("[7] FIRST=%x", first);
-
     volatile uint16_t *p = (volatile uint16_t *)buf;
-    p[0] = first;
-    for (int i = 1; i < limit / 2; i++) p[i] = inw(D);
+    for (int i = 0; i < limit / 2; i++) p[i] = inw(ATA_DATA);
 
-    //debug_printf("[8] done head=%x %x %x %x",buf[0], buf[1], buf[2], buf[3]);
     return 0;
 }
