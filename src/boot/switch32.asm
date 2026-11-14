@@ -152,7 +152,7 @@ pm_start:
     mov fs, ax
     mov gs, ax
     mov ss, ax
-    mov esp, 0x9FC00
+    mov esp, 0x900000
             
     call kernel_main ; kernel.cへ移行
 
