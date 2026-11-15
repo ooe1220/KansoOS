@@ -22,12 +22,17 @@ int19h_handler:
     ; ----------------------------
     ; INT 13h 拡張読み込み (AH=0x42)
     ; ----------------------------
-    mov ah, 0x42
     mov ax, 0xF000
     mov ds, ax
     mov si, int19_dap   ; DS:SI = DAP
+    mov ah, 0x42
     int 0x13
     jc int19_err        ; CF=1 ならエラー
+
+    mov dx, 0x3F8
+    mov al, '3'
+    out dx, al
+    ;jmp tmp ; CD開発中は一旦AA55判定跳ばす
 
     ; ----------------------------
     ; 0xAA55 確認
@@ -38,6 +43,12 @@ int19h_handler:
     cmp word [bx + 510], 0xAA55
     jne int19_err
 
+tmp:
+
+    mov dx, 0x3F8
+    mov al, '4'
+    out dx, al
+
     ; ----------------------------
     ; MBR へジャンプ
     ; ----------------------------
@@ -47,6 +58,10 @@ int19h_handler:
 ; エラー時停止
 ; ----------------------------
 int19_err:
+    mov si, int13_err_msg
+    call print_string
     cli
     hlt
     jmp int19_err
+
+int13_err_msg   db "No bootable device", 0x0D, 0x0A, 0

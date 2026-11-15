@@ -18,8 +18,6 @@
 %define ATA_PRIMARY_LBA_27_24_8   0x1F6   ; Drive / LBA / Master
 %define ATA_PRIMARY_STATUS_8      0x1F7   ; Status (R) / Command (W)
 
-int13h_handler:
-
 ata_secter_read:
     pusha
     push es

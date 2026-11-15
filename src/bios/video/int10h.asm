@@ -71,4 +71,6 @@ int10h_handler:
     popa
     iret
 
-
+%include "src/bios/video/vga.asm"
+%include "src/bios/video/vbe.asm"
+%include "src/bios/video/teletype.asm"

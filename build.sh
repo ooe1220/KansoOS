@@ -15,7 +15,7 @@ done < <(find user -type d)
 xxd -i src/kernel/penguin.bmp > src/kernel/penguin_bmp.h
 
 # 自作BIOSのビルド
-nasm -f bin src/bios/mybios.asm -o build/mybios.bin
+nasm -f bin src/bios/main.asm -o build/KansoFW​.bin
 
 # 2. 追加アセンブリをオブジェクトに
 nasm -f elf32 src/boot/switch32.asm -o build/switch32.o

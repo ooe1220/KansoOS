@@ -72,15 +72,12 @@ hlt_loop:
     jmp hlt_loop
 
 %include "src/bios/cpupost.asm"
-%include "src/bios/8042.asm"
-%include "src/bios/vga.asm"
-%include "src/bios/vbe.asm"
-%include "src/bios/int10h.asm"
-%include "src/bios/teletype.asm"
-%include "src/bios/int12h.asm"
-%include "src/bios/int13h.asm"
-%include "src/bios/int19h.asm"
-font_8x16: incbin "src/bios/font_8x16.bin" 
+%include "src/bios/driver/keyboard.asm"
+%include "src/bios/video/int10h.asm"
+%include "src/bios/int/int12h.asm"
+%include "src/bios/int/int13h.asm"
+%include "src/bios/int/int19h.asm"
+font_8x16: incbin "src/bios/font/font_8x16.bin" 
 
 print_string:
     lodsb
@@ -92,7 +89,7 @@ print_string:
 .done:
     ret
     
-msg_bios   db "Custom BIOS booting", 0x0D, 0x0A, 0
+msg_bios   db "KansoFW - simple firmware for KansoOS", 0x0D, 0x0A, 0
 
 ; Reset Vector を FFF0 に置く
 times 0xFFF0-($-$$) db 0xFF
