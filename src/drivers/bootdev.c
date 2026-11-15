@@ -5,9 +5,8 @@
 /* #include "atapi.h" */    /* CD 対応できたら atapi_cd_blkdev */
 #include "../lib/stddef.h"       // NULL のため
 #include "../lib/stdint.h"
+#include "../lib/memmap.h"
 
-
-#define VBR_BASE        0x00007c00u
 #define ROOTDEV_SIG_OFF 0x1FD
 #define ROOTDEV_HDD     'H'
 #define ROOTDEV_CD      'C'
@@ -21,7 +20,8 @@ extern block_dev_t atapi_blkdev;
 /* VBR の sig を見て種別を決める（一度だけ判定） */
 bootdev_type_t bootdev_type(void)
 {
-    const uint8_t sig = *(const uint8_t *)(VBR_BASE + ROOTDEV_SIG_OFF);
+    const uint8_t sig = *(const uint8_t *)(BOOTLOADER_ADDR + ROOTDEV_SIG_OFF);
+   
     switch (sig) {
     case ROOTDEV_CD:
         return BOOTDEV_CD;

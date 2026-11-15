@@ -1,3 +1,4 @@
+#include "lib/memmap.h"
 // argc: 引数個数, argv: 引数配列
 // 引数を指定しない場合、argc=1, argv[0]=ファイル名
 .global user_exec
@@ -19,7 +20,8 @@ user_exec:
     mov     0x10(%ebp), %edi      /* argv  */
 
     /* ユーザースタックへ切替 */
-    mov     $0xaff000, %esp       /* USER_STACK_TOP */
+    //mov     $0xaff000, %esp       /* USER_STACK_TOP */
+    mov     $USER_STACK_TOP, %esp
     xor     %ebp, %ebp
 
     /* cdecl: 引数を逆順でプッシュ */

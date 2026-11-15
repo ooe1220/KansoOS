@@ -5,6 +5,7 @@
 #include "fs/fs_file.h"
 #include "debug/serial.h"
 #include "debug/debug_print.h"
+#include "lib/memmap.h"
 
 extern uint32_t saved_kernel_esp;
 extern uint32_t saved_kernel_ebp;
@@ -52,10 +53,10 @@ int run_file(const char *line){
     }
     
     // 引数をユーザプログラムが読む場所に複製
-    char *p = (char*)USER_ARG_MEM;
+    char *p = (char*)USER_ARG_ADDR;
     for (int j = 0; j < 256; j++) p[j] = 0; // 前回のデータを初期化
     if (argstr) {
-        strcpy((char*)USER_ARG_MEM, argstr); // 引数文字列コピー
+        strcpy((char*)USER_ARG_ADDR, argstr); // 引数文字列コピー
     }
     
     // argc を計算
@@ -78,7 +79,7 @@ int run_file(const char *line){
     
     if (argstr) {
         int arg_index = 1;
-        char *s = (char*)USER_ARG_MEM; // 複製済みの引数文字列
+        char *s = (char*)USER_ARG_ADDR; // 複製済みの引数文字列
         argv[arg_index] = s;
         for (int j = 0; s[j]; j++) {
             if (s[j] == ' ') {
@@ -105,14 +106,14 @@ int run_file(const char *line){
     // ファイルを毎回固定でメモリ0x10000上へ展開して実行
     uint32_t size;
     fs_get_file_size(fd, &size); // ユーザプログラムの大きさ取得
-    fs_read(fd, (void*)USER_PROG_MEM, size); // ユーザプログラムをメモリ0x10000上へ展開 (drivers/ata.h)
+    fs_read(fd, (void*)USER_PROG_ADDR, size); // ユーザプログラムをメモリ0x10000上へ展開 (drivers/ata.h)
     fs_close(fd);
 
     uint32_t esp;
     asm volatile ("mov %%esp, %0" : "=r"(esp));
     debug_printf("ESP = 0x%x\n", esp);
     
-    int ret = user_exec((void*)USER_PROG_MEM, argc, argv);// ユーザプログラムへ遷移 (kernel/user_exec.h)
+    int ret = user_exec((void*)USER_PROG_ADDR, argc, argv);// ユーザプログラムへ遷移 (kernel/user_exec.h)
 
     asm volatile ("mov %%esp, %0" : "=r"(esp));
     debug_printf("ESP = 0x%x\n", esp);

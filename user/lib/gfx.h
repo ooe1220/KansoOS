@@ -5,8 +5,8 @@
 
 /* ---- 描画先（ユーザ側で持つ画面バッファ） ---- */
 // mallocが安定したら可変にする
-#ifndef DRAWBUF_ADDR
-#define DRAWBUF_ADDR  ((uint32_t)0x00B00000u)
+#ifndef USER_FB_ADDR
+#define USER_FB_ADDR  ((uint32_t)0x00B00000u)
 #endif
 
 struct gfx_buf {
@@ -17,7 +17,7 @@ struct gfx_buf {
 
 // 今は固定
 static struct gfx_buf g_gfx = {
-    .base   = DRAWBUF_ADDR, 
+    .base   = USER_FB_ADDR, 
     .width  = 800,
     .height = 600,
 };

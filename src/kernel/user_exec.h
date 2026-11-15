@@ -1,8 +1,5 @@
 #pragma once
 
-#define USER_PROG_MEM 0x600000 // ユーザプログラムを置くアドレス
-#define USER_ARG_MEM  0x610000  // コマンドライン引数を置くアドレス、ユーザプログラムには実体でなくアドレスを渡す
-
 int user_exec(void* entry, int argc, char **argv);
 
 int run_file(const char *line);
