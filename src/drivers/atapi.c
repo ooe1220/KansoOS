@@ -25,7 +25,8 @@ static inline void io_wait(void) {
     outb(0x80, 0);
 }
 
-/* 戻り値: 0=DRQ準備完了, -1=ERR または 時間切れ */
+// データ送信準備（DRQ）が整うまで待つ
+// 戻り値: 0=準備完了, -1=エラー又は時間切れ
 static int wait_drq(void) {
     for (int i = 0; i < 1000000; i++) {
         uint8_t s = inb(ATA_CMD);
@@ -39,14 +40,17 @@ static int wait_drq(void) {
 struct atapi_dev atapi_detect(void) {
     struct atapi_dev dev = {0};
 
+    // 1台目のドライブへ命令を送る指定
     outb(ATA_DEV, DEV_MASTER);
     io_wait();
     io_wait();
 
+    // デバイス情報(IDENTIFY PACKET)の送信をデバイスへ命令
     outb(ATA_CMD, CMD_IDENTIFY); 
     io_wait();
     io_wait();
 
+    // デバイスの応答を確認（0x00なら無応答＝不在）
     uint8_t st = inb(ATA_CMD);
     if (st == 0x00) {
         return dev;
@@ -56,18 +60,18 @@ struct atapi_dev atapi_detect(void) {
     
     wait_drq();
 
-    /* IDENTIFY データ読み込み */
+    // IDENTIFYデータ(256ワード=512バイト)をデータポートから全部読み込む
     uint16_t id[256];
     for (int i = 0; i < 256; i++) {
-        id[i] = inw(ATA_DATA);  /* ← データポートは 0x170 */
+        id[i] = inw(ATA_DATA);
     }
 
-    /* 機種名（word 27–46） */
+    //ドライブ機種名（word 27–46）のみ取り出す
     int k = 0;
     for (int i = 27; i <= 46; i++) {
         uint16_t w = id[i];
-            dev.model[k++] = (w >> 8) & 0xFF;
-            dev.model[k++] = w & 0xFF;
+        dev.model[k++] = (w >> 8) & 0xFF;  // 上位8bit
+        dev.model[k++] = w & 0xFF;            // 下位8bit
     }
     dev.model[k] = '\0';
 
@@ -76,54 +80,53 @@ struct atapi_dev atapi_detect(void) {
 
 int atapi_read_sector(uint32_t lba, uint8_t *buf)
 {
+
+    //バッファを 0xAA で埋める（転送されたかの目印）
     memset(buf, 0xAA, SECTOR_SIZE);
 
-    /* 1. 待機：BSY も DRQ も落ちていること */
+    // BSY も DRQ も落ちていること
     while (inb(ATA_CMD) & (ST_BSY | ST_DRQ)) {
         io_wait();
     }
 
-    /* 2. レジスタ設定 */
-    outb(ATA_FEAT, 0x00);          /* Features = 0 (PIO) */
-    outb(ATA_BC_LOW, 0x00);          /* Byte Count Low  = 0x0800 */
-    outb(ATA_BC_HIGH, 0x08);          /* Byte Count High = 0x0800 */
-    outb(ATA_DEV, 0xA0);          /* マスター。モデル名が取れた値と同じにする */
+    // PIO指定(DMA不使用)
+    outb(ATA_FEAT, 0x00); 
+
+    // CD 1セクタ=2048byte(0x0800)を指定する
+    outb(ATA_BC_LOW, 0x00);          // 下位8bit
+    outb(ATA_BC_HIGH, 0x08);         // 上位8bit
+
+    // 1台目のドライブ指定
+    outb(ATA_DEV, DEV_MASTER);          
     io_wait();
 
-    /* 3. PACKET 発行 */
+    // CDBを送る準備
     outb(ATA_CMD, CMD_PACKET);
     io_wait();
 
-    /* 4. コマンド受付：BSY 落ち + DRQ 立ち */
-    wait_drq();
-
-    if (!(inb(ATA_CMD) & 0x08))return -1;
+    if (wait_drq() != 0) return -1;
 
     /* 5. CDB 送出（READ(10)） */
     uint8_t cdb[12] = {0};
-    cdb[0] = CMD_READ_10;                     /* READ(10) */
-    /* cdb[1] = 0; FUA 等なし */
-    cdb[2] = (lba >> 24) & 0xff;       /* LBA は 4 バイト */
+    cdb[0] = CMD_READ_10;                     // READ(10)
+    cdb[2] = (lba >> 24) & 0xff;       // LBA は 4 バイト */
     cdb[3] = (lba >> 16) & 0xff;
     cdb[4] = (lba >>  8) & 0xff;
     cdb[5] = (lba >>  0) & 0xff;
     cdb[6] = 0;
-    cdb[7] = 0;                        /* Transfer Length */
-    cdb[8] = 1;
-    cdb[9] = 0;                        /* Control */
+    cdb[7] = 0;
+    cdb[8] = 1;  // 1セクタずつ読む
 
     for (int i = 0; i < 6; i++) {
         uint16_t w = cdb[i*2] | ((uint16_t)cdb[i*2+1] << 8); /* リトルエンディアン送出 */
         outw(ATA_DATA,w);
     }
-    io_wait();
 
-    /* 6. データ転送：BSY 落ち + DRQ 立ち */
     wait_drq();
 
     if (!(inb(ATA_CMD) & ST_DRQ))return -1;
 
-    /* 7. 実際の転送バイト数を取得 */
+    //. 実際の転送バイト数を取得
     uint16_t limit = inb(ATA_BC_LOW) | (inb(ATA_BC_HIGH) << 8);
     if (limit == 0 || limit > SECTOR_SIZE) limit = SECTOR_SIZE;
     limit &= ~1;
