@@ -1,7 +1,7 @@
 #ifndef ISO9660_H
 #define ISO9660_H
 
-#include <stdint.h>
+#include "../lib/stdint.h"
 
 /*
  * ISO9660 ディレクトリレコードの「固定部」

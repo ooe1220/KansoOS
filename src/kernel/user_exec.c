@@ -2,49 +2,12 @@
 #include "lib/string.h"
 #include "x86/console.h"
 #include "lib/stddef.h" // NULLの定義
-#include "fs/fat16.h"
 #include "fs/fs_file.h"
-#include "x86/pic.h"
 #include "debug/serial.h"
 #include "debug/debug_print.h"
 
 extern uint32_t saved_kernel_esp;
 extern uint32_t saved_kernel_ebp;
-
-// argc: 引数個数, argv: 引数配列
-// 引数を指定しない場合、argc=1, argv[0]=ファイル名
-/*
-int user_exec(void* entry, int argc, char **argv)
-{
-    int ret;
-    
-    //debug_dump_mem((uint32_t)entry, 512); // 実行ファイルが読み込まれているか
-    
-    //kprintf("user_exec.c argc: %d\n", argc); // test:引数の数
-    
-    uint32_t esp;
-    asm volatile ("mov %%esp, %0" : "=r"(esp));
-    debug_printf("ESP = 0x%x\n", esp);
-
-    asm volatile (
-        "push %[argv]\n"   // argv のアドレスを push
-        "push %[argc]\n"   // argc を push
-        "call *%[entry]\n" // エントリポイントを呼び出す
-        "add $8, %%esp\n"  // argv、argcの分のスタックを戻す
-        : "=a"(ret)        // EAX に返り値を受け取る
-        : [entry]"r"(entry),
-          [argc]"r"(argc),
-          [argv]"r"(argv)
-        : "memory"
-    );
-    
-    asm volatile ("mov %%esp, %0" : "=r"(esp));
-    debug_printf("ESP = 0x%x\n", esp);
-
-    
-    return ret;
-}
-*/
 
 int run_file(const char *line){
     if (line[0] == 0) return 1; // 空行なら何もしない

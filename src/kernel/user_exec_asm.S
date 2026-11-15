@@ -1,3 +1,5 @@
+// argc: 引数個数, argv: 引数配列
+// 引数を指定しない場合、argc=1, argv[0]=ファイル名
 .global user_exec
     .type   user_exec, @function
 user_exec:

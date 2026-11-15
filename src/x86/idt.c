@@ -1,5 +1,4 @@
 #include "idt.h"
-#include "console.h"
 
 /*
  IDT 1個分の構造体

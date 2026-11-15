@@ -1,7 +1,7 @@
 #ifndef STRING_H
 #define STRING_H
 
-#include "lib/stdint.h"   // size_t を使う場合
+#include "lib/stdint.h"   // size_t 
 
 /* 文字列長取得 */
 size_t strlen(const char *s);
