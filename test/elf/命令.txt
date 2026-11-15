@@ -1,0 +1,130 @@
+
+```
+# コンパイル（ユーザプログラム。PICにする）
+gcc -O2 -ffreestanding -march=i486 -nostdlib -fpic -m32  -c test.c -o test.o
+
+# リンク（ベースアドレスを 0 にして、相対でまとめる）
+ld -m elf_i386 -nostdlib -shared -e main test.o -o test.elf
+
+objdump -d test.elf
+
+
+# GOTの中身をダンプ ここに書き換えるべきアドレスの指定箇所がある
+objdump -s -j .got test.elf
+
+# データそのもの
+objdump -s -j .data test.elf
+
+# どこに何を置くか
+readelf -r test.elf
+```
+
+# 広域変数の参照
+
+```c
+int g = 0x12345678;
+int main() { return g; }
+```
+
+```
+test  …/KansoOS/test/elf   master $?⇡    v15.2.0    objdump -d test.elf
+
+test.elf:     ファイル形式 elf32-i386
+
+
+セクション .text の逆アセンブル:
+
+00001000 <main>:
+    1000:	e8 0e 00 00 00       	call   1013 <__x86.get_pc_thunk.ax>
+    1005:	05 ef 2f 00 00       	add    $0x2fef,%eax
+    100a:	8b 80 fc ff ff ff    	mov    -0x4(%eax),%eax
+    1010:	8b 00                	mov    (%eax),%eax
+    1012:	c3                   	ret
+
+00001013 <__x86.get_pc_thunk.ax>:
+    1013:	8b 04 24             	mov    (%esp),%eax
+    1016:	c3                   	ret
+
+test  …/KansoOS/test/elf   master $?⇡    v15.2.0    objdump -s -j .got test.elf
+
+test.elf:     ファイル形式 elf32-i386
+
+セクション .got の内容:
+ 3ff0 00000000                             ....            
+
+test  …/KansoOS/test/elf   master $?⇡    v15.2.0    objdump -s -j .data test.elf
+
+test.elf:     ファイル形式 elf32-i386
+
+セクション .data の内容:
+ 4000 78563412                             xV4.            
+
+test  …/KansoOS/test/elf   master $?⇡    v15.2.0    readelf -r test.elf
+
+再配置セクション '.rel.dyn' at offset 0x170 contains 1 entry:
+ オフセット 情報    型              シンボル値 シンボル名
+00003ff0  00000106 R_386_GLOB_DAT    00004000   g
+```
+
+
+#  bss書き換え
+
+```
+int g = 0x42;        // .data 行き（初期値あり）
+int h;               // .bss 行き（初期値0＝無指定）
+int arr[10];         // .bss 行き
+
+int main() {
+    h = 1;           // .bss を使わせる（最適化で消えないように）
+    arr[0] = 2;
+    return g;
+}
+```
+
+
+```
+test  …/KansoOS/test/elf   master $?⇡    v15.2.0    objdump -d test.elf
+
+test.elf:     ファイル形式 elf32-i386
+
+
+セクション .text の逆アセンブル:
+
+00001000 <main>:
+    1000:	e8 26 00 00 00       	call   102b <__x86.get_pc_thunk.ax>
+    1005:	05 ef 2f 00 00       	add    $0x2fef,%eax
+    100a:	8b 90 fc ff ff ff    	mov    -0x4(%eax),%edx
+    1010:	c7 02 01 00 00 00    	movl   $0x1,(%edx)
+    1016:	8b 90 f4 ff ff ff    	mov    -0xc(%eax),%edx
+    101c:	c7 02 02 00 00 00    	movl   $0x2,(%edx)
+    1022:	8b 80 f8 ff ff ff    	mov    -0x8(%eax),%eax
+    1028:	8b 00                	mov    (%eax),%eax
+    102a:	c3                   	ret
+
+0000102b <__x86.get_pc_thunk.ax>:
+    102b:	8b 04 24             	mov    (%esp),%eax
+    102e:	c3                   	ret
+
+test  …/KansoOS/test/elf   master $?⇡    v15.2.0    objdump -s -j .got test.elf
+
+test.elf:     ファイル形式 elf32-i386
+
+セクション .got の内容:
+ 3fe8 00000000 00000000 00000000           ............    
+
+test  …/KansoOS/test/elf   master $?⇡    v15.2.0    objdump -s -j .data test.elf
+
+test.elf:     ファイル形式 elf32-i386
+
+セクション .data の内容:
+ 4000 42000000                             B...            
+
+test  …/KansoOS/test/elf   master $?⇡    v15.2.0    readelf -r test.elf
+
+再配置セクション '.rel.dyn' at offset 0x1a4 contains 3 entries:
+ オフセット 情報    型              シンボル値 シンボル名
+00003fe8  00000106 R_386_GLOB_DAT    00004020   arr
+00003fec  00000206 R_386_GLOB_DAT    00004000   g
+00003ff0  00000406 R_386_GLOB_DAT    00004048   h
+
+```
