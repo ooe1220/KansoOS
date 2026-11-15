@@ -14,8 +14,6 @@
 #include "debug/serial.h"
 #include "debug/debug_print.h"
 
-extern fs_ops_t *g_fs_ops;
-
 // 内部コマンド実行
 int run_builtin_command(const char *line){
 

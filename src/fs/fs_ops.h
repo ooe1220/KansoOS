@@ -14,6 +14,6 @@ typedef struct {
 } fs_ops_t;
 
 /* 今、どの FS が刺さってるか（fs_init_from_boot_sig でセット） */
-extern fs_ops_t *g_fs_ops;
+extern const fs_ops_t *g_fs_ops;
 
 #endif

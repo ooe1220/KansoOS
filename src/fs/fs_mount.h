@@ -9,7 +9,6 @@
 void fs_mount_root(void);
 
 /* fs_mount.c が持っているマウント状態を見えるようにする */
-extern fs_ops_t *g_fs_ops;
 extern block_dev_t *g_fs_blk;
 
 #endif

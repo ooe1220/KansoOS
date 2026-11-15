@@ -38,17 +38,6 @@ void fat16_init(void) {
     kprintf("FAT16 init ok: fat=%u root=%u data=%u spc=%u\n",g_fat_lba, g_root_lba, g_data_lba, (uint32_t)g_sec_per_clus);
 }
 
-uint32_t fat16_data_lba(void)
-{
-    return g_data_lba;   /* static の中身を外に出さずに「値だけ」渡す */
-}
-
-uint32_t fat16_sec_per_cluster(void)
-{
-    return g_sec_per_clus;
-}
-
-
 //************************************************
 // 文字を大文字に変換（自作）
 //************************************************
@@ -356,7 +345,7 @@ static int fat16_read(struct kfile *file, void *buf, int size)
     if (!g_fs_blk) return -1;
 
     uint32_t lba   = fat16_cluster_to_lba(file->first_unit);
-    uint32_t sec_p = fat16_sec_per_cluster();
+    uint32_t sec_p = g_sec_per_clus;
 
     if (block_read(g_fs_blk, lba, sec_p, buf) != 0) return -1;
 

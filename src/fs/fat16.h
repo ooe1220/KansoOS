@@ -41,9 +41,6 @@ typedef struct {
 
 void fat16_init(void);
 
-uint32_t fat16_data_lba(void);        /* データ領域の開始 LBA */
-uint32_t fat16_sec_per_cluster(void); /* 1 クラスタのセクタ数 */
-
 /* dir / ls */
 void fs_dir_list(void);
 

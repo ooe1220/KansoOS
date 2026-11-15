@@ -13,7 +13,7 @@ extern const fs_ops_t fat16_ops;
 extern const fs_ops_t iso9660_ops; 
 
 /* ---- マウント状態はここが持つ ---- */
-fs_ops_t    *g_fs_ops = NULL;
+const fs_ops_t    *g_fs_ops = NULL; // constでポインタの中身変更禁止
 block_dev_t *g_fs_blk = NULL;
 
 /* bootdev と fs 実装を繋ぐ ※暫定的に起動ディスクに固定して、kernelmainから1回呼ぶ*/
