@@ -17,6 +17,9 @@ xxd -i src/kernel/penguin.bmp > src/kernel/penguin_bmp.h
 # 自作BIOSのビルド
 nasm -f bin src/bios/main.asm -o build/KansoFW​.bin
 
+# 自作POSTのビルド
+nasm -f bin src/boot/post.asm -o build/post.bin
+
 # 2. 追加アセンブリをオブジェクトに
 nasm -f elf32 src/boot/switch32.asm -o build/switch32.o
 
@@ -297,6 +300,7 @@ nasm -f bin src/boot/cdboot.asm -o build/cdboot.bin
 
 mkdir -p build/iso_root/boot
 cp build/cdboot.bin build/iso_root/boot/
+cp build/post.bin  build/iso_root/
 cp build/kernel.bin  build/iso_root/
 cp build/cat.bin  build/iso_root/
 cp build/memtest.bin  build/iso_root/
@@ -316,4 +320,5 @@ cp build/test.txt  build/iso_root/
 
 # kernel.cのLBAを探す ファイル増えたら変わる　今後はブートローダ内で探すように改良予定
 # isoinfo -l -i build/os.iso | grep KERNEL
+# isoinfo -l -i build/os.iso | grep POST
 # dd if=build/os.iso bs=2048 skip=37 count=32 | cmp - build/kernel.bin && echo OK

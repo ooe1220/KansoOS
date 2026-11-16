@@ -20,7 +20,6 @@ user_exec:
     mov     0x10(%ebp), %edi      /* argv  */
 
     /* ユーザースタックへ切替 */
-    //mov     $0xaff000, %esp       /* USER_STACK_TOP */
     mov     $USER_STACK_TOP, %esp
     xor     %ebp, %ebp
 

@@ -18,45 +18,41 @@ real_start:
     mov si, 0x7C00
 
     push dx
-
     mov si, msg_loaded
     call print_string
-
-    ; 8086の場合は起動しない    
-    call is8086
-    je not_8086
-    jne is_8086
-is_8086:
-    mov si, msg_386only
-    call print_string
-hang:
-    cli
-    hlt
-    jmp hang
-    
-not_8086: ; 8086で無かったらOSを起動する
-    mov si, msg_cpu_ok
-    call print_string
-        
-load_kernel:
     pop dx    ; ドライブ番号
+
     mov  ah, 0x42      ; LBA拡張リード
-    mov  si, dap       ; DAP へのポインタ
+    mov  si, dap_kernel       ; DAP へのポインタ
     int  0x13
     jc   load_error
 
+    mov  ah, 0x42
+    mov  si, dap_post
+    int  0x13
+    jc   load_error
+
+    ; POSTへ飛ぶ
     jmp  0x0000:0x8000
 
 ; === DAP (Disk Address Packet) ===
-dap:
+dap_kernel:
     db 0x10            ; DAP サイズ (16バイト)
     db 0x00            ; 予約
     dw 128              ; 読み込みセクタ数 (空HDDに書き込むから64KBまで0埋めは不要)
     dw 0x0000          ; バッファオフセット (ES:BX)
-    dw 0x0800          ; バッファセグメント
-    ;dd 126             ; LBA 下位32bit
+    dw 0x1800          ; バッファセグメント
     dd 72             ; LBA 下位32bit FAT16初期化直後にmcopyでkernel.binを複製するとデータ領域最初のLBA72へ置かれる（今後BPBから計算するように変更予定）
     dd 0               ; LBA 上位32bit (通常0)
+
+dap_post:
+    db 0x10
+    db 0x00
+    dw 128
+    dw 0x0000
+    dw 0x0800
+    dd 72
+    dd 0
     
 print_string:
     lodsb
@@ -76,22 +72,9 @@ load_error:
 hang_hlt:
     cli
     jmp hang_hlt
-
-; =========================================
-;   8086判定 戻り値: ZF=1 → 286以降   ZF=0 → 8086系
-; =========================================
-is8086:
-    push sp          ; 8086系なら「SP-2 した値」が積まれる
-    pop  bx
-    cmp  bx, sp      ; 一致すれば8086ではない
-    ret
     
-msg_vbe_fail   db "[VBR] VBE info acquisition failed", 0x0D, 0x0A, 0
 msg_loaded db "[VBR] Execution started at 0x0000:0x7C00", 0x0D, 0x0A, 0
-error_msg db "Failed to load KERNEL.BIN", 0x0D, 0x0A, 0
-
-msg_386only   db "KansoOS requires i386 or later. 8086/8088 not supported.", 0x0D, 0x0A, 0
-msg_cpu_ok    db "CPU check passed (i386+). Continuing...", 0x0D, 0x0A, 0
+error_msg db "Failed to load KERNEL.BIN / POST.BIN", 0x0D, 0x0A, 0
 
 ; 何からOSを起動したかを記憶(ファイルシステムの初期マウントに使用)
 times 0x1FD-($-$$) db 0   ; 0x1FD (509) まで0埋め
