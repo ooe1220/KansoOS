@@ -27,7 +27,9 @@ post_start:
     mov si, msg_post_start
     call print_string
 
+    call cpuid_check
     call a20_enable
+
     call vbe_init ; VBE 800*600*16bpp設定 これ移行カーネルのconsoleが動くまでは文字表示不可
 
 jmp enter_pm ; 32bitモードへ切り替え(モードを切り替える為call retは使わない)
@@ -50,6 +52,7 @@ msg_post_start db "Custom POST started", 0x0D, 0x0A, 0
 error_msg db "FVBE Error", 0x0D, 0x0A, 0
 
 ; 注意、下に置くと32ビットコードに変換され不具合
+%include "src/boot/post/cpuid.asm" 
 %include "src/boot/post/pm.asm" 
 %include "src/boot/post/a20.asm" 
 %include "src/boot/post/vbe_init.asm" 
