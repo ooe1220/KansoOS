@@ -277,8 +277,8 @@ dd if=build/vbr.bin of=build/fat16.img bs=512 count=1 conv=notrunc
 echo 'drive x: file="build/fat16.img" fat_bits=16' > mtoolsrc
 export MTOOLSRC=$PWD/mtoolsrc
 
+mcopy build/post.bin   x:POST.BIN
 mcopy build/kernel.bin x:KERNEL.BIN
-
 mcopy build/test2.bin   x:TEST2.BIN
 mcopy build/test3.bin   x:TEST3.BIN
 mcopy build/cat.bin     x:CAT.BIN

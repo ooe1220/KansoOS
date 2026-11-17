@@ -22,13 +22,15 @@ real_start:
     call print_string
     pop dx    ; ドライブ番号
 
+    ; mshowfat -i build/fat16.img '::POST.BIN'
+    ; mshowfat -i build/fat16.img '::KERNEL.BIN'
     mov  ah, 0x42      ; LBA拡張リード
-    mov  si, dap_kernel       ; DAP へのポインタ
+    mov  si, dap_post       ; DAP へのポインタ
     int  0x13
     jc   load_error
 
     mov  ah, 0x42
-    mov  si, dap_post
+    mov  si, dap_kernel
     int  0x13
     jc   load_error
 
@@ -37,12 +39,12 @@ real_start:
 
 ; === DAP (Disk Address Packet) ===
 dap_kernel:
-    db 0x10            ; DAP サイズ (16バイト)
+    db 0x10            ; DAP 大きさ(16バイト)
     db 0x00            ; 予約
-    dw 128              ; 読み込みセクタ数 (空HDDに書き込むから64KBまで0埋めは不要)
-    dw 0x0000          ; バッファオフセット (ES:BX)
-    dw 0x1800          ; バッファセグメント
-    dd 72             ; LBA 下位32bit FAT16初期化直後にmcopyでkernel.binを複製するとデータ領域最初のLBA72へ置かれる（今後BPBから計算するように変更予定）
+    dw 128             ; 読み込みセクタ数
+    dw 0x0000       ; オフセット
+    dw 0x1800       ; セグメント
+    dd 200             ; LBA 下位32bit FAT16初期化直後にmcopyでkernel.binを複製するとデータ領域最初のLBA72へ置かれる（今後BPBから計算するように変更予定）
     dd 0               ; LBA 上位32bit (通常0)
 
 dap_post:
