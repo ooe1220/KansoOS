@@ -18,12 +18,12 @@ xxd -i src/kernel/penguin.bmp > src/kernel/penguin_bmp.h
 nasm -f bin src/bios/main.asm -o build/KansoFW​.bin
 
 # 自作POSTのビルド
-nasm -f bin src/boot/post.asm -o build/post.bin
+nasm -f bin src/boot/post/post.asm -o build/post.bin
 
-# 2. 追加アセンブリをオブジェクトに
-nasm -f elf32 src/boot/switch32.asm -o build/switch32.o
+#  カーネル先頭
+nasm -f elf32 src/kernel/switch32.asm -o build/switch32.o
 
-# 3. C をオブジェクトファイルに
+#  C をオブジェクトファイルに
 # -m32 : 32ビットの機械語を生成
 # -ffreestanding : OS標準ライブラリを使わない。開始点がmain()でなくても良くなる
 # -c : コンパイルのみ、リンクはしない　これがないと gcc は最終的な実行ファイル（.exe や a.out）を作ろうとする
@@ -168,7 +168,6 @@ $ASM  -O0 src/drivers/ata_block.c -o build/disasm/drivers/atapi_block_O0.asm
 $ASM  -O2 src/drivers/ata_block.c -o build/disasm/drivers/atapi_block_O2.asm
 
 # フラグの並びが違う単発はそのまま
-nasm -f elf32 src/boot/switch32.asm -o build/switch32.o
 gcc -m32 -ffreestanding -I./src -c src/x86/font_8x16.c -o build/font_8x16.o
 gcc -m32 -ffreestanding -fno-pic -fno-pie -c src/x86/syscall_entry.S -o build/syscall_entry.o
 

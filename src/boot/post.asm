@@ -22,46 +22,13 @@ start:
 
 post_start:
 
-    mov si, test_msg
+    mov si, msg_post_start
     call print_string
 
-; ここにPOST処理を入れる
-
-    ; VBE対応しているか
-    mov ax, 0x4F00
-    mov di, controllerinfo
-    int 0x10
-    cmp ax, 0x004F
-    jne no_vbe
-    
-    ; VBEの情報をBIOSに聞く
-    mov ax, 0x4F01
-    mov cx, 0x114 ; 800x600 16bpp
-    mov di, modeinfo
-    int 0x10
-    cmp ax, 0x004F
-    jne no_vbe
-    
-    ; 800x600
-    mov ax, 0x4F02    ; VBE Set Mode
-    mov bx, 0x4114    ; 800x600 16bpp
-    int 0x10
-    cmp ax, 0x004F
-    jne no_vbe
-
-    ; vbe_infoへVBE情報構造体のアドレスを置く
-    mov eax, modeinfo
-    mov [vbe_info], eax
+    call a20_enable
+    call vbe_init ; VBE 800*600*16bpp設定 これ移行カーネルのconsoleが動くまでは文字表示不可
 
 jmp enter_pm ; 32bitモードへ切り替え(モードを切り替える為call retは使わない)
-
-no_vbe:
-    mov si, error_msg
-    call print_string
-.hang:
-    cli
-    hlt
-    jmp .hang 
 
 print_string:
     lodsb
@@ -77,10 +44,13 @@ print_string:
 controllerinfo: times 0x100 db 0 ; こちらは使わないが受け皿
 modeinfo: times 0x100 db 0
 
-test_msg db "Custom POST started", 0x0D, 0x0A, 0
+msg_post_start db "Custom POST started", 0x0D, 0x0A, 0
 error_msg db "FVBE Error", 0x0D, 0x0A, 0
 
-%include "src/boot/pm.asm" ; 注意、下に置くと32ビットコードに変換され不具合
+; 注意、下に置くと32ビットコードに変換され不具合
+%include "src/boot/pm.asm" 
+%include "src/boot/a20.asm" 
+%include "src/boot/vbe_init.asm" 
 ;-------------------------------------------------------32-------------------------------------------------------
 
 bits 32

@@ -1,8 +1,14 @@
-; ================================
+bits 16
 ; A20を有効化する
-; ================================
-; 使用: AXのみ
-; ================================
+
+a20_enable:
+
+    call a20_enable_8042
+    call a20_enable_fast
+    call a20_check
+
+    ret
+
 
 a20_enable_8042:
 .wait_input_empty:
@@ -44,3 +50,57 @@ a20_enable_fast:
     out  0x92, al
     ret
 
+
+a20_check:
+    push ax
+    push si
+    push es
+    push ds
+    push di
+
+    ; 0x0000:0x0500 = 0xAA
+    xor ax, ax
+    mov es, ax
+    mov di, 0x0500
+    mov byte [es:di], 0xAA
+
+    ; 0xFFFF:0x0510 = 0x55
+    mov ax, 0xFFFF
+    mov es, ax
+    mov di, 0x0510
+    mov byte [es:di], 0x55
+
+    ; 0x0000:0x0500 を読み出し
+    xor ax, ax
+    mov ds, ax
+    mov di, 0x0500
+    mov al, [ds:di]
+
+    ; 比較
+    cmp al, 0x55
+    je .a20_off
+
+    mov si, a20_msg_ok
+    call print_string
+    
+    pop di
+    pop ds
+    pop es
+    pop si
+    pop ax
+    ret
+
+.a20_off:
+    mov si, a20_msg_fail
+    call print_string
+    
+.hang:
+    cli
+    hlt
+    jmp .hang
+
+
+
+
+a20_msg_ok      db "A20 enabled", 0x0D, 0x0A, 0
+a20_msg_fail    db "A20 Error", 0x0D, 0x0A, 0
