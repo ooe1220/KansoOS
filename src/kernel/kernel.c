@@ -58,8 +58,8 @@ void kernel_main() {
     
     show_penguin();// shell画面左上にペンギン画像を表示
     
-    cpu_cache_disable();// キャッシュを切っておく
-    kputs("CPU cache disabled\n");
+    //cpu_cache_disable();// キャッシュを切る(デバッグ用!これを入れるとVRAMが激重)　切ると偶にATAPI読み込み失敗
+    //kputs("CPU cache disabled\n");
 
     fs_mount_root(); //起動ディスクに応じてATA+FAT16かATAPI+ISO9660かを決める（安定したら固定をやめる）
 
