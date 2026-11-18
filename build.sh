@@ -18,7 +18,7 @@ xxd -i src/kernel/penguin.bmp > src/kernel/penguin_bmp.h
 nasm -f bin src/bios/main.asm -o build/KansoFW​.bin
 
 # 自作POSTのビルド
-nasm -f bin src/boot/post/post.asm -o build/post.bin
+nasm -f bin src/boot/stage2/stage2_main.asm -o build/stage2.bin
 
 #  カーネル先頭
 nasm -f elf32 src/kernel/switch32.asm -o build/switch32.o
@@ -276,7 +276,7 @@ dd if=build/vbr.bin of=build/fat16.img bs=512 count=1 conv=notrunc
 echo 'drive x: file="build/fat16.img" fat_bits=16' > mtoolsrc
 export MTOOLSRC=$PWD/mtoolsrc
 
-mcopy build/post.bin   x:POST.BIN
+mcopy build/stage2.bin   x:STAGE2.BIN
 mcopy build/kernel.bin x:KERNEL.BIN
 mcopy build/test2.bin   x:TEST2.BIN
 mcopy build/test3.bin   x:TEST3.BIN
@@ -299,7 +299,7 @@ nasm -f bin src/boot/cdboot.asm -o build/cdboot.bin
 
 mkdir -p build/iso_root/boot
 cp build/cdboot.bin build/iso_root/boot/
-cp build/post.bin  build/iso_root/
+cp build/stage2.bin  build/iso_root/
 cp build/kernel.bin  build/iso_root/
 cp build/cat.bin  build/iso_root/
 cp build/memtest.bin  build/iso_root/
@@ -319,5 +319,5 @@ cp build/test.txt  build/iso_root/
 
 # kernel.cのLBAを探す ファイル増えたら変わる　今後はブートローダ内で探すように改良予定
 # isoinfo -l -i build/os.iso | grep KERNEL
-# isoinfo -l -i build/os.iso | grep POST
+# isoinfo -l -i build/os.iso | grep STAGE2
 # dd if=build/os.iso bs=2048 skip=37 count=32 | cmp - build/kernel.bin && echo OK
