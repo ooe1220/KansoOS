@@ -17,7 +17,6 @@ enter_pm:
     ; 32ビットコードへ跳ぶ
     jmp dword 0x08:pm_start
 
-
 bits 32
 pm_start:
     ; データセグメント設定（フラット）

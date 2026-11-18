@@ -11,7 +11,9 @@ org 0x8000 ;  0x0000:0x8000 に読み込まれている前提（VBR/CDBOOTがこ
 
     jmp start
     vbe_info: dd 0 ; modeinfoの先頭アドレス 後続のカーネル(C言語)より参照する
+    expected_sum:   dd 0x00000000 ; kernel.binのチェックサム値。ビルドスクリプトから入れる
 
+align 4  ; jmp からstartとの間にdd一個だと動くが、dd2つ置くならこれを入れないとその後正常に動作しなくなる。
 start:
     cli
     xor ax, ax
@@ -50,6 +52,8 @@ bits 32
     mov ecx, 8192
     rep movsd
 
+    call checksum ; kernel.binがビット反転していないか確認
+
     ; ここからkenelへ飛ぶ
     jmp 0x200000
 
@@ -60,6 +64,7 @@ bits 32
 %include "src/boot/stage2/a20.asm" 
 %include "src/boot/stage2/vbe_init.asm" 
 %include "src/boot/stage2/lib.asm" 
+%include "src/boot/stage2/checksum.asm" 
 
 ;------------------------------------------------------DATA------------------------------------------------------
 

@@ -228,6 +228,17 @@ objcopy -O binary build/kernel.elf build/kernel.bin
 current=$(stat -c%s build/kernel.bin)
 dd if=/dev/zero bs=1 count=$((65536 - current)) >> build/kernel.bin
 
+#######################
+
+# リトルエンディアンで dd
+sum=$(od -An -v -tu1 build/kernel.bin | awk '{for(i=1;i<=NF;i++)s=(s+$i)%4294967296} END{printf "%08x",s}')
+
+printf "\x${sum:6:2}\x${sum:4:2}\x${sum:2:2}\x${sum:0:2}" | dd of=build/stage2.bin bs=1 seek=6 count=4 conv=notrunc
+
+# 4) 確認
+xxd -s 6 -l 4 build/stage2.bin
+#######################
+
 # 6. ユーザー空間
 gcc -ffreestanding -nostdlib -fno-pic -fno-pie -m32 -c user/start.S -o build/start.o
 
