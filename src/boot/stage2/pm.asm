@@ -37,15 +37,64 @@ pm_start:
     push eax
     ret
 
+
+bits 32
+
+align 4
+leave_pm: ; 32bit mode -> 16bit mode
+    ; 16ビットデータセグメントを設定する 0x20 = GDT[4]
+    ; D=0なので命令を16ビットととして実行する
+    mov ax, 0x20
+    mov ds, ax
+    mov es, ax
+    mov fs, ax
+    mov gs, ax
+    mov ss, ax
+
+    jmp 0x18:rm_seg
+
+bits 16
+
+rm_seg:
+
+    ; PE = 0
+    mov eax, cr0
+    and eax, 0xFFFFFFFE
+    mov cr0, eax
+    
+    ; CS = 0として16bitモードへ突入
+    jmp 0:real_mode
+
+real_mode:
+
+    xor ax, ax
+    mov ds, ax
+    mov es, ax
+    mov ss, ax
+    mov fs, ax
+    mov gs, ax
+    mov sp, 0x7C00
+
+    mov si, enter_rm
+    call print_string
+
+    jmp leave_pm_end
+
 ; ------------------GDT--------------------
 gdt_start:
     dq 0x0000000000000000            ; NULL
 
-gdt_code:
-    dq 0x00CF9A000000FFFF            ; limit 0-15 / base 0-23 / code / flags
+gdt_code:                             ; 0x08
+    dq 0x00CF9A000000FFFF           ; limit 0-15 / base 0-23 / code / flags
 
-gdt_data:
+gdt_data:                              ; 0x10
     dq 0x00CF92000000FFFF            ; limit 0-15 / base 0-23 / data / flags
+
+gdt_code16:                         ; 0x18
+    dq 0x00009E000000FFFF            ; 16bit code / base=0 / limit=0xFFFF / G=0 D=0
+
+gdt_data16:                          ; 0x20
+    dq 0x000092000000FFFF            ; 16bit data / base=0 / limit=0xFFFF / G=0
 
 gdt_end:
 
@@ -60,3 +109,5 @@ pm_return_ip16:   dw 0x0000            ; 16bit 戻り先 IP（リアルモード
 pm_return_cs16:   dw 0x0000            ; 16bit 戻り先 CS
 
 ;pm_return_eip32:  dd 0x00000000        ; 32bit 側の戻り先 EIP
+
+enter_rm db "Returned to Real Mode.", 0x0D, 0x0A, 0
