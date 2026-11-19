@@ -8,7 +8,6 @@ org 0x0000 ; BIOSは0xF0000-0xFFFFFの64KB(メモリ1MBの一番高い領域)
 bios_start:
 
     call cpupost
-    call bios_kbd_set1 ; QEMUだと初めはset2になっていた。簡素OSはset1想定
 
     cli
     ; IVTに登録
@@ -72,7 +71,6 @@ hlt_loop:
     jmp hlt_loop
 
 %include "src/bios/cpupost.asm"
-%include "src/bios/driver/keyboard.asm"
 %include "src/bios/video/int10h.asm"
 %include "src/bios/int/int12h.asm"
 %include "src/bios/int/int13h.asm"

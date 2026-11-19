@@ -32,6 +32,7 @@ start:
 
     ; ここに少しずつBIOSを真似たPOST処理を追加して行きたい
 
+    call keybord_init
     call cpuid_check
     call a20_enable
     call pic_init
@@ -73,7 +74,8 @@ bits 32
 %include "src/boot/stage2/cpuid.asm" 
 %include "src/boot/stage2/pm.asm" 
 %include "src/boot/stage2/a20.asm"
-%include "src/boot/stage2/pic_init.asm"  
+%include "src/boot/stage2/pic_init.asm"
+%include "src/boot/stage2/keybord_init.asm"  
 %include "src/boot/stage2/vbe_init.asm" 
 %include "src/boot/stage2/lib.asm" 
 %include "src/boot/stage2/checksum.asm" 
