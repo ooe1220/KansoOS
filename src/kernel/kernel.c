@@ -66,9 +66,6 @@ void kernel_main() {
     idt_init(); // IDT初期化 (x86/idt.h)
     kputs("IDT initialized\n");
     
-    pic_init(); // PIC初期化 (x86/pic.h)
-    kputs("PIC initialized\n");
-    
     pic_unmask_irq(1); // PICのIRQ1(キーボード割り込み)を有効化 (x86/pic.h)
     kputs("IRQ1 (keyboard) unmasked\n");
     

@@ -34,6 +34,8 @@ start:
 
     call cpuid_check
     call a20_enable
+    call pic_init
+
     call vbe_init ; VBE 800*600*16bpp設定 これ移行カーネルのconsoleが動くまでは文字表示不可
 
     call enter_pm; 32bitモードへ切り替え(モードを切り替える為call retは使わない)
@@ -70,7 +72,8 @@ bits 32
 ; 必ず各ファイルの初めにbits 16/32をつけること
 %include "src/boot/stage2/cpuid.asm" 
 %include "src/boot/stage2/pm.asm" 
-%include "src/boot/stage2/a20.asm" 
+%include "src/boot/stage2/a20.asm"
+%include "src/boot/stage2/pic_init.asm"  
 %include "src/boot/stage2/vbe_init.asm" 
 %include "src/boot/stage2/lib.asm" 
 %include "src/boot/stage2/checksum.asm" 

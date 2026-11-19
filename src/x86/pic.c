@@ -1,21 +1,7 @@
 // PIC.c
 #include "io.h"
 
-// PIC初期化
-void pic_init(void) {
-    outb(0x20, 0x11);
-    outb(0xA0, 0x11);
-    outb(0x21, 0x20);
-    outb(0xA1, 0x28);
-    outb(0x21, 0x04);
-    outb(0xA1, 0x02);
-    outb(0x21, 0x01);
-    outb(0xA1, 0x01);
-
-    // 初期状態は全IRQ禁止
-    outb(0x21, 0xFF);
-    outb(0xA1, 0xFF);
-}
+// 第二ブートローダで初期化済み
 
 void pic_send_eoi(uint8_t irq) {
     (void)irq;              // 今は IRQ1 しか使わない
