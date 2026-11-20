@@ -37,7 +37,7 @@ start:
     call a20_enable
     call pic_init
 
-    call enter_pm; 32bitモードへ切り替え
+    call real_to_prot; 32bitモードへ切り替え
 
 bits 32
 
@@ -59,14 +59,14 @@ bits 32
 
     call checksum ; kernel.binがビット反転していないか確認
 
-    jmp leave_pm ; VBEを設定する為に16ビットモードへ戻る 32bitアドレスをCS:IPにするのが難しく一旦JMP
+    jmp prot_to_real ; VBEを設定する為に16ビットモードへ戻る 32bitアドレスをCS:IPにするのが難しく一旦JMP
 
 bits 16
-leave_pm_end: 
+prot_to_real_end: 
 
     call vbe_init ; VBE 800*600*16bpp設定
     
-    call enter_pm;
+    call real_to_prot;
 bits 32
 
     ; ここからkenelへ飛ぶ

@@ -1,5 +1,5 @@
 bits 16
-enter_pm:
+real_to_prot:
     
     ; 返りアドレス保存
     pop ax                      ; near call が積んだ戻り先IP
@@ -41,7 +41,7 @@ pm_start:
 bits 32
 
 align 4
-leave_pm: ; 32bit mode -> 16bit mode
+prot_to_real: ; 32bit mode -> 16bit mode
     ; 16ビットデータセグメントを設定する 0x20 = GDT[4]
     ; D=0なので命令を16ビットととして実行する
     mov ax, 0x20
@@ -78,7 +78,7 @@ real_mode:
     mov si, enter_rm
     call print_string
 
-    jmp leave_pm_end
+    jmp prot_to_real_end
 
 ; ------------------GDT--------------------
 gdt_start:
