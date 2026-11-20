@@ -6,10 +6,10 @@
 ; 0x18000 : kernel.bin（呼び出し元がここへ読み込み済み）
 ; 0x200000: kernel.binへ跳ぶ
 
-%define KERNEL_TMP_ADDR    0x18000
-%define KERNEL_LOAD_ADDR   0x200000
-%define KERNEL_REGION_SIZE    0x100000
-%define KERNEL_FILE_SIZE   0x10000
+%define KERNEL_TMP_ADDR    0x18000      ; カーネル一時置き場
+%define KERNEL_LOAD_ADDR   0x200000   ; カーネル配置領域
+%define KERNEL_REGION_SIZE    0x100000 ; kernel.bin + bssの為に予約した領域
+%define KERNEL_FILE_SIZE   0x10000          ; kernel.binの大きさ 64KB
 
 bits 16
 org 0x8000 ;  0x0000:0x8000 に読み込まれている前提（VBR/CDBOOTがここへ読み込む)
@@ -52,12 +52,9 @@ bits 32
     ; ブートセクタから0x18000に置いたkernel.binを0x200000へ複製 
     ; 16bitモードでは0x200000へ届かない為ここで複製する
     ; カーネルを1MB以内に置くと今後肥大化した際にVRAMやBOISを侵食し兼ねない
-    ; 64KBの複製は2回に分けないと実機で失敗した
     mov esi, KERNEL_TMP_ADDR
     mov edi, KERNEL_LOAD_ADDR 
-    mov ecx, KERNEL_FILE_SIZE / 4           ; 32KB / 4 (DWORD)
-    rep movsd
-    mov ecx, KERNEL_FILE_SIZE / 4           ; 後半の32KB
+    mov ecx, KERNEL_FILE_SIZE / 4           ; 64KB / 4 (DWORD)
     rep movsd
 
     call checksum ; kernel.binがビット反転していないか確認
