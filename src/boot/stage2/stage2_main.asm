@@ -59,10 +59,8 @@ bits 32
 
     call checksum ; kernel.binがビット反転していないか確認
 
-    jmp prot_to_real ; VBEを設定する為に16ビットモードへ戻る 32bitアドレスをCS:IPにするのが難しく一旦JMP
-
+    call prot_to_real ; VBEを設定する為に16ビットモードへ戻る
 bits 16
-prot_to_real_end: 
 
     call vbe_init ; VBE 800*600*16bpp設定
     
