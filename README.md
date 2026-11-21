@@ -115,6 +115,13 @@ ATAPI(光学ドライバ実装中)
 sudo apt install nasm
 sudo apt install qemu-system-x86
 sudo apt install -y gcc-multilib libc6-dev-i386
+
+
+sudo apt install flatpak
+flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+flatpak install flathub net._86box._86Box
+flatpak install flathub net._86box._86Box.ROMs  # 失敗した分は個別で導入
+flatpak run net._86box._86Box # 起動確認
 ```
 
 

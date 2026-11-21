@@ -29,6 +29,7 @@ static int ata_block_read(void *dev, uint32_t lba, uint32_t count, void *buf)
     (void)dev; 
     //kprintf("count=%d",count);
     return ata_read_lba28(lba, count, buf);  /* 成功0 / 失敗-1 を想定 */
+    //return ata_read_chs(lba, count, buf);
 }
 
 /*=============================================================

@@ -32,7 +32,7 @@ start:
 
     ; ここに少しずつBIOSを真似たPOST処理を追加して行きたい
 
-    call keybord_init
+    ;call keybord_init ; これを実行すると突然QEMUでSETが1でなくなるようになった
     call cpuid_check
     call a20_enable
     call pic_init

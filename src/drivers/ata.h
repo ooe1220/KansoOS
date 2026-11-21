@@ -3,6 +3,10 @@
 
 #include "lib/stdint.h"
 
+
+
+int ata_read_chs(uint32_t lba, uint8_t sector_cnt, void* buffer);
+
 /*
  * ATA PIO (LBA28) でディスクを読み込む
  *

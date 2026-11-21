@@ -22,9 +22,26 @@ real_start:
     call print_string
     pop dx    ; ドライブ番号
 
+    ; --- 拡張INT13h対応確認 ---
+    mov ah, 0x41
+    mov bx, 0x55AA
+    int 0x13
+    jc  .no_ext             ; CF=1 なら非対応
+    cmp bx, 0xAA55
+    jne .no_ext
+    test cx, 1              ; bit0: Packet Read/Write対応
+    jz  .no_ext
+    jmp .ext_ok
+
+.no_ext:
+    mov si, msg_noext
+    call print_string
+    jmp hang_hlt
+.ext_ok:
+
     ; mshowfat -i build/fat16.img '::POST.BIN'
     ; mshowfat -i build/fat16.img '::KERNEL.BIN'
-    mov  ah, 0x42      ; LBA拡張リード
+    mov  ah, 0x42      ; LBA拡張
     mov  si, dap_post       ; DAP へのポインタ
     int  0x13
     jc   load_error
@@ -76,6 +93,7 @@ hang_hlt:
     jmp hang_hlt
     
 msg_loaded db "[VBR] Execution started at 0x0000:0x7C00", 0x0D, 0x0A, 0
+msg_noext db "INT 13h extensions (AH=42h) not supported", 0x0D, 0x0A, 0
 error_msg db "Failed to load KERNEL.BIN / POST.BIN", 0x0D, 0x0A, 0
 
 ; 何からOSを起動したかを記憶(ファイルシステムの初期マウントに使用)
